@@ -6,6 +6,11 @@ node_modules/
 __pycache__/
 *.pyc
 *.log
+*.key
+*.pem
+*.p12
+*.secret
+*.secrets
 .vscode/
 .idea/
 
