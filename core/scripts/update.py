@@ -128,6 +128,32 @@ def fetch_remote_version(url):
             return "", ()
 
 
+def fetch_remote_version_via_git(remote="origin", branch="main"):
+    if not (REPO_ROOT / ".git").exists() or not shutil.which("git"):
+        return "", ()
+
+    try:
+        subprocess.run(
+            ["git", "fetch", remote, branch, "--quiet"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            check=False,
+        )
+        show_result = subprocess.run(
+            ["git", "show", f"{remote}/{branch}:VERSION"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if show_result.returncode == 0:
+            return parse_version(show_result.stdout.strip())
+    except Exception as exc:
+        print(f"[WARN] No se pudo leer VERSION remota via git: {exc}")
+
+    return "", ()
+
+
 def is_update_available(local_tuple, remote_tuple):
     if not local_tuple or not remote_tuple:
         return False
@@ -251,13 +277,18 @@ def run_update(force=False, check_only=False):
     raw_url = build_raw_version_url(repo_url)
     zip_url = build_zip_url(repo_url)
     local_text, local_tuple = read_local_version()
-    remote_text, remote_tuple = fetch_remote_version(raw_url)
+    remote_text, remote_tuple = fetch_remote_version_via_git()
+    remote_source = "git origin/main"
+    if not remote_text:
+        remote_text, remote_tuple = fetch_remote_version(raw_url)
+        remote_source = raw_url
 
     if not remote_text:
         return STATUS_ERROR
 
     print(f"[INFO] Version local: {local_text or 'N/D'}")
     print(f"[INFO] Version remota: {remote_text}")
+    print(f"[INFO] Fuente remota: {remote_source}")
 
     if not local_tuple:
         print("[WARN] VERSION local no valido o inexistente.")
