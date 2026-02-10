@@ -1,0 +1,50 @@
+# === PA Framework Pre-Alpha — .gitignore ===
+
+# System / IDE
+.env
+node_modules/
+__pycache__/
+*.pyc
+*.log
+.vscode/
+.idea/
+
+# AI CLI internal dirs (generated at runtime)
+.claude/
+.codex/
+.opencode/package-lock.json
+.opencode/temp-quota/
+.opencode/*.tmp
+
+# Privacy — sensitive vars only
+core/.context/env_vars.json
+
+# Old root-level context (legacy)
+/.context/
+/sessions/
+/logs/
+
+# User workspaces (private content)
+workspaces/*/
+
+# Config with secrets
+opencode.jsonc
+
+# Temp / dev artifacts
+TEMPO/
+_bmad/
+_bmad-output/
+*.tmp
+.last_sync
+
+# Local dev notes (keep out of releases)
+PRE-ALPHA.txt
+DIAGNOSTICO-DEV.txt
+ResultadoPruebasMVP-Personal.txt
+DELEGACION_CODEX.md
+PLAN_EVOLUCION_UX.md
+PLAN_SISTEMICO_INTEGRACION.md
+opencode.jsonc.nanogpt.jsonc
+opencode.jsonc_bk
+opencode.jsonc.template
+idea-chat.png

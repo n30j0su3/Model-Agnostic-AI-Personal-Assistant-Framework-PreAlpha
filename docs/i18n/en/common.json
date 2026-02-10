@@ -1,0 +1,21 @@
+{
+  "system": {
+    "welcome": "Welcome to Personal Assistant Framework",
+    "status": "System status",
+    "version": "Version"
+  },
+  "session": {
+    "start": "Starting daily session",
+    "end": "Closing daily session",
+    "focus": "Day's focus",
+    "pending": "Pending tasks",
+    "completed": "Completed tasks"
+  },
+  "workspaces": {
+    "personal": "Personal",
+    "professional": "Professional",
+    "research": "Research",
+    "content": "Content",
+    "development": "Development"
+  }
+}
