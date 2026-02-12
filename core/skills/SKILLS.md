@@ -15,7 +15,8 @@
 | **@etl** | Diseño inteligente UI/UX con base de datos buscable | `core/etl/` |
 | **@json-prompt-generator** | Diseño inteligente UI/UX con base de datos buscable | `core/json-prompt-generator/` |
 | **@pptx** | Diseño inteligente UI/UX con base de datos buscable | `core/pptx/` |
-| **@data-viz** | Diseño inteligente UI/UX con base de datos buscable | `core/data-viz/` |
+| **@data-viz** | Visualización de datos con Seaborn/Matplotlib | `core/data-viz/` |
+| **@prd-generator** | Generación de Product Requirements Documents con historias de usuario | `core/prd-generator/` |
 
 ## Cómo Invocar
 

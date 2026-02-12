@@ -1,0 +1,59 @@
+{
+  "version": "1.0",
+  "last_updated": "2026-01-30",
+  "categories": {
+    "frameworks": [
+      {
+        "name": "Context7",
+        "url": "https://context7.ai",
+        "description": "Documentation server for libraries."
+      },
+      {
+        "name": "LangChain",
+        "url": "https://python.langchain.com",
+        "description": "Building applications with LLMs."
+      }
+    ],
+    "agents": [
+      {
+        "name": "NirDiamant Agents",
+        "url": "https://github.com/NirDiamant/GenAI_Agents",
+        "description": "Reference implementations for specialized agents."
+      },
+      {
+        "name": "Serena",
+        "url": "https://github.com/oraios/serena",
+        "description": "Agentic framework research."
+      }
+    ],
+    "tools": [
+      {
+        "name": "Git MCP",
+        "url": "https://github.com/git-mcp/git-mcp",
+        "description": "Model Context Protocol for Git."
+      },
+      {
+        "name": "DeepSeek OCR",
+        "url": "https://github.com/deepseek-ai/DeepSeek-OCR",
+        "description": "High accuracy OCR for documents."
+      }
+    ],
+    "models": [
+      {
+        "id": "claude-3-opus",
+        "provider": "Anthropic",
+        "use_case": "Deep reasoning, auditing."
+      },
+      {
+        "id": "gemini-1.5-pro",
+        "provider": "Google",
+        "use_case": "Long context, planning, multimodal."
+      },
+      {
+        "id": "gpt-4-turbo",
+        "provider": "OpenAI",
+        "use_case": "Code generation (Codex)."
+      }
+    ]
+  }
+}

@@ -8,7 +8,8 @@
 Main Agent (pa-assistant)
 ├── ContextScout      → Descubrimiento de contexto (read-only)
 ├── SessionManager    → Gestión de sesiones diarias
-└── DocWriter         → Documentación automática
+├── DocWriter         → Documentación automática
+└── FeatureArchitect  → Arquitecto de producto (dev-only)
 ```
 
 ## Agente Principal
@@ -17,7 +18,7 @@ Main Agent (pa-assistant)
 - **Propósito**: Asistente personal principal. Orquesta sesiones, contexto y delegación.
 - **Archivo**: `pa-assistant.md`
 - **Estado**: OPERATIVO
-- **Dependencias**: context-scout, session-manager, doc-writer
+- **Dependencias**: context-scout, session-manager, doc-writer, feature-architect
 
 ## Subagentes
 
@@ -36,6 +37,13 @@ Main Agent (pa-assistant)
 - **Archivo**: `subagents/doc-writer.md`
 - **Estado**: OPERATIVO
 
+### @feature-architect
+- **Propósito**: Arquitecto de producto y guardián de la filosofía. Evalúa, planea y ejecuta features del backlog sin solapamientos.
+- **Archivo**: `subagents/feature-architect.md`
+- **Estado**: OPERATIVO
+- **Modo**: DEV-ONLY (no disponible en producción)
+- **Dependencias**: prd-generator, task-management
+
 ---
 
 ## Jerarquía de Delegación
@@ -45,7 +53,8 @@ Usuario → pa-assistant → [Comprende tarea]
                         ├── ContextScout (¿qué contexto necesito?)
                         ├── Ejecuta directamente (tareas simples)
                         ├── SessionManager (gestión de sesión)
-                        └── DocWriter (documentación)
+                        ├── DocWriter (documentación)
+                        └── FeatureArchitect (arquitectura de features - dev)
 ```
 
 ## Crear Nuevo Agente
