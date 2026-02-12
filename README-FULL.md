@@ -2,9 +2,14 @@
 
 > "One Framework to rule them all, One Context to find them."
 > "El Conocimiento verdadero trasciende a lo público".
+> 
+> **"True knowledge transcends to the public."**
 
 [![Release](https://img.shields.io/badge/release-v0.1.0--alpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.1.0-alpha)
 [![Changelog](https://img.shields.io/badge/changelog-keep%20a%20changelog-green)](./CHANGELOG.md)
+[![Instagram](https://img.shields.io/badge/Instagram-%40freakingjson-E4405F?logo=instagram&logoColor=white)](https://instagram.com/freakingjson)
+[![Linktree](https://img.shields.io/badge/Linktree-@freakingjson-43E55C?logo=linktree&logoColor=white)](https://linktr.ee/freakingjson)
+[![Blog](https://img.shields.io/badge/Blog-freakingjson.com-FFA500?logo=firefoxbrowser&logoColor=white)](https://freakingjson.com)
 ![Stage](https://img.shields.io/badge/stage-alpha-red)
 
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -282,5 +287,22 @@ xdg-open dashboard.html    # Linux
 No requiere servidor ni dependencias externas.
 
 ---
-Hecho con ❤️ por el equipo de **Advanced Agentic Coding**.
+
+## 🔗 Conecta con FreakingJSON
+
+- 📸 **Instagram**: [@freakingjson](https://instagram.com/freakingjson)
+- 🌐 **Todas las redes**: [linktr.ee/freakingjson](https://linktr.ee/freakingjson)
+- 📝 **Blog Tech & Homelab**: [freakingjson.com](https://freakingjson.com)
+- ☕ **Apoya el proyecto**: [buymeacoffee.com/freakingjson](https://buymeacoffee.com/freakingjson)
+
+---
+
+Hecho con ❤️ por **FreakingJSON**.
+
+> **"El conocimiento verdadero trasciende a lo público."**
+> 
+> **"True knowledge transcends to the public."**
+> 
+> *I own my context. I am FreakingJSON.*
+
 Basado en las filosofías de **theNetworkChuck**.

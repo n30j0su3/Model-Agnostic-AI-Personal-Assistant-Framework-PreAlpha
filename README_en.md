@@ -3,11 +3,20 @@
 > "Your Personal AI Assistant. Your Knowledge. Your Control."
 
 [![Release](https://img.shields.io/badge/release-v0.1.0--alpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.1.0-alpha)
+[![Instagram](https://img.shields.io/badge/Instagram-%40freakingjson-E4405F?logo=instagram&logoColor=white)](https://instagram.com/freakingjson)
+[![Linktree](https://img.shields.io/badge/Linktree-@freakingjson-43E55C?logo=linktree&logoColor=white)](https://linktr.ee/freakingjson)
+[![Blog](https://img.shields.io/badge/Blog-freakingjson.com-FFA500?logo=firefoxbrowser&logoColor=white)](https://freakingjson.com)
 [![Changelog](https://img.shields.io/badge/changelog-keep%20a%20changelog-green)](./CHANGELOG.md)
 ![Stage](https://img.shields.io/badge/stage-alpha-red)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 [🇪🇸 Spanish Version](./README.md)
+
+> **"True knowledge transcends to the public."**
+> 
+> *"El conocimiento verdadero trasciende a lo público."*
+> 
+> — *FreakingJSON*
 
 ---
 
@@ -180,4 +189,15 @@ The structure and operation are identical. Only the script file extensions chang
 
 Made with ❤️ by **FreakingJSON**.
 
+### 🔗 Connect with FreakingJSON
+
+- 📸 **Instagram**: [@freakingjson](https://instagram.com/freakingjson)
+- 🌐 **All socials**: [linktr.ee/freakingjson](https://linktr.ee/freakingjson)
+- 📝 **Tech & Homelab Blog**: [freakingjson.com](https://freakingjson.com)
+- ☕ **Support the project**: [buymeacoffee.com/freakingjson](https://buymeacoffee.com/freakingjson)
+
 > *"I own my context. I am FreakingJSON."*
+> 
+> **"True knowledge transcends to the public."**
+> 
+> *"El conocimiento verdadero trasciende a lo público."*
