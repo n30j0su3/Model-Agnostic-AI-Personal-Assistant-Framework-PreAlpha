@@ -15,7 +15,12 @@
 | **@etl** | Diseño inteligente UI/UX con base de datos buscable | `core/etl/` |
 | **@json-prompt-generator** | Diseño inteligente UI/UX con base de datos buscable | `core/json-prompt-generator/` |
 | **@pptx** | Diseño inteligente UI/UX con base de datos buscable | `core/pptx/` |
-| **@data-viz** | Diseño inteligente UI/UX con base de datos buscable | `core/data-viz/` |
+| **@data-viz** | Visualización de datos con Seaborn/Matplotlib | `core/data-viz/` |
+| **@prd-generator** | Generación de Product Requirements Documents con historias de usuario | `core/prd-generator/` |
+| **@skill-creator** | Guía completa para crear nuevas skills en el framework | `core/skill-creator/` |
+| **@markdown-writer** | Toolkit para escribir Markdown consistente siguiendo MVI | `core/markdown-writer/` |
+| **@csv-processor** | Procesamiento de CSV para limpieza, transformación y análisis | `core/csv-processor/` |
+| **@python-standards** | Estándares cross-platform para scripts Python | `core/python-standards/` |
 
 ## Cómo Invocar
 

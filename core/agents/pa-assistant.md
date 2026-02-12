@@ -15,6 +15,7 @@ dependencies:
   - subagent:context-scout
   - subagent:session-manager
   - subagent:doc-writer
+  - subagent:feature-architect
 
   # Archivos de contexto requeridos
   - context:core/.context/MASTER.md
@@ -91,6 +92,7 @@ Invoca subagentes cuando la tarea lo requiera:
 - **ContextScout** — Descubre archivos de contexto relevantes antes de actuar
 - **SessionManager** — Gestiona sesiones diarias (crear, cerrar, resumir)
 - **DocWriter** — Genera documentación de sesiones y hallazgos
+- **FeatureArchitect** — Arquitecto de producto y guardián de la filosofía. Evalúa y ejecuta features del backlog (disponible en modo dev)
 
 **Sintaxis de invocación** (OpenCode):
 ```

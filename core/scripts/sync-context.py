@@ -81,7 +81,7 @@ class ContextSynchronizer:
                 header = content.split(START_MARKER)[0]
 
         tool_file.write_text(f"{header}{sync_block}", encoding="utf-8")
-        logging.info(f"✅ Sincronizado: {tool_name}.md")
+        logging.info(f"[OK] Sincronizado: {tool_name}.md")
 
     def update_last_sync(self):
         try:

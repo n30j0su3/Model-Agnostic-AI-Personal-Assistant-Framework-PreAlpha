@@ -1,0 +1,128 @@
+{
+  "version": "1.0",
+  "last_updated": "2026-02-11",
+  "skills": {
+    "task-management": {
+      "id": "task-management",
+      "name": "Task Management",
+      "category": "Productivity",
+      "description": "Gestión de tareas y seguimiento",
+      "path": "core/task-management/",
+      "status": "active"
+    },
+    "pdf": {
+      "id": "pdf",
+      "name": "PDF Processing",
+      "category": "Content",
+      "description": "Procesamiento de archivos PDF",
+      "path": "core/pdf/",
+      "status": "active"
+    },
+    "xlsx": {
+      "id": "xlsx",
+      "name": "Excel Processing",
+      "category": "Content",
+      "description": "Procesamiento de hojas de cálculo",
+      "path": "core/xlsx/",
+      "status": "active"
+    },
+    "prompt-improvement": {
+      "id": "prompt-improvement",
+      "name": "Prompt Improvement",
+      "category": "AI",
+      "description": "Optimización y refinamiento de prompts",
+      "path": "core/prompt-improvement/",
+      "status": "active"
+    },
+    "ui-ux-pro-max": {
+      "id": "ui-ux-pro-max",
+      "name": "UI/UX Pro Max",
+      "category": "Development",
+      "description": "Diseño inteligente UI/UX con base de datos buscable",
+      "path": "core/ui-ux-pro-max/",
+      "status": "active"
+    },
+    "docx": {
+      "id": "docx",
+      "name": "Word Processing",
+      "category": "Content",
+      "description": "Toolkit for creating, editing, and analyzing Word documents",
+      "path": "core/docx/",
+      "status": "active"
+    },
+    "etl": {
+      "id": "etl",
+      "name": "ETL Processor",
+      "category": "Development",
+      "description": "Procesamiento ETL de datos",
+      "path": "core/etl/",
+      "status": "active"
+    },
+    "json-prompt-generator": {
+      "id": "json-prompt-generator",
+      "name": "JSON Prompt Generator",
+      "category": "AI",
+      "description": "Generación de prompts estructurados en JSON",
+      "path": "core/json-prompt-generator/",
+      "status": "active"
+    },
+    "pptx": {
+      "id": "pptx",
+      "name": "PowerPoint Processing",
+      "category": "Content",
+      "description": "Procesamiento de presentaciones PowerPoint",
+      "path": "core/pptx/",
+      "status": "active"
+    },
+    "data-viz": {
+      "id": "data-viz",
+      "name": "Data Visualization",
+      "category": "Development",
+      "description": "Visualización de datos con Seaborn/Matplotlib",
+      "path": "core/data-viz/",
+      "status": "active"
+    },
+    "prd-generator": {
+      "id": "prd-generator",
+      "name": "PRD Generator",
+      "category": "Development",
+      "description": "Generación de Product Requirements Documents",
+      "path": "core/prd-generator/",
+      "status": "active",
+      "dev_only": true
+    },
+    "skill-creator": {
+      "id": "skill-creator",
+      "name": "Skill Creator",
+      "category": "Framework",
+      "description": "Guía completa para crear nuevas skills en el framework",
+      "path": "core/skill-creator/",
+      "status": "active"
+    },
+    "markdown-writer": {
+      "id": "markdown-writer",
+      "name": "Markdown Writer",
+      "category": "Framework",
+      "description": "Toolkit para escribir Markdown consistente siguiendo MVI",
+      "path": "core/markdown-writer/",
+      "status": "active"
+    },
+    "csv-processor": {
+      "id": "csv-processor",
+      "name": "CSV Processor",
+      "category": "Data",
+      "description": "Procesamiento de CSV para limpieza, transformación y análisis",
+      "path": "core/csv-processor/",
+      "status": "active"
+    },
+    "python-standards": {
+      "id": "python-standards",
+      "name": "Python Standards",
+      "category": "Framework",
+      "description": "Estándares cross-platform para scripts Python",
+      "path": "core/python-standards/",
+      "status": "active",
+      "core": true
+    }
+  }
+}
