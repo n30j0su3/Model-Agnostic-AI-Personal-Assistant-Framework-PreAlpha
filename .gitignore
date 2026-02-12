@@ -6,11 +6,6 @@ node_modules/
 __pycache__/
 *.pyc
 *.log
-*.key
-*.pem
-*.p12
-*.secret
-*.secrets
 .vscode/
 .idea/
 
@@ -21,13 +16,21 @@ __pycache__/
 .opencode/temp-quota/
 .opencode/*.tmp
 
-# Privacy — sensitive vars only
+# Privacy — User data (NEVER commit)
+core/.context/profile.md
+core/.context/sessions/
+core/.context/codebase/
+core/.context/backups/
 core/.context/env_vars.json
+core/.context/opencode.md
+core/.context/claude.md
+core/.context/gemini.md
+core/.context/MASTER.md
 
 # Old root-level context (legacy)
-/.context/
-/sessions/
-/logs/
+.context/
+sessions/
+logs/
 
 # User workspaces (private content)
 workspaces/*/
@@ -53,3 +56,6 @@ opencode.jsonc.nanogpt.jsonc
 opencode.jsonc_bk
 opencode.jsonc.template
 idea-chat.png
+
+# Obsolete/Historical (preserved but excluded from sync)
+OBSOLETE/

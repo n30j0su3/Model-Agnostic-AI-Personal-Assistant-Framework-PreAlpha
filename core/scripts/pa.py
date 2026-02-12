@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-PA Framework — Control Panel (Pre-Alpha)
+PA Framework — Control Panel (Pre-Alpha 0.1.0)
 Menú simplificado de 4 opciones + submenu de configuración.
 """
 
@@ -15,9 +15,9 @@ from pathlib import Path
 
 
 # --- RESOLVE PATHS ---
-SCRIPT_DIR = Path(__file__).resolve().parent  # core/scripts/
-CORE_DIR = SCRIPT_DIR.parent  # core/
-REPO_ROOT = CORE_DIR.parent  # /PA-Pre-Alpha/
+SCRIPT_DIR = Path(__file__).resolve().parent          # core/scripts/
+CORE_DIR = SCRIPT_DIR.parent                          # core/
+REPO_ROOT = CORE_DIR.parent                           # /PA-Pre-Alpha/
 CONTEXT_DIR = CORE_DIR / ".context"
 SESSIONS_DIR = CONTEXT_DIR / "sessions"
 CODEBASE_DIR = CONTEXT_DIR / "codebase"
@@ -63,22 +63,6 @@ def print_info(msg: str):
     print(c(f"  ℹ {msg}", Colors.CYAN))
 
 
-# --- VERSION ---
-DEFAULT_FRAMEWORK_VERSION = "0.1.0-alpha"
-
-
-def get_framework_version() -> str:
-    version_file = REPO_ROOT / "VERSION"
-    try:
-        if version_file.exists():
-            version = version_file.read_text(encoding="utf-8").strip()
-            if version:
-                return version
-    except Exception:
-        pass
-    return DEFAULT_FRAMEWORK_VERSION
-
-
 # --- PLATFORM ---
 def clear_screen():
     if sys.stdout.isatty():
@@ -99,27 +83,16 @@ def set_title(title: str):
 
 # --- UI ---
 def print_banner():
-    version = get_framework_version()
     branding_file = REPO_ROOT / "config" / "branding.txt"
     if branding_file.exists():
         try:
-            branding = branding_file.read_text(encoding="utf-8")
-            branding = branding.replace("{{VERSION}}", version)
-            print(c(branding, Colors.HEADER))
+            print(c(branding_file.read_text(encoding="utf-8"), Colors.HEADER))
             return
         except Exception:
             pass
-
-    border = "╔═══════════════════════════════════════════════════════╗"
-    bottom = "╚═══════════════════════════════════════════════════════╝"
-    inner_width = len(border) - 2
-    title = f"Personal Assistant Framework — Pre-Alpha {version}"
-    if len(title) > inner_width:
-        title = title[:inner_width]
-
-    print(c(border, f"{Colors.HEADER}{Colors.BOLD}"))
-    print(c(f"║{title.center(inner_width)}║", f"{Colors.HEADER}{Colors.BOLD}"))
-    print(c(bottom, f"{Colors.HEADER}{Colors.BOLD}"))
+    print(c("╔═══════════════════════════════════════════════════════╗", f"{Colors.HEADER}{Colors.BOLD}"))
+    print(c("║   Personal Assistant Framework — Pre-Alpha 0.1.0     ║", f"{Colors.HEADER}{Colors.BOLD}"))
+    print(c("╚═══════════════════════════════════════════════════════╝", f"{Colors.HEADER}{Colors.BOLD}"))
 
 
 def pause(msg: str = ""):
@@ -240,19 +213,9 @@ def menu_launch_ai():
     context_file = f"core/.context/MASTER.md"
     magic = f"Lee el archivo '{context_file}' y el archivo 'core/agents/pa-assistant.md' para iniciar la sesión de hoy."
 
-    print(
-        c(
-            f"\n  ╔══ MAGIC PROMPT ════════════════════════════════════╗",
-            f"{Colors.GREEN}{Colors.BOLD}",
-        )
-    )
+    print(c(f"\n  ╔══ MAGIC PROMPT ════════════════════════════════════╗", f"{Colors.GREEN}{Colors.BOLD}"))
     print(c(f"  ║ {magic}", Colors.CYAN))
-    print(
-        c(
-            f"  ╚════════════════════════════════════════════════════╝\n",
-            f"{Colors.GREEN}{Colors.BOLD}",
-        )
-    )
+    print(c(f"  ╚════════════════════════════════════════════════════╝\n", f"{Colors.GREEN}{Colors.BOLD}"))
 
     pause("Presiona Enter después de copiar el prompt para iniciar la CLI...")
 
@@ -323,7 +286,6 @@ def submenu_system_status():
     # 1. Python
     checks_total += 1
     import platform as plat
-
     py_ver = plat.python_version()
     print_ok(f"Python: {py_ver}")
     checks_ok += 1
@@ -331,9 +293,7 @@ def submenu_system_status():
     # 2. Git
     checks_total += 1
     try:
-        r = subprocess.run(
-            ["git", "--version"], capture_output=True, text=True, check=False
-        )
+        r = subprocess.run(["git", "--version"], capture_output=True, text=True, check=False)
         if r.returncode == 0:
             print_ok(f"Git: {r.stdout.strip()}")
             checks_ok += 1
@@ -344,13 +304,7 @@ def submenu_system_status():
 
     # 3. Framework structure
     checks_total += 1
-    required = [
-        "core/.context",
-        "core/agents",
-        "core/skills",
-        "core/scripts",
-        "workspaces",
-    ]
+    required = ["core/.context", "core/agents", "core/skills", "core/scripts", "workspaces"]
     missing_dirs = [d for d in required if not (REPO_ROOT / d).exists()]
     if not missing_dirs:
         print_ok("Estructura del framework: completa")
@@ -386,9 +340,7 @@ def submenu_system_status():
     last_sync = REPO_ROOT / ".last_sync"
     if last_sync.exists():
         try:
-            days = (
-                datetime.now() - datetime.fromtimestamp(last_sync.stat().st_mtime)
-            ).days
+            days = (datetime.now() - datetime.fromtimestamp(last_sync.stat().st_mtime)).days
             if days == 0:
                 print_ok("Última sync: hoy")
             elif days <= 3:
@@ -436,9 +388,7 @@ def _install_opencode():
     if result.returncode == 0:
         print_ok("OpenCode instalado correctamente.")
     else:
-        print_error(
-            "No se pudo instalar. Intenta manualmente: npm install -g opencode-ai"
-        )
+        print_error("No se pudo instalar. Intenta manualmente: npm install -g opencode-ai")
 
 
 def submenu_profile():
@@ -488,10 +438,7 @@ def submenu_profile():
 
     # Update MASTER.md
     import re
-
-    content = re.sub(
-        r"- \*\*Primary Language\*\*: .*", f"- **Primary Language**: {lang}", content
-    )
+    content = re.sub(r"- \*\*Primary Language\*\*: .*", f"- **Primary Language**: {lang}", content)
     content = re.sub(r"- Response style: .*", f"- Response style: {style}", content)
 
     if focus:
@@ -515,8 +462,10 @@ def submenu_profile():
 def _save_profile(lang: str = "es", default_cli: str = "opencode"):
     """Save profile.md with current settings."""
     import platform as plat
-
-    version = get_framework_version()
+    version = "0.1.0-alpha"
+    vf = REPO_ROOT / "VERSION"
+    if vf.exists():
+        version = vf.read_text(encoding="utf-8").strip()
 
     profile = CONTEXT_DIR / "profile.md"
     profile.write_text(
@@ -545,14 +494,7 @@ def submenu_workspaces():
     else:
         print("  (Sin workspaces configurados)")
 
-    defaults = [
-        "personal",
-        "professional",
-        "research",
-        "content",
-        "development",
-        "homelab",
-    ]
+    defaults = ["personal", "professional", "research", "content", "development", "homelab"]
     print(f"\n    {c('1', Colors.CYAN)}. Crear nuevo workspace")
     print(f"    {c('2', Colors.CYAN)}. Restablecer por defecto ({', '.join(defaults)})")
     print(f"    {c('0', Colors.RED)}. Volver\n")
@@ -593,23 +535,15 @@ def menu_updates():
         )
         if result.returncode == 0:
             print_ok("El framework está actualizado.")
-        elif result.returncode == 2:
+        else:
             print_warn("Hay actualizaciones disponibles.")
             if prompt_yes_no("¿Actualizar ahora?", default=False):
-                update_result = subprocess.run(
-                    [get_python(), str(update_script), "--force"],
+                subprocess.run(
+                    [get_python(), str(update_script)],
                     cwd=REPO_ROOT,
                     capture_output=False,
                     check=False,
                 )
-                if update_result.returncode == 0:
-                    print_ok("Actualización completada correctamente.")
-                else:
-                    print_error(
-                        "La actualización falló. Revisa los mensajes anteriores."
-                    )
-        else:
-            print_error("No se pudo verificar actualizaciones en este momento.")
     else:
         # Simple git-based check
         try:
@@ -625,9 +559,7 @@ def menu_updates():
             else:
                 print_ok("Sin actualizaciones detectadas.")
         except Exception:
-            print_info(
-                "No se pudo verificar (git no disponible o no es un repositorio)."
-            )
+            print_info("No se pudo verificar (git no disponible o no es un repositorio).")
 
     pause()
 
@@ -667,19 +599,9 @@ def main_menu():
 
 # --- ENTRY POINT ---
 def main():
-    version = get_framework_version()
-    parser = argparse.ArgumentParser(
-        description=f"PA Framework Control Panel (Pre-Alpha {version})"
-    )
+    parser = argparse.ArgumentParser(description="PA Framework Control Panel (Pre-Alpha)")
     parser.add_argument("--sync", action="store_true", help="Run sync and exit")
-    parser.add_argument(
-        "--version", action="store_true", help="Show framework version and exit"
-    )
     args = parser.parse_args()
-
-    if args.version:
-        print(version)
-        return
 
     # Setup
     os.chdir(REPO_ROOT)
@@ -701,9 +623,7 @@ def main():
         install_script = SCRIPT_DIR / "install.py"
         if install_script.exists():
             print_info("Primera ejecución detectada. Iniciando instalador...")
-            subprocess.run(
-                [get_python(), str(install_script)], cwd=REPO_ROOT, check=False
-            )
+            subprocess.run([get_python(), str(install_script)], cwd=REPO_ROOT, check=False)
 
     main_menu()
 
