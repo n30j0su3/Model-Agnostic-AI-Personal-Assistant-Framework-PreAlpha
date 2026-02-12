@@ -47,16 +47,23 @@ Un asistente de inteligencia artificial que vive en **tu computadora**, no en se
 
 ---
 
-## 📁 Estructura Simple
+## 📁 Estructura del Proyecto
 
 ```
-📂 Tu carpeta del asistente/
-├── 📄 Conocimiento/           # Archivos de contexto (.md)
-├── 🤖 Agentes/                # Configuración de asistentes
-├── 🛠️ Skills/                 # Herramientas (Excel, PDF, etc.)
-├── 💼 Workspaces/             # Espacios de trabajo por proyecto
-└── 📅 Sessions/               # Historial de conversaciones
+📂 Model-Agnostic-AI-Personal-Assistant-Framework/
+├── 📁 config/                 # Configuración general
+├── 📁 core/                   # Núcleo del framework
+│   ├── 📁 .context/           # Configuración y contexto del framework
+│   │   └── 📁 sessions/       # Historial de conversaciones
+│   ├── 📁 agents/             # Definición de agentes
+│   ├── 📁 scripts/            # Scripts de automatización
+│   └── 📁 skills/             # Skills y herramientas
+├── 📁 docs/                   # Documentación
+├── 📁 logs/                   # Logs del sistema
+└── 📁 workspaces/             # ← Tus archivos de trabajo van aquí
 ```
+
+**Tus archivos personales van en `workspaces/`**. El resto es el framework.
 
 **Todo son archivos de texto.** Puedes abrirlos, editarlos, respaldarlos o sincronizarlos con tu sistema favorito (Google Drive, Dropbox, etc.).
 
@@ -134,7 +141,10 @@ Para usar modelos avanzados (GPT-4, Claude, etc.) necesitarás:
 → **Parcialmente.** El framework funciona offline, pero necesitarás internet para consultar modelos de IA en la nube. También puedes instalar modelos locales (como Ollama) para trabajo 100% offline.
 
 **¿Cómo actualizo el framework?**
-→ Si usaste Git: `git pull`. Si descargaste ZIP: descarga la nueva versión y copia tu carpeta `.context/` (tu conocimiento) a la nueva instalación.
+→ Si usaste Git: `git pull`. Si descargaste ZIP: descarga la nueva versión y copia:
+- `core/.context/` → configuración del framework
+- `workspaces/` → tus archivos de trabajo
+- Opcional: `docs/` y `config/` si personalizaste documentación o configuración
 
 **¿Qué pasa si algo no funciona?**
 → Revisa nuestra documentación completa o abre un issue en GitHub. La comunidad te ayuda.

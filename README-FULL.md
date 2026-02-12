@@ -42,13 +42,15 @@
 ## 📁 Estructura del Proyecto
 
 ```text
-├── .context/       # Conocimiento central (MASTER.md)
-├── agents/         # Agentes especializados (@session-manager, etc.)
-├── skills/         # Habilidades modulares (@xlsx, @pdf, @task-mgmt)
-├── workspaces/     # Espacios aislados por disciplina
-├── sessions/       # Logs diarios y trazabilidad
-├── scripts/        # Automatización y sincronización
-└── docs/           # Documentación profesional (Mintlify style)
+├── config/         # Configuración general
+├── core/           # Núcleo del framework
+│   ├── .context/   # Conocimiento central (MASTER.md)
+│   ├── agents/     # Agentes especializados
+│   ├── scripts/    # Automatización
+│   └── skills/     # Habilidades modulares
+├── docs/           # Documentación
+├── logs/           # Logs del sistema
+└── workspaces/     # ← Tus archivos de trabajo
 ```
 
 ## 🛠 Instalación Rápida
@@ -135,12 +137,13 @@ Comandos:
    ```bash
    cd Model-Agnostic-AI-Personal-Assistant-Framework
    ```
-6. **Configura tu perfil** editando `.context/MASTER.md`.
+6. **Configura tu perfil** editando `core/.context/MASTER.md`.
 7. **Sincroniza el contexto**:
    ```bash
-   python scripts/sync-context.py
+   python core/scripts/sync-context.py
    ```
-8. **Verifica** que se generaron archivos de contexto en `.context/` y `sessions/`.
+8. **Verifica** que se generaron archivos de contexto en `core/.context/` y `core/.context/sessions/`.
+9. **Comienza a trabajar** en tu carpeta `workspaces/` (allí van tus archivos personales).
 9. **Listo**: ya puedes iniciar sesiones y activar skills.
 
 ## 🤖 Instalación de LLMs (IA) Paso a Paso
@@ -248,9 +251,9 @@ Guia completa: `docs/uninstall.mdx`
 ## ❓ FAQ Basico
 
 - **¿Necesito saber programar?** No. Esta guia esta pensada para principiantes.
-- **¿Donde vive mi conocimiento?** En archivos `.md` dentro de `.context/`, bajo tu control.
+- **¿Donde vive mi conocimiento?** Tus archivos van en `workspaces/`. La configuración del framework está en `core/.context/`.
 - **¿Que pasa si no tengo API key?** Puedes usar el framework, pero sin ejecutar modelos remotos.
-- **¿Como actualizo el framework?** Entra al repo y ejecuta `git pull`.
+- **¿Como actualizo el framework?** Con Git: `git pull`. Con ZIP: copia `core/.context/` y `workspaces/` (y opcionalmente `docs/` y `config/`) a la nueva versión.
 - **¿Esto es gratis?** El framework es MIT, pero los proveedores de IA pueden cobrar por uso.
 
 ## 🙏 Agradecimientos

@@ -49,18 +49,23 @@ An artificial intelligence assistant that lives on **your computer**, not on thi
 
 ---
 
-## 📁 Simple Structure
+## 📁 Project Structure
 
 ```
-📂 Your assistant folder/
-├── 📄 Knowledge/           # Context files (.md)
-├── 🤖 Agents/              # Assistant configuration
-├── 🛠️ Skills/              # Tools (Excel, PDF, etc.)
-├── 💼 Workspaces/          # Workspaces by project
-└── 📅 Sessions/            # Conversation history
+📂 Model-Agnostic-AI-Personal-Assistant-Framework/
+├── 📁 config/                 # General configuration
+├── 📁 core/                   # Framework core
+│   ├── 📁 .context/           # Framework configuration and context
+│   │   └── 📁 sessions/       # Conversation history
+│   ├── 📁 agents/             # Agent definitions
+│   ├── 📁 scripts/            # Automation scripts
+│   └── 📁 skills/             # Skills and tools
+├── 📁 docs/                   # Documentation
+├── 📁 logs/                   # System logs
+└── 📁 workspaces/             # ← Your working files go here
 ```
 
-**Everything is text files.** You can open them, edit them, back them up, or sync them with your favorite system (Google Drive, Dropbox, etc.).
+**Your personal files go in `workspaces/`**. The rest is the framework.
 
 ---
 
@@ -136,7 +141,10 @@ To use advanced models (GPT-4, Claude, etc.) you'll need:
 → **Partially.** The framework works offline, but you'll need internet to query cloud AI models. You can also install local models (like Ollama) for 100% offline work.
 
 **How do I update the framework?**
-If you used Git: `git pull`. If you downloaded ZIP: download the new version and copy your `.context/` folder (your knowledge) to the new installation.
+If you used Git: `git pull`. If you downloaded ZIP: download the new version and copy:
+- `core/.context/` → framework configuration
+- `workspaces/` → your working files
+- Optional: `docs/` and `config/` if you customized documentation or configuration
 
 **What if something doesn't work?**
 → Check our complete documentation or open an issue on GitHub. The community will help you.
