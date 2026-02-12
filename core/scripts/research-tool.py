@@ -65,7 +65,7 @@ def get_research_recommendations(kb_path, catalog_path, topic=None, output_json=
     skill_categories = get_skills_from_catalog(catalog_path)
 
     output = []
-    output.append("# 🔬 Research & Improvement Analysis\n")
+    output.append("# Research & Improvement Analysis\n")
 
     # 1. Información general
     kb_categories = kb.get("categories", {})
@@ -83,7 +83,7 @@ def get_research_recommendations(kb_path, catalog_path, topic=None, output_json=
 
         cat_key = cat_name.lower()
         if cat_key not in [k.lower() for k in skill_categories.keys()]:
-            output.append(f"### ❌ {cat_name}")
+            output.append(f"### [GAP] {cat_name}")
             output.append("Categoría encontrada en KB pero no en skills locales.")
             if items:
                 output.append("**Sugerencias:**")
@@ -101,7 +101,7 @@ def get_research_recommendations(kb_path, catalog_path, topic=None, output_json=
             gaps_found = True
 
     if not gaps_found:
-        output.append("✅ No se encontraron gaps de categorías inmediatos.\n")
+        output.append("[OK] No se encontraron gaps de categorías inmediatos.\n")
 
     # 3. Categorías existentes - Oportunidades de mejora
     output.append("## Oportunidades de Optimización\n")
@@ -116,7 +116,7 @@ def get_research_recommendations(kb_path, catalog_path, topic=None, output_json=
 
         if kb_match:
             kb_cat_name, kb_items = kb_match
-            output.append(f"### 📊 {cat_name} (Local existe)")
+            output.append(f"### [DATA] {cat_name} (Local existe)")
             output.append(f"Skills locales: {len(skill_categories[cat_name])}")
             if kb_items:
                 output.append("**Referencias de KB para mejoras:**")
@@ -129,7 +129,7 @@ def get_research_recommendations(kb_path, catalog_path, topic=None, output_json=
                         output.append(f"  - {item}")
             output.append("")
         else:
-            output.append(f"### ✅ {cat_name} (Local only)")
+            output.append(f"### [OK] {cat_name} (Local only)")
             output.append("Categoría solo existe localmente.\n")
 
     # 4. Resumen ejecutivo

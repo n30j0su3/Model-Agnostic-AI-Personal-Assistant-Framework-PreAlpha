@@ -42,10 +42,20 @@ class Colors:
     HEADER = "\033[95m"
 
 
-def print_ok(m): print(f"{Colors.GREEN}  ✓ {m}{Colors.END}")
-def print_warn(m): print(f"{Colors.YELLOW}  ⚠ {m}{Colors.END}")
-def print_error(m): print(f"{Colors.RED}  ✗ {m}{Colors.END}")
-def print_info(m): print(f"{Colors.CYAN}  ℹ {m}{Colors.END}")
+def print_ok(m):
+    print(f"{Colors.GREEN}  [OK] {m}{Colors.END}")
+
+
+def print_warn(m):
+    print(f"{Colors.YELLOW}  [WARN] {m}{Colors.END}")
+
+
+def print_error(m):
+    print(f"{Colors.RED}  [ERROR] {m}{Colors.END}")
+
+
+def print_info(m):
+    print(f"{Colors.CYAN}  [INFO] {m}{Colors.END}")
 
 
 def prompt_yes_no(msg, default=False):
@@ -64,12 +74,17 @@ def configure_preferences(repo_root):
         return
     print_info("Configuración de preferencias (Enter para mantener valor actual)")
     lang = input("  Idioma principal [es]: ").strip() or "es"
-    style = input("  Estilo de respuesta [Claro y conciso]: ").strip() or "Claro y conciso; ampliar cuando sea necesario."
+    style = (
+        input("  Estilo de respuesta [Claro y conciso]: ").strip()
+        or "Claro y conciso; ampliar cuando sea necesario."
+    )
     return lang, style
 
 
 def main():
-    print(f"\n{Colors.HEADER}{Colors.BOLD}  Personal Assistant Framework — Instalador Pre-Alpha{Colors.END}\n")
+    print(
+        f"\n{Colors.HEADER}{Colors.BOLD}  Personal Assistant Framework — Instalador Pre-Alpha{Colors.END}\n"
+    )
     print_info(f"Sistema: {platform.system()} {platform.release()}")
     print_info(f"Python: {platform.python_version()}")
     print_info(f"Directorio: {REPO_ROOT}\n")
@@ -114,7 +129,9 @@ def main():
     if found:
         print_ok(f"CLIs detectados: {', '.join(found)}")
     else:
-        print_warn("Ningún CLI de IA detectado. Instala: opencode, claude, gemini, o codex")
+        print_warn(
+            "Ningún CLI de IA detectado. Instala: opencode, claude, gemini, o codex"
+        )
 
     # Choose default CLI
     default_cli = "opencode"
@@ -154,9 +171,11 @@ def main():
 
     # Done
     print(f"\n{Colors.GREEN}{Colors.BOLD}  {'=' * 50}{Colors.END}")
-    print(f"{Colors.GREEN}{Colors.BOLD}  ✓ Instalación completada.{Colors.END}")
+    print(f"{Colors.GREEN}{Colors.BOLD}  [OK] Instalación completada.{Colors.END}")
     print(f"{Colors.GREEN}{Colors.BOLD}  {'=' * 50}{Colors.END}")
-    print(f"\n{Colors.CYAN}  Siguiente paso: ejecuta pa.bat para iniciar el framework.{Colors.END}\n")
+    print(
+        f"\n{Colors.CYAN}  Siguiente paso: ejecuta pa.bat para iniciar el framework.{Colors.END}\n"
+    )
 
 
 if __name__ == "__main__":

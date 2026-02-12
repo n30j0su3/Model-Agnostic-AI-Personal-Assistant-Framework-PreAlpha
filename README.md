@@ -1,13 +1,27 @@
-# Model-Agnostic AI Personal Assistant Framework v1.6.3-alpha
+# Model-Agnostic AI Personal Assistant Framework v0.1.0-alpha
 
 > "One Framework to rule them all, One Context to find them."
 > "El Conocimiento verdadero trasciende a lo público".
 
+[![Release](https://img.shields.io/badge/release-v0.1.0--alpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.1.0-alpha)
+[![Changelog](https://img.shields.io/badge/changelog-keep%20a%20changelog-green)](./CHANGELOG.md)
 ![Stage](https://img.shields.io/badge/stage-alpha-red)
-![Version](https://img.shields.io/badge/version-1.6.3-blue)
 
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Agnostic](https://img.shields.io/badge/Model-Agnostic-orange)
+
+---
+
+## 📢 Latest Release
+
+**v0.1.0-alpha** - Primera release oficial del framework
+- 4 skills nuevas: skill-creator, markdown-writer, csv-processor, python-standards
+- 5 agentes desplegados con arquitectura de subagentes
+- Sistema de sync BASE/DEV/PROD completo
+
+📄 [Ver Changelog](./CHANGELOG.md) | 🏷️ [Ver Releases](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases)
+
+---
 
 ## 🚀 Características Principales
 

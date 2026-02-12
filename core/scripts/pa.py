@@ -15,9 +15,9 @@ from pathlib import Path
 
 
 # --- RESOLVE PATHS ---
-SCRIPT_DIR = Path(__file__).resolve().parent          # core/scripts/
-CORE_DIR = SCRIPT_DIR.parent                          # core/
-REPO_ROOT = CORE_DIR.parent                           # /PA-Pre-Alpha/
+SCRIPT_DIR = Path(__file__).resolve().parent  # core/scripts/
+CORE_DIR = SCRIPT_DIR.parent  # core/
+REPO_ROOT = CORE_DIR.parent  # /PA-Pre-Alpha/
 CONTEXT_DIR = CORE_DIR / ".context"
 SESSIONS_DIR = CONTEXT_DIR / "sessions"
 CODEBASE_DIR = CONTEXT_DIR / "codebase"
@@ -48,19 +48,19 @@ def c(text: str, color: str) -> str:
 
 
 def print_ok(msg: str):
-    print(c(f"  ✓ {msg}", Colors.GREEN))
+    print(c(f"  [OK] {msg}", Colors.GREEN))
 
 
 def print_warn(msg: str):
-    print(c(f"  ⚠ {msg}", Colors.YELLOW))
+    print(c(f"  [WARN] {msg}", Colors.YELLOW))
 
 
 def print_error(msg: str):
-    print(c(f"  ✗ {msg}", Colors.RED))
+    print(c(f"  [ERROR] {msg}", Colors.RED))
 
 
 def print_info(msg: str):
-    print(c(f"  ℹ {msg}", Colors.CYAN))
+    print(c(f"  [INFO] {msg}", Colors.CYAN))
 
 
 # --- PLATFORM ---
@@ -90,9 +90,24 @@ def print_banner():
             return
         except Exception:
             pass
-    print(c("╔═══════════════════════════════════════════════════════╗", f"{Colors.HEADER}{Colors.BOLD}"))
-    print(c("║   Personal Assistant Framework — Pre-Alpha 0.1.0     ║", f"{Colors.HEADER}{Colors.BOLD}"))
-    print(c("╚═══════════════════════════════════════════════════════╝", f"{Colors.HEADER}{Colors.BOLD}"))
+    print(
+        c(
+            "╔═══════════════════════════════════════════════════════╗",
+            f"{Colors.HEADER}{Colors.BOLD}",
+        )
+    )
+    print(
+        c(
+            "║   Personal Assistant Framework — Pre-Alpha 0.1.0     ║",
+            f"{Colors.HEADER}{Colors.BOLD}",
+        )
+    )
+    print(
+        c(
+            "╚═══════════════════════════════════════════════════════╝",
+            f"{Colors.HEADER}{Colors.BOLD}",
+        )
+    )
 
 
 def pause(msg: str = ""):
@@ -167,7 +182,7 @@ def run_sync_context() -> bool:
 
 def menu_sync():
     """Option 1: Sync Context."""
-    print(c("\n  🔄 Sincronizando contexto...\n", Colors.CYAN))
+    print(c("\n  [SYNC] Sincronizando contexto...\n", Colors.CYAN))
     if run_sync_context():
         print_ok("Contexto sincronizado correctamente.")
     else:
@@ -178,7 +193,7 @@ def menu_sync():
 # --- LAUNCH AI SESSION ---
 def menu_launch_ai():
     """Option 2: Launch AI Session."""
-    print(c("\n  🚀 Iniciar Sesión AI\n", f"{Colors.BOLD}{Colors.CYAN}"))
+    print(c("\n  [LAUNCH] Iniciar Sesión AI\n", f"{Colors.BOLD}{Colors.CYAN}"))
 
     available = detect_clis()
     default_cli = get_default_cli()
@@ -213,9 +228,19 @@ def menu_launch_ai():
     context_file = f"core/.context/MASTER.md"
     magic = f"Lee el archivo '{context_file}' y el archivo 'core/agents/pa-assistant.md' para iniciar la sesión de hoy."
 
-    print(c(f"\n  ╔══ MAGIC PROMPT ════════════════════════════════════╗", f"{Colors.GREEN}{Colors.BOLD}"))
+    print(
+        c(
+            f"\n  ╔══ MAGIC PROMPT ════════════════════════════════════╗",
+            f"{Colors.GREEN}{Colors.BOLD}",
+        )
+    )
     print(c(f"  ║ {magic}", Colors.CYAN))
-    print(c(f"  ╚════════════════════════════════════════════════════╝\n", f"{Colors.GREEN}{Colors.BOLD}"))
+    print(
+        c(
+            f"  ╚════════════════════════════════════════════════════╝\n",
+            f"{Colors.GREEN}{Colors.BOLD}",
+        )
+    )
 
     pause("Presiona Enter después de copiar el prompt para iniciar la CLI...")
 
@@ -257,10 +282,10 @@ def menu_config():
     """Option 3: Configuration submenu."""
     while True:
         clear_screen()
-        print(c("\n  ⚙️  Configuración\n", f"{Colors.BOLD}{Colors.CYAN}"))
-        print(f"    {c('1', Colors.CYAN)}. 📊 Estado del Sistema")
-        print(f"    {c('2', Colors.CYAN)}. ⚙️  Configurar Perfil")
-        print(f"    {c('3', Colors.CYAN)}. 🏢 Workspaces")
+        print(c("\n  [CONFIG] Configuración\n", f"{Colors.BOLD}{Colors.CYAN}"))
+        print(f"    {c('1', Colors.CYAN)}. [INFO] Estado del Sistema")
+        print(f"    {c('2', Colors.CYAN)}. [CONFIG] Configurar Perfil")
+        print(f"    {c('3', Colors.CYAN)}. [WORKSPACE] Workspaces")
         print(f"    {c('0', Colors.RED)}. ↩  Volver\n")
 
         choice = prompt_choice("  Selecciona: ", {"0", "1", "2", "3"})
@@ -277,7 +302,7 @@ def menu_config():
 
 def submenu_system_status():
     """3.1: System Status with option to install missing components."""
-    print(c("\n  📊 Estado del Sistema\n", f"{Colors.BOLD}{Colors.CYAN}"))
+    print(c("\n  [STATUS] Estado del Sistema\n", f"{Colors.BOLD}{Colors.CYAN}"))
 
     checks_ok = 0
     checks_total = 0
@@ -286,6 +311,7 @@ def submenu_system_status():
     # 1. Python
     checks_total += 1
     import platform as plat
+
     py_ver = plat.python_version()
     print_ok(f"Python: {py_ver}")
     checks_ok += 1
@@ -293,7 +319,9 @@ def submenu_system_status():
     # 2. Git
     checks_total += 1
     try:
-        r = subprocess.run(["git", "--version"], capture_output=True, text=True, check=False)
+        r = subprocess.run(
+            ["git", "--version"], capture_output=True, text=True, check=False
+        )
         if r.returncode == 0:
             print_ok(f"Git: {r.stdout.strip()}")
             checks_ok += 1
@@ -304,7 +332,13 @@ def submenu_system_status():
 
     # 3. Framework structure
     checks_total += 1
-    required = ["core/.context", "core/agents", "core/skills", "core/scripts", "workspaces"]
+    required = [
+        "core/.context",
+        "core/agents",
+        "core/skills",
+        "core/scripts",
+        "workspaces",
+    ]
     missing_dirs = [d for d in required if not (REPO_ROOT / d).exists()]
     if not missing_dirs:
         print_ok("Estructura del framework: completa")
@@ -323,7 +357,7 @@ def submenu_system_status():
         print_warn("CLIs AI: ninguno detectado")
 
     for cli in not_found:
-        print(c(f"    ✗ {CLI_LABELS.get(cli, cli)} (no instalado)", Colors.DIM))
+        print(c(f"    [MISSING] {CLI_LABELS.get(cli, cli)} (no instalado)", Colors.DIM))
         if cli == "opencode":
             installable.append(cli)
 
@@ -340,7 +374,9 @@ def submenu_system_status():
     last_sync = REPO_ROOT / ".last_sync"
     if last_sync.exists():
         try:
-            days = (datetime.now() - datetime.fromtimestamp(last_sync.stat().st_mtime)).days
+            days = (
+                datetime.now() - datetime.fromtimestamp(last_sync.stat().st_mtime)
+            ).days
             if days == 0:
                 print_ok("Última sync: hoy")
             elif days <= 3:
@@ -358,7 +394,7 @@ def submenu_system_status():
     ratio = checks_ok / checks_total if checks_total else 0
     summary = f"  {checks_ok}/{checks_total} verificaciones OK"
     if ratio >= 1:
-        print(c(summary + " — Sistema saludable ✓", Colors.GREEN))
+        print(c(summary + " — Sistema saludable [OK]", Colors.GREEN))
     elif ratio >= 0.7:
         print(c(summary + " — Funcional con advertencias", Colors.YELLOW))
     else:
@@ -388,12 +424,14 @@ def _install_opencode():
     if result.returncode == 0:
         print_ok("OpenCode instalado correctamente.")
     else:
-        print_error("No se pudo instalar. Intenta manualmente: npm install -g opencode-ai")
+        print_error(
+            "No se pudo instalar. Intenta manualmente: npm install -g opencode-ai"
+        )
 
 
 def submenu_profile():
     """3.2: Configure Profile."""
-    print(c("\n  ⚙️  Configurar Perfil\n", f"{Colors.BOLD}{Colors.CYAN}"))
+    print(c("\n  [CONFIG] Configurar Perfil\n", f"{Colors.BOLD}{Colors.CYAN}"))
 
     master = CONTEXT_DIR / "MASTER.md"
     if not master.exists():
@@ -438,7 +476,10 @@ def submenu_profile():
 
     # Update MASTER.md
     import re
-    content = re.sub(r"- \*\*Primary Language\*\*: .*", f"- **Primary Language**: {lang}", content)
+
+    content = re.sub(
+        r"- \*\*Primary Language\*\*: .*", f"- **Primary Language**: {lang}", content
+    )
     content = re.sub(r"- Response style: .*", f"- Response style: {style}", content)
 
     if focus:
@@ -462,6 +503,7 @@ def submenu_profile():
 def _save_profile(lang: str = "es", default_cli: str = "opencode"):
     """Save profile.md with current settings."""
     import platform as plat
+
     version = "0.1.0-alpha"
     vf = REPO_ROOT / "VERSION"
     if vf.exists():
@@ -481,7 +523,7 @@ def _save_profile(lang: str = "es", default_cli: str = "opencode"):
 
 def submenu_workspaces():
     """3.3: Workspace Management."""
-    print(c("\n  🏢 Gestión de Workspaces\n", f"{Colors.BOLD}{Colors.CYAN}"))
+    print(c("\n  [WORKSPACE] Gestión de Workspaces\n", f"{Colors.BOLD}{Colors.CYAN}"))
     ws_dir = REPO_ROOT / "workspaces"
     ws_dir.mkdir(exist_ok=True)
 
@@ -490,11 +532,18 @@ def submenu_workspaces():
     if existing:
         print("  Workspaces actuales:")
         for ws in sorted(existing):
-            print(f"    📁 {ws}")
+            print(f"    [DIR] {ws}")
     else:
         print("  (Sin workspaces configurados)")
 
-    defaults = ["personal", "professional", "research", "content", "development", "homelab"]
+    defaults = [
+        "personal",
+        "professional",
+        "research",
+        "content",
+        "development",
+        "homelab",
+    ]
     print(f"\n    {c('1', Colors.CYAN)}. Crear nuevo workspace")
     print(f"    {c('2', Colors.CYAN)}. Restablecer por defecto ({', '.join(defaults)})")
     print(f"    {c('0', Colors.RED)}. Volver\n")
@@ -523,7 +572,7 @@ def submenu_workspaces():
 # --- UPDATE CHECK ---
 def menu_updates():
     """Option 4: Check for updates."""
-    print(c("\n  🔄 Buscando actualizaciones...\n", Colors.CYAN))
+    print(c("\n  [SYNC] Buscando actualizaciones...\n", Colors.CYAN))
 
     update_script = SCRIPT_DIR / "update.py"
     if update_script.exists():
@@ -559,7 +608,9 @@ def menu_updates():
             else:
                 print_ok("Sin actualizaciones detectadas.")
         except Exception:
-            print_info("No se pudo verificar (git no disponible o no es un repositorio).")
+            print_info(
+                "No se pudo verificar (git no disponible o no es un repositorio)."
+            )
 
     pause()
 
@@ -572,17 +623,17 @@ def main_menu():
         print_banner()
         print()
 
-        print(f"    {c('1', Colors.CYAN)}. 🔄 Sincronizar Contexto")
-        print(f"    {c('2', Colors.CYAN)}. 🚀 {c('Iniciar Sesión AI', Colors.BOLD)}")
-        print(f"    {c('3', Colors.CYAN)}. ⚙️  Configuración")
-        print(f"    {c('4', Colors.CYAN)}. 🔄 Buscar Actualizaciones")
-        print(f"    {c('0', Colors.RED)}. 🚪 Salir")
+        print(f"    {c('1', Colors.CYAN)}. [SYNC] Sincronizar Contexto")
+        print(f"    {c('2', Colors.CYAN)}. [LAUNCH] {c('Iniciar Sesión AI', Colors.BOLD)}")
+        print(f"    {c('3', Colors.CYAN)}. [CONFIG] Configuración")
+        print(f"    {c('4', Colors.CYAN)}. [SYNC] Buscar Actualizaciones")
+        print(f"    {c('0', Colors.RED)}. [EXIT] Salir")
         print()
 
         choice = input(f"  {c('Selecciona una opción', Colors.BOLD)}: ").strip()
 
         if choice == "0":
-            print(c("\n  ¡Hasta luego! 👋\n", Colors.CYAN))
+            print(c("\n  ¡Hasta luego! [BYE]\n", Colors.CYAN))
             return
         elif choice == "1":
             menu_sync()
@@ -599,7 +650,9 @@ def main_menu():
 
 # --- ENTRY POINT ---
 def main():
-    parser = argparse.ArgumentParser(description="PA Framework Control Panel (Pre-Alpha)")
+    parser = argparse.ArgumentParser(
+        description="PA Framework Control Panel (Pre-Alpha)"
+    )
     parser.add_argument("--sync", action="store_true", help="Run sync and exit")
     args = parser.parse_args()
 
@@ -623,7 +676,9 @@ def main():
         install_script = SCRIPT_DIR / "install.py"
         if install_script.exists():
             print_info("Primera ejecución detectada. Iniciando instalador...")
-            subprocess.run([get_python(), str(install_script)], cwd=REPO_ROOT, check=False)
+            subprocess.run(
+                [get_python(), str(install_script)], cwd=REPO_ROOT, check=False
+            )
 
     main_menu()
 

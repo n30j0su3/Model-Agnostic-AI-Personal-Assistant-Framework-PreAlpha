@@ -10,6 +10,7 @@ import subprocess
 import shutil
 from pathlib import Path
 
+
 def find_libreoffice():
     """Locates LibreOffice executable based on platform."""
     if sys.platform == "win32":
@@ -24,10 +25,11 @@ def find_libreoffice():
         p = Path("/Applications/LibreOffice.app/Contents/MacOS/soffice")
         if p.exists():
             return str(p)
-    else: # Linux
+    else:  # Linux
         return shutil.which("soffice") or shutil.which("libreoffice")
-    
+
     return None
+
 
 def recalculate(file_path, timeout=30):
     """
@@ -44,36 +46,39 @@ def recalculate(file_path, timeout=30):
         return False
 
     print(f"Recalculating {file_path.name} using LibreOffice...")
-    
+
     # We use --headless and --convert-to xlsx to trigger recalculation
     # A common trick is to convert to the same format
     try:
         cmd = [
             soffice,
             "--headless",
-            "--convert-to", "xlsx",
-            "--outdir", str(file_path.parent),
-            str(file_path)
+            "--convert-to",
+            "xlsx",
+            "--outdir",
+            str(file_path.parent),
+            str(file_path),
         ]
-        
+
         subprocess.run(cmd, check=True, timeout=timeout, capture_output=True)
-        print("✓ Formulas recalculated successfully.")
+        print("[OK] Formulas recalculated successfully.")
         return True
     except subprocess.TimeoutExpired:
         print(f"Error: Recalculation timed out after {timeout}s.")
     except Exception as e:
         print(f"Error during recalculation: {e}")
-    
+
     return False
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python recalc.py <file.xlsx> [timeout]")
         sys.exit(1)
-    
+
     path = sys.argv[1]
     time_limit = int(sys.argv[2]) if len(sys.argv) > 2 else 30
-    
+
     if recalculate(path, time_limit):
         sys.exit(0)
     else:
