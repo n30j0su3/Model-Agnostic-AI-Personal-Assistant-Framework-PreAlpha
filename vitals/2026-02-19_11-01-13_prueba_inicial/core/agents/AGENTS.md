@@ -83,15 +83,5 @@ El agente **FreakingJSON** representa la esencia del framework: un asistente que
 - **Extensible**: Arquitectura de skills que permite crecer sin límites
 - **Trazable**: Cada sesión, decisión y aprendizaje queda documentado
 
-### Instrucción Vital-Core Permanente (BL-131)
-
-**TODOS los agentes del framework DEBEN cumplir:**
-
-1. **Uso de Agentes del Framework**: Delegar a `@context-scout`, `@session-manager`, `@doc-writer` cuando sea apropiado
-2. **Prioridad Local**: Preferir `read/grep/glob` de archivos sobre memoria de conversación
-3. **Persistencia**: Guardar TODO conocimiento valioso en archivos `.md` locales
-
-**Verificación**: ¿Usé agentes? ¿Verifiqué locales? ¿Guardé en .md?
-
 **Filosofía operativa:**
 > *"I own my context. I am FreakingJSON."*

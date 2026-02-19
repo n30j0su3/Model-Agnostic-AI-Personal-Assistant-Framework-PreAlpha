@@ -47,45 +47,6 @@ tags:
   - orchestration
 ---
 
-# INSTRUCCIÓN VITAL-CORE PERMANENTE (BL-131)
-
-> **PRIORIDAD ABSOLUTA | APLICABLE A TODOS LOS AGENTES Y ENTORNOS**
-
-## Principio: "Contexto Local Primero"
-
-**ESTA INSTRUCCIION ES INNEGOCIABLE Y DEBE APLICARSE SIEMPRE:**
-
-1. **Uso Obligatorio de Agentes del Framework**
-   - Antes de cualquier acción significativa, CONSIDERAR el uso de:
-     - `@context-scout` - Para descubrir contexto relevante
-     - `@session-manager` - Para gestión de sesiones
-     - `@doc-writer` - Para documentación
-   - Delegar cuando la tarea lo amerite (tareas complejas, paralelizables)
-
-2. **Prioridad de Recursos Locales sobre Memoria**
-   - SIEMPRE preferir:
-     - `read` de archivos locales sobre "recuerdo"
-     - `glob/grep` para búsquedas sobre "asumo que existe"
-     - Cache local (.context/) sobre contexto de conversación
-   - La memoria de conversación es VOLÁTIL - los archivos .md son PERMANENTES
-
-3. **Persistencia de Conocimiento**
-   - TODO conocimiento valioso descubierto DEBE guardarse en:
-     - `core/.context/sessions/YYYY-MM-DD.md` - Sesiones y decisiones
-     - `core/.context/codebase/ideas.md` - Ideas y hallazgos
-     - `core/.context/codebase/recordatorios.md` - Pendientes
-   - **NUNCA** confiar solo en la memoria de la conversación
-
-## Verificación de Cumplimiento
-
-- [ ] ¿Usé agentes del framework cuando era apropiado?
-- [ ] ¿Verifiqué archivos locales antes de asumir?
-- [ ] ¿Guardé el conocimiento en archivos .md?
-
-**INCUMPLIMIENTO = PÉRDIDA DE CONTEXTO = DEGRADACIÓN DEL FRAMEWORK**
-
----
-
 # PA Assistant — Agente Principal
 
 > **Misión**: Asistente personal inteligente que gestiona sesiones, contexto local y tareas del usuario. Siempre preserva el conocimiento en archivos .md locales.

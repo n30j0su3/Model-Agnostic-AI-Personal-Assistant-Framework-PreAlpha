@@ -39,6 +39,53 @@ def c(text: str, color: str) -> str:
     return f"{color}{text}{Colors.END}"
 
 
+# --- VERIFICACIÓN DE VITALS ---
+def check_vitals_integrity():
+    """Verificar integridad de archivos vitales (solo en base/dev)."""
+    import subprocess
+
+    vitals_script = SCRIPT_DIR / "vitals-guardian.py"
+    if not vitals_script.exists():
+        return True, []
+
+    try:
+        # Ejecutar check sin output para ser rápido
+        result = subprocess.run(
+            [sys.executable, str(vitals_script), "check"],
+            capture_output=True,
+            text=True,
+            timeout=5,  # Máximo 5 segundos
+        )
+
+        if result.returncode != 0:
+            # Hay problemas - extraer información clave
+            output = result.stdout + result.stderr
+            issues = []
+            for line in output.split("\n"):
+                if "[X]" in line or "[!]" in line:
+                    issues.append(line.strip())
+            return False, issues[:5]  # Máximo 5 issues
+
+        return True, []
+    except:
+        return True, []  # Si falla, no bloquear inicio
+
+
+def show_vitals_status():
+    """Mostrar estado de archivos vitales."""
+    all_ok, issues = check_vitals_integrity()
+
+    if not all_ok and issues:
+        print(c("\n[VITALS] Estado de archivos protegidos:", Colors.BOLD + Colors.RED))
+        print(c("  [!] Se detectaron anomalías en archivos vitales", Colors.RED))
+        for issue in issues:
+            print(f"    {issue}")
+        print(f"\n  Ejecuta: python core/scripts/vitals-guardian.py restore")
+        return False
+
+    return True
+
+
 # --- VALIDACIÓN DE AGENTE ---
 def check_agent():
     """Verificar si el agente activo es FreakingJSON-PA en OpenCode."""
@@ -174,7 +221,10 @@ def main():
     # 2. Mostrar template de inicio (3s)
     print_session_start()
 
-    # 3. Crear sesión del día si no existe
+    # 3. Verificar integridad de archivos vitales (solo base/dev)
+    show_vitals_status()
+
+    # 4. Crear sesión del día si no existe
     today = datetime.now().strftime("%Y-%m-%d")
     session_file = SESSIONS_DIR / f"{today}.md"
 
