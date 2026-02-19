@@ -4,6 +4,33 @@ Plan de desarrollo del Personal Assistant Framework.
 
 ---
 
+## 🧭 Filosofía y Principios
+
+### Frase Insignia
+
+> **"El conocimiento verdadero trasciende a lo público."**
+> 
+> *"True knowledge transcends to the public."*
+> 
+> — **FreakingJSON**
+
+### Principios Fundamentales
+
+1. **Local-first**: El conocimiento debe residir en archivos locales bajo control del usuario
+2. **Vendor-agnostic**: Sin dependencia de un único proveedor de IA
+3. **Extensible**: Arquitectura modular que permite crecer sin límites
+4. **Trazable**: Cada sesión y decisión queda documentada
+5. **Soberanía de datos**: Tú controlas tu información, siempre
+
+### Conecta con el Creador
+
+- 📸 **Instagram**: [@freakingjson](https://instagram.com/freakingjson)
+- 🌐 **Todas las redes**: [linktr.ee/freakingjson](https://linktr.ee/freakingjson)
+- 📝 **Blog Tech & Homelab**: [freakingjson.com](https://freakingjson.com)
+- ☕ **Apoya el proyecto**: [buymeacoffee.com/freakingjson](https://buymeacoffee.com/freakingjson)
+
+---
+
 ## Versiones Alpha
 
 ### ✅ v0.1.0-alpha (Actual)
@@ -38,6 +65,16 @@ Primera release con arquitectura base estable:
   - Lista de workspaces existentes
   - Crear nuevo workspace (formulario)
   - Switch entre workspaces
+
+- [ ] **Módulo de Migración de Archivos** (Ver ideas.md #2026-02-12):
+  - Wizard para copiar archivos del sistema a workspaces
+  - Escaneo automático de archivos nuevos
+  - Selección en bulk con checkboxes
+  - Elegir qué archivos incluir/excluir del contexto AI
+  - Preview antes de guardar cambios
+  - **Proceso 1**: Archivos ya copiados → seleccionar para contexto
+  - **Proceso 2**: Asistido completo → elegir fuente → copiar → seleccionar → guardar
+  - No destructivo: nunca modifica archivos origen del usuario
 
 #### 2. Mejoras de Framework
 - [ ] Sistema de plugins para skills
@@ -141,6 +178,28 @@ SPA (Single Page Application) que sirva como interfaz visual del framework, inte
    - Drag & drop de archivos
    - Preview de archivos .md
    - Búsqueda global
+
+5. **Módulo de Migración de Archivos (V0.2.0)** - PRIORIDAD ALTA
+   - Facilita la adopción del framework para nuevos usuarios
+   - **Flujo 1 - Archivos ya en workspace**:
+     * Escanear archivos nuevos en workspaces
+     * Mostrar listado con metadatos (tipo, tamaño, fecha)
+     * Selección en bulk (checkboxes, select all/none)
+     * Toggle: Incluir en contexto AI / Excluir del contexto
+     * Guardar: Actualiza .context sin tocar archivos
+   - **Flujo 2 - Asistido completo**:
+     * Wizard: Seleccionar carpeta fuente del sistema
+     * Previsualizar estructura de archivos
+     * Elegir workspace destino
+     * Copiar archivos al workspace
+     * Seleccionar cuáles incluir en contexto AI
+     * Guardar todo: Copia + Configuración
+   - **Características**:
+     * No destructivo: nunca modifica origen
+     * Archivos excluidos permanecen en workspace (visibles pero AI no los ve)
+     * Filtros por extensión, tipo, fecha
+     * Preview de cambios antes de aplicar
+     * Undo: revertir inclusiones sin borrar archivos
 
 ### Avanzadas
 5. **Live Status**: Estado de sincronización entre entornos BASE/DEV/PROD

@@ -1,0 +1,12 @@
+{
+  "@feature-architect": ["feature", "arquitectura", "diseno", "plan", "roadmap", "scope", "backlog", "prd", "documentacion"],
+  "@session-manager": ["sesion", "session", "resumen", "cierre", "pendientes", "daily", "today", "log-task"],
+  "@github-deployer": ["deploy", "push", "commit", "github", "sync", "merge"],
+  "@context-sync": ["contexto", "sync", "context", "snapshot", "versionado", "backup"],
+  "@orchestrator": ["orquestador", "orchestrator", "coordinar", "orquestar", "delegar", "plan de ejecucion", "planificacion", "multi-step", "multi step"],
+  "@task-management": ["tareas", "task", "prioridad", "backlog", "planificacion"],
+  "@prompt-improvement": ["prompt", "mejora prompt", "refina prompt", "json prompt"],
+  "@paper-summarizer": ["paper", "articulo", "resumen", "summary", "investigacion"],
+  "@code-reviewer": ["review", "code review", "refactor", "lint", "clean code"],
+  "@content-optimizer": ["seo", "contenido", "copy", "redaccion", "blog", "post"]
+}

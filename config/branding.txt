@@ -5,4 +5,4 @@
  | |  | | |  __/ (_| |   <| | | | || |__| |____) | |__| | |\  |
  |_|  |_|  \___|\__,_|_|\_\_|_| |_(_)____/|_____/ \____/|_| \_|
                                                                
-       :: Personal Assistant Framework :: v1.6.3-alpha ::
+       :: Personal Assistant Framework :: v0.1.0-alpha ::

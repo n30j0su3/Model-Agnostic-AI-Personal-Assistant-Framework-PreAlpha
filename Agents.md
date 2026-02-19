@@ -10,20 +10,32 @@
 
 Si estás leyendo este archivo, has encontrado un proyecto que utiliza el **Personal Assistant Framework**. Este framework gestiona asistentes AI personales con contexto local.
 
-### Step 2: Read Core Context
+### Step 2: Fast Start (<30s) ⚡
 
 ```
-📂 Archivos que DEBES leer para iniciar:
+📂 ACCIÓN OBLIGATORIA - Ejecutar script de inicio rápido:
+   python core/scripts/session-start.py
+
+Este script:
+- Crea/verifica sesión del día
+- Muestra conteos (pendientes, logros, skills)
+- No carga contenido completo = RÁPIDO
+- Target: <30 segundos
+```
+
+### Step 3: Fallback Manual (si script falla)
+
+```
+📂 Archivos a leer SOLO si session-start.py no está disponible:
 1. core/.context/MASTER.md         → Configuración global y preferencias
 2. core/agents/pa-assistant.md     → Agente principal (tu rol y workflow)
 3. core/.context/navigation.md     → Mapa de todo el conocimiento disponible
 ```
 
-### Step 3: Start Session
+### Step 4: Session Ready
 
-1. **Lee los 3 archivos anteriores** en esa secuencia.
-2. **Crea/verifica la sesión del día** en `core/.context/sessions/YYYY-MM-DD.md`
-3. **Sigue el workflow** definido en `pa-assistant.md`:
+1. Sesión creada en `core/.context/sessions/YYYY-MM-DD.md`
+2. **Sigue el workflow** definido en `pa-assistant.md`:
    - Inicialización → Comprensión → Ejecución → Preservación
 
 ---

@@ -37,6 +37,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Sanitización de archivos sensibles antes de deploy a PROD
 
+### Philosophy
+- **Frase insignia oficial**: *"El conocimiento verdadero trasciende a lo público."* / *"True knowledge transcends to the public."*
+- **Enlaces del creador**: Instagram [@freakingjson](https://instagram.com/freakingjson), Blog [freakingjson.com](https://freakingjson.com), Linktree [linktr.ee/freakingjson](https://linktr.ee/freakingjson)
+
 ---
 
 ## [0.0.x] - Pre-release

@@ -1,0 +1,24 @@
+{
+  "name": "General Purpose Rubric",
+  "description": "Criterios generales para evaluar la calidad de las respuestas de un asistente IA.",
+  "criteria": [
+    {
+      "id": "accuracy",
+      "label": "Precision y Veracidad",
+      "description": "La respuesta es tecnicamente correcta y no contiene alucinaciones.",
+      "weight": 0.4
+    },
+    {
+      "id": "clarity",
+      "label": "Claridad y Estilo",
+      "description": "La respuesta es facil de entender, esta bien estructurada y sigue el tono del framework.",
+      "weight": 0.3
+    },
+    {
+      "id": "utility",
+      "label": "Utilidad y Accionabilidad",
+      "description": "La respuesta resuelve el problema del usuario o proporciona pasos claros a seguir.",
+      "weight": 0.3
+    }
+  ]
+}

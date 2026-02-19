@@ -35,14 +35,10 @@ from typing import List, Set, Tuple, Optional
 
 # Rutas fijas (absolutas) para este entorno
 DEFAULT_BASE_DIR = Path(
-    r"C:\ACTUAL\IA\TEST\1_tempo_feb2026\test-pa-gemini_Opus\Model-Agnostic-AI-Personal-Assistant-Framework"
+    r"C:\ACTUAL\FreakingJSON-pa\Model-Agnostic-AI-Personal-Assistant-Framework"
 )
-DEFAULT_PREALPHA_DIR = Path(
-    r"C:\ACTUAL\IA\TEST\1_tempo_feb2026\test-pa-gemini_Opus\Pa_Pre_alpha_Opus_4_6"
-)
-DEFAULT_PREALPHA_DEV_DIR = Path(
-    r"C:\ACTUAL\IA\TEST\1_tempo_feb2026\test-pa-gemini_Opus\Pa_Pre_alpha_Opus_4_6_DEV"
-)
+DEFAULT_PREALPHA_DIR = Path(r"C:\ACTUAL\FreakingJSON-pa\Pa_Pre_alpha_Opus_4_6")
+DEFAULT_PREALPHA_DEV_DIR = Path(r"C:\ACTUAL\FreakingJSON-pa\Pa_Pre_alpha_Opus_4_6_DEV")
 
 # Archivo de configuración limpio para producción
 CLEAN_CONFIG_NAME = "opencode.jsonc.CLEAN-PROD"
@@ -68,6 +64,16 @@ ADDITIONAL_IGNORE_PATTERNS = {
 PROD_ONLY_IGNORE_PATTERNS = {
     "docs/backlog.md",
     "docs/backlog.view.md",
+}
+
+# =============================================================================
+# DIRECTORIOS PROTEGIDOS EN PreAlpha-DEV (nunca se sobrescriben)
+# =============================================================================
+
+PROTECTED_DIRS = {
+    "core/.context/sessions",
+    "core/.context/codebase",
+    "workspaces",
 }
 
 # =============================================================================
@@ -222,6 +228,45 @@ def calculate_hash(filepath: Path) -> str:
         return ""
 
 
+def backup_protected_dirs(dest_dir: Path, protected: set) -> dict:
+    """
+    Hace backup de directorios protegidos antes del sync.
+    Retorna dict con {nombre_dir: ruta_backup}
+    """
+    backups = {}
+    for protected_dir in protected:
+        src_path = dest_dir / protected_dir
+        if src_path.exists():
+            backup_path = dest_dir / f"{protected_dir}.backup"
+            # Eliminar backup anterior si existe
+            if backup_path.exists():
+                if backup_path.is_dir():
+                    shutil.rmtree(backup_path)
+                else:
+                    backup_path.unlink()
+            # Mover directorio actual a backup
+            shutil.move(str(src_path), str(backup_path))
+            backups[protected_dir] = backup_path
+    return backups
+
+
+def restore_protected_dirs(dest_dir: Path, backups: dict, reporter: SyncReporter):
+    """
+    Restaura directorios protegidos después del sync.
+    """
+    for protected_dir, backup_path in backups.items():
+        target_path = dest_dir / protected_dir
+        # Eliminar versión sincronizada si existe
+        if target_path.exists():
+            if target_path.is_dir():
+                shutil.rmtree(target_path)
+            else:
+                target_path.unlink()
+        # Restaurar desde backup
+        shutil.move(str(backup_path), str(target_path))
+        reporter.ignore(f"[PROTEGIDO] {protected_dir}")
+
+
 def sync_directory(
     src_dir: Path,
     dest_dir: Path,
@@ -230,6 +275,7 @@ def sync_directory(
     dry_run: bool = False,
     use_clean_config: bool = False,
     is_prod_mode: bool = False,
+    protect_dirs: bool = False,
 ) -> bool:
     """
     Sincroniza directorio fuente a destino
@@ -242,11 +288,17 @@ def sync_directory(
         dry_run: Si True, solo reporta sin aplicar
         use_clean_config: Si True, reemplaza opencode.jsonc con CLEAN-PROD
         is_prod_mode: Si True, aplica exclusiones específicas de producción
+        protect_dirs: Si True, protege directorios personales (sessions, codebase, workspaces)
 
     Returns:
         True si hubo éxito, False si hubo errores
     """
     success = True
+    protected_backups = {}
+
+    # Hacer backup de directorios protegidos antes de sync (solo en modo protegido y no dry-run)
+    if protect_dirs and not dry_run:
+        protected_backups = backup_protected_dirs(dest_dir, PROTECTED_DIRS)
 
     # Crear directorio destino si no existe
     if not dest_dir.exists() and not dry_run:
@@ -371,6 +423,10 @@ def sync_directory(
                     reporter.error(f"Error copiando .gitignore: {e}")
                     success = False
 
+    # Restaurar directorios protegidos después del sync
+    if protect_dirs and not dry_run and protected_backups:
+        restore_protected_dirs(dest_dir, protected_backups, reporter)
+
     return success
 
 
@@ -488,6 +544,7 @@ Ejemplos:
             dry_run=args.dry_run,
             use_clean_config=True,
             is_prod_mode=True,
+            protect_dirs=False,  # PROD: sincronización limpia
         )
 
         reporter.print_summary(dry_run=args.dry_run)
@@ -495,7 +552,9 @@ Ejemplos:
 
     if args.mode in ["dev", "all"]:
         print(f"\n{'=' * 70}")
-        print(f">>> SINCRONIZANDO: Desarrollo (mantiene config original)")
+        print(
+            f">>> SINCRONIZANDO: Desarrollo (mantiene config original + protege datos)"
+        )
         print(f"{'=' * 70}")
 
         reporter = SyncReporter()
@@ -507,6 +566,7 @@ Ejemplos:
             dry_run=args.dry_run,
             use_clean_config=False,
             is_prod_mode=False,
+            protect_dirs=True,  # DEV: protege directorios personales
         )
 
         reporter.print_summary(dry_run=args.dry_run)

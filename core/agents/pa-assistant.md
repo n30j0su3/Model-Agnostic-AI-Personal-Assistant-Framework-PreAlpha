@@ -106,10 +106,10 @@ task(
 ## Workflow Principal
 
 <workflow>
-  <stage id="1" name="Inicialización" required="true">
-    1. Lee `core/.context/navigation.md` para mapear el contexto disponible.
-    2. Lee `core/.context/MASTER.md` para cargar configuración global.
-    3. Verifica/crea sesión del día: `core/.context/sessions/YYYY-MM-DD.md`
+  <stage id="1" name="Inicialización" required="true" target="<30s">
+    1. **EJECUTA** `python core/scripts/session-start.py` — Crea sesión, muestra estado, conteos.
+    2. Si falla el script, fallback manual: lee `navigation.md` + `MASTER.md`.
+    3. Output del script incluye: fecha, agentes, skills, pendientes, logros previos.
   </stage>
 
   <stage id="2" name="Comprensión" required="true">

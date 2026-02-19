@@ -1,0 +1,56 @@
+[
+  {
+    "id": "time_date",
+    "pattern": "^(que\\s+hora\\s+es|fecha\\s+de\\s+hoy|hora\\s+actual|what\\s+time\\s+is\\s+it|today\\s+date)\\??$",
+    "action": "local:system_time",
+    "description": "Consultas simples de hora/fecha"
+  },
+  {
+    "id": "math_calc",
+    "pattern": "^(calc|calcula|calculate):\\s+(.+)$",
+    "action": "local:math_eval",
+    "description": "Calculos simples"
+  },
+  {
+    "id": "list_files",
+    "pattern": "^(lista\\s+archivos|listar\\s+archivos|ls|list\\s+files)\\b.*$",
+    "action": "local:list_files",
+    "description": "Listar archivos del repo"
+  },
+  {
+    "id": "show_backlog",
+    "pattern": "^(ver|mostrar)\\s+backlog|show\\s+backlog$",
+    "action": "local:show_backlog",
+    "description": "Mostrar backlog filtrado"
+  },
+  {
+    "id": "show_session",
+    "pattern": "^(ver|mostrar|muestra)\\s+sesion|show\\s+session$",
+    "action": "local:show_session",
+    "description": "Mostrar sesion actual"
+  },
+  {
+    "id": "sync_context",
+    "pattern": "^(sync|sincroniza)\\s+contexto|sync\\s+context$",
+    "action": "local:sync_context",
+    "description": "Sincronizar contexto local"
+  },
+  {
+    "id": "update_framework",
+    "pattern": "^(actualiza|update)\\s+framework\\b.*$",
+    "action": "local:update_framework",
+    "description": "Actualizar framework"
+  },
+  {
+    "id": "get_agent_details",
+    "pattern": "^(obten|ver|get)\\s+detalles\\s+de\\s+(@[a-zA-Z0-9\\-]+).*$",
+    "action": "local:get_agent_details",
+    "description": "Obtener instrucciones detalladas de un agente (Progressive Disclosure)"
+  },
+  {
+    "id": "init_orchestration",
+    "pattern": "^\\s*/?init\\b|inicializar\\s+orquestacion|orquestacion\\s+init|activa\\s+multi\\-?modelo",
+    "action": "local:run_orchestration_init",
+    "description": "Activar la orquestacion multi-modelo (crear .context/models.md)"
+  }
+]
