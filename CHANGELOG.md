@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `@csv-processor`: Procesamiento de datos CSV con pandas
   - `@python-standards`: Estándares y validación de código Python
 - **5 agentes desplegados** en arquitectura de subagentes:
-  - `@pa-assistant` (principal)
+  - `@FreakingJSON-PA` (principal - modo producción)
   - `@session-manager`, `@context-scout`, `@doc-writer`, `@feature-architect`
 - **15 skills totales** en producción
 - **28 scripts validados** cross-platform (Windows/Linux/macOS)
@@ -27,11 +27,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Reemplazados emojis por prefijos ASCII (`[OK]`, `[ERROR]`, `[WARN]`) para compatibilidad Windows
 - Estandarizada estructura de skills con `SKILL.md`, `scripts/`, `references/`, `assets/`
-- Configuración de agente por entorno (`FreakingJSON` en BASE/DEV, `pa-assistant` en PROD)
+- Configuración de agente por entorno (`FreakingJSON` en BASE/DEV, `FreakingJSON-PA` en PROD)
 
 ### Fixed
 - `UnicodeEncodeError` en scripts con emojis en Windows
-- Configuración de agente en PROD (ahora usa `pa-assistant`)
+- Configuración de agente en PROD (ahora usa `FreakingJSON-PA`)
 - Exclusión de archivos de desarrollo en entorno PROD
 
 ### Security

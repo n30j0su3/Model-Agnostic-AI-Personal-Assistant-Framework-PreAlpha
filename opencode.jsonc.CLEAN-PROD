@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "agent": "pa-assistant",
+  "agent": "FreakingJSON-PA",
   "plugin": [],
   "mcp": {
     "context7": {

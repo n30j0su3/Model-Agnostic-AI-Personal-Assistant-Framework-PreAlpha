@@ -226,7 +226,7 @@ def menu_launch_ai():
 
     # Magic prompt
     context_file = f"core/.context/MASTER.md"
-    magic = f"Lee el archivo '{context_file}' y el archivo 'core/agents/pa-assistant.md' para iniciar la sesión de hoy."
+    magic = f"Lee el archivo '{context_file}' y el archivo 'core/agents/pa-assistant.md' (agente FreakingJSON-PA) para iniciar la sesión de hoy."
 
     print(
         c(
@@ -624,7 +624,9 @@ def main_menu():
         print()
 
         print(f"    {c('1', Colors.CYAN)}. [SYNC] Sincronizar Contexto")
-        print(f"    {c('2', Colors.CYAN)}. [LAUNCH] {c('Iniciar Sesión AI', Colors.BOLD)}")
+        print(
+            f"    {c('2', Colors.CYAN)}. [LAUNCH] {c('Iniciar Sesión AI', Colors.BOLD)}"
+        )
         print(f"    {c('3', Colors.CYAN)}. [CONFIG] Configuración")
         print(f"    {c('4', Colors.CYAN)}. [SYNC] Buscar Actualizaciones")
         print(f"    {c('0', Colors.RED)}. [EXIT] Salir")

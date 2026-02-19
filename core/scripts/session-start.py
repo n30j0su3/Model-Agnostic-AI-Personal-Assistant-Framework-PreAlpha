@@ -131,7 +131,7 @@ def print_session_start():
 
     # Agentes
     print(c("\n[AGENTS] Agentes Disponibles:", Colors.BOLD + Colors.CYAN))
-    print("   pa-assistant, context-scout, session-manager, doc-writer")
+    print("   FreakingJSON-PA, context-scout, session-manager, doc-writer")
 
     # Skills (recientes/variadas)
     print(c("\n[SKILLS] Skills Disponibles:", Colors.BOLD + Colors.CYAN))

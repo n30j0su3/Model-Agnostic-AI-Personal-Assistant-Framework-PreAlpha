@@ -35,7 +35,7 @@ The **Model-Agnostic AI Personal Assistant Framework** (Pre-Alpha 0.1.0) is a un
 
 **Directory Structure:**
 *   `core/.context/`: Central knowledge base (MASTER.md, sessions, codebase).
-*   `core/agents/`: Specialized AI agents (pa-assistant, context-scout, session-manager).
+*   `core/agents/`: Specialized AI agents (FreakingJSON-PA, context-scout, session-manager).
 *   `core/skills/`: Modular tools/capabilities (@pdf, @xlsx, @task-management).
 *   `core/scripts/`: Python automation scripts (pa.py, install, sync).
 *   `workspaces/`: Isolated domains for tasks.
@@ -43,8 +43,8 @@ The **Model-Agnostic AI Personal Assistant Framework** (Pre-Alpha 0.1.0) is a un
 
 ## Key Components
 
-### Core Agent: @pa-assistant
-*   Manages sessions, context, and task delegation.
+### Core Agent: @FreakingJSON-PA
+*   Manages sessions, context, and task delegation in production mode.
 *   Delegates to subagents: @context-scout, @session-manager, @doc-writer.
 
 ### Core Skills

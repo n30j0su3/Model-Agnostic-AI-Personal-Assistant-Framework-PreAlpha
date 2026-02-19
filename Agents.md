@@ -28,14 +28,14 @@ Este script:
 ```
 📂 Archivos a leer SOLO si session-start.py no está disponible:
 1. core/.context/MASTER.md         → Configuración global y preferencias
-2. core/agents/pa-assistant.md     → Agente principal (tu rol y workflow)
+2. core/agents/pa-assistant.md     → Agente principal FreakingJSON-PA (modo producción)
 3. core/.context/navigation.md     → Mapa de todo el conocimiento disponible
 ```
 
 ### Step 4: Session Ready
 
 1. Sesión creada en `core/.context/sessions/YYYY-MM-DD.md`
-2. **Sigue el workflow** definido en `pa-assistant.md`:
+2. **Sigue el workflow** definido en `pa-assistant.md` (agente FreakingJSON-PA):
    - Inicialización → Comprensión → Ejecución → Preservación
 
 ---
@@ -44,7 +44,7 @@ Este script:
 
 | Agente | Propósito | Archivo |
 |--------|-----------|---------|
-| **@pa-assistant** | Agente principal, orquestación | `core/agents/pa-assistant.md` |
+| **@FreakingJSON-PA** | Agente principal (producción), orquestación | `core/agents/pa-assistant.md` |
 | **@context-scout** | Descubrimiento de contexto | `core/agents/subagents/context-scout.md` |
 | **@session-manager** | Gestión de sesiones diarias | `core/agents/subagents/session-manager.md` |
 | **@doc-writer** | Documentación MVI | `core/agents/subagents/doc-writer.md` |

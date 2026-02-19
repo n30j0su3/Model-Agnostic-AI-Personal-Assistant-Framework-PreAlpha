@@ -1,6 +1,6 @@
 ---
 # FreakingJSON PA Framework - Main Agent Configuration
-id: pa-assistant
+id: FreakingJSON-PA
 name: FreakingJSON-PA
 description: "Agente principal del Personal Assistant Framework. Gestiona sesiones, contexto y delegación a subagentes."
 category: core

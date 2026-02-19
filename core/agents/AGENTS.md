@@ -5,7 +5,7 @@
 ## Arquitectura
 
 ```
-Main Agent (pa-assistant)
+Main Agent (FreakingJSON-PA)
 ├── ContextScout      → Descubrimiento de contexto (read-only)
 ├── SessionManager    → Gestión de sesiones diarias
 ├── DocWriter         → Documentación automática
@@ -14,9 +14,9 @@ Main Agent (pa-assistant)
 
 ## Agente Principal
 
-### @pa-assistant
-- **Propósito**: Asistente personal principal. Orquesta sesiones, contexto y delegación.
-- **Archivo**: `pa-assistant.md`
+### @FreakingJSON-PA
+- **Propósito**: Asistente personal principal en modo producción. Orquesta sesiones, contexto y delegación para usuarios finales.
+- **Archivo**: `pa-assistant.md` (agente: FreakingJSON-PA)
 - **Estado**: OPERATIVO
 - **Dependencias**: context-scout, session-manager, doc-writer, feature-architect
 
@@ -49,7 +49,7 @@ Main Agent (pa-assistant)
 ## Jerarquía de Delegación
 
 ```
-Usuario → pa-assistant → [Comprende tarea]
+Usuario → FreakingJSON-PA → [Comprende tarea]
                         ├── ContextScout (¿qué contexto necesito?)
                         ├── Ejecuta directamente (tareas simples)
                         ├── SessionManager (gestión de sesión)
@@ -62,7 +62,7 @@ Usuario → pa-assistant → [Comprende tarea]
 1. Crear archivo `.md` en `subagents/` con YAML frontmatter
 2. Definir: `id`, `name`, `description`, `type: subagent`, `tools`, `permissions`
 3. Agregar referencia en este archivo (AGENTS.md)
-4. Agregar dependencia en `pa-assistant.md` si aplica
+4. Agregar dependencia en `FreakingJSON-PA` (pa-assistant.md) si aplica
 
 ---
 

@@ -7,7 +7,7 @@ El PA Framework utiliza **dos agentes principales** configurados según el entor
 | Agente | Entorno | Personalidad | Uso |
 |--------|---------|--------------|-----|
 | **FreakingJSON** | Desarrollo (Base + PreAlpha-DEV) | Cool, creativo (temp 0.1) | Desarrollo interno, sesiones locales |
-| **FreakingJSON-PA** (pa-assistant) | Producción (PreAlpha-Prod) | Formal, técnico (temp 0.2) | Release público, usuarios externos |
+| **FreakingJSON-PA** | Producción (PreAlpha-Prod) | Formal, técnico (temp 0.2) | Release público, usuarios externos |
 
 ## Ubicación de Archivos
 
@@ -16,7 +16,7 @@ El PA Framework utiliza **dos agentes principales** configurados según el entor
 ├── config.json              # Configuración del agent por defecto
 └── agent/
     ├── FreakingJSON.md      # Definición del agente cool
-    └── pa-assistant.md      # Definición del agente formal
+    └── pa-assistant.md      # Definición del agente formal (FreakingJSON-PA)
 ```
 
 ## Configuración por Repositorio
@@ -59,7 +59,7 @@ El PA Framework utiliza **dos agentes principales** configurados según el entor
 
 ```json
 {
-  "agent": "pa-assistant"
+  "agent": "FreakingJSON-PA"
 }
 ```
 
@@ -113,7 +113,7 @@ nano .opencode/config.json
 
 # Cambiar el valor de "agent"
 {
-  "agent": "FreakingJSON"      # o "pa-assistant"
+  "agent": "FreakingJSON"      # o "FreakingJSON-PA"
 }
 ```
 
@@ -134,7 +134,7 @@ nano .opencode/config.json
                        ▼ Sync + Validación
 ┌─────────────────────────────────────────────────────────────┐
 │  PRODUCCIÓN (PreAlpha-Prod)                                │
-│  Agente: FreakingJSON-PA (pa-assistant)                     │
+│  Agente: FreakingJSON-PA                                    │
 │  • Release público                                          │
 │  • Sin backlog interno                                      │
 │  • Sin credenciales                                         │
@@ -155,7 +155,7 @@ cat Pa_Pre_alpha_Opus_4_6_DEV/.opencode/config.json
 
 # Verificar PreAlpha-Prod
 cat Pa_Pre_alpha_Opus_4_6/.opencode/config.json
-# Debe mostrar: {"agent": "pa-assistant"}
+# Debe mostrar: {"agent": "FreakingJSON-PA"}
 ```
 
 ### Agregar Nuevos Agents
@@ -177,12 +177,12 @@ Después de ejecutar `sync-prealpha.py`, es importante verificar que la configur
 # 1. Verificar PreAlpha-DEV (debe ser FreakingJSON)
 cat Pa_Pre_alpha_Opus_4_6_DEV/.opencode/config.json
 
-# 2. Verificar PreAlpha-Prod (debe ser pa-assistant)
+# 2. Verificar PreAlpha-Prod (debe ser FreakingJSON-PA)
 cat Pa_Pre_alpha_Opus_4_6/.opencode/config.json
 
 # 3. Verificar que ambos agents existen
 ls Pa_Pre_alpha_Opus_4_6/.opencode/agent/
-# Debe mostrar: FreakingJSON.md, pa-assistant.md
+# Debe mostrar: FreakingJSON.md, pa-assistant.md (FreakingJSON-PA)
 ```
 
 ### Si la configuración se perdió
@@ -194,7 +194,7 @@ Si el sync sobrescribió los configs, restáuralos manualmente:
 echo '{"agent": "FreakingJSON"}' > Pa_Pre_alpha_Opus_4_6_DEV/.opencode/config.json
 
 # Para PreAlpha-Prod
-echo '{"agent": "pa-assistant"}' > Pa_Pre_alpha_Opus_4_6/.opencode/config.json
+echo '{"agent": "FreakingJSON-PA"}' > Pa_Pre_alpha_Opus_4_6/.opencode/config.json
 ```
 
 Luego commit y push:
@@ -213,7 +213,7 @@ git push origin dev
 ## Referencias
 
 - [FreakingJSON Agent Definition](../.opencode/agent/FreakingJSON.md)
-- [PA-Assistant Agent Definition](../.opencode/agent/pa-assistant.md)
+- [FreakingJSON-PA Agent Definition](../.opencode/agent/pa-assistant.md)
 - [Sync Process](../OBSOLETE/docs/PREALPHA-SYNC-PROCESS.md)
 
 ---

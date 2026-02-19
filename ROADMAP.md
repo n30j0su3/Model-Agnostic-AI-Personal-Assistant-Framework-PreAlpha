@@ -89,7 +89,7 @@ Primera release con arquitectura base estable:
 ### Features Planificadas
 
 #### 1. Chat Interface
-- [ ] **Ventana de chat** integrada con @pa-assistant
+- [ ] **Ventana de chat** integrada con @FreakingJSON-PA
 - [ ] **Historial de conversaciones** por sesión
 - [ ] **Comandos slash** (/status, /session, /skill, etc.)
 - [ ] **Sugerencias contextuales** basadas en workspace activo
