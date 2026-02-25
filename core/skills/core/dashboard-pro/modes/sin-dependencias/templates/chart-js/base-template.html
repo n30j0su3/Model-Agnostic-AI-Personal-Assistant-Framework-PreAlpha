@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{project_name}}</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: '{{colors.primary.main}}',
+              light: '{{colors.primary.light}}',
+              dark: '{{colors.primary.dark}}',
+            },
+            surface: '{{colors.surface}}',
+            background: '{{colors.background}}',
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Custom Styles -->
+  <style>
+    :root {
+      --bg-primary: {{colors.light.background}};
+      --text-primary: {{colors.light.textPrimary}};
+    }
+    .dark {
+      --bg-primary: {{colors.dark.background}};
+      --text-primary: {{colors.dark.textPrimary}};
+    }
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .dark .glass {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <!-- Header -->
+  <header class="sticky top-0 z-50 glass">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <h1 class="text-xl font-semibold">{{project_name}}</h1>
+        <button id="themeToggle" class="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+          <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+          <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- KPI Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {{#each kpiCards}}
+      <div class="glass rounded-xl p-6">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm text-gray-500 dark:text-gray-400">{{title}}</span>
+          <span class="text-{{color}}-500">{{icon}}</span>
+        </div>
+        <div class="text-2xl font-bold mb-1">{{metric}}</div>
+        <div class="text-sm {{#if trend.direction == 'up'}}text-green-500{{else}}text-red-500{{/if}}">
+          {{#if trend.direction == 'up'}}↑{{else}}↓{{/if}} {{trend.value}}%
+        </div>
+      </div>
+      {{/each}}
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      {{#each charts}}
+      <div class="glass rounded-xl p-6">
+        <h3 class="text-lg font-semibold mb-4">{{title}}</h3>
+        <div class="relative h-64">
+          <canvas id="chart-{{id}}"></canvas>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+
+    <!-- Data Table -->
+    <div class="glass rounded-xl overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-semibold">{{table.title}}</h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead class="bg-gray-50 dark:bg-gray-800">
+            <tr>
+              {{#each table.columns}}
+              <th class="px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{{label}}</th>
+              {{/each}}
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700" id="tableBody">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- JavaScript -->
+  <script>
+    // Theme Toggle
+    const themeToggle = document.getElementById('themeToggle');
+    const html = document.documentElement;
+    
+    themeToggle.addEventListener('click', () => {
+      html.classList.toggle('dark');
+      localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+    });
+    
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      html.classList.toggle('dark', savedTheme === 'dark');
+    }
+
+    // Mock Data
+    const mockData = {
+      kpi: {{json kpiData}},
+      charts: {{json chartData}},
+      table: {{json tableData}}
+    };
+
+    // Initialize Charts
+    {{#each charts}}
+    new Chart(document.getElementById('chart-{{id}}'), {
+      type: '{{type}}',
+      data: {
+        labels: {{json data.labels}},
+        datasets: [{
+          label: '{{title}}',
+          data: {{json data.values}},
+          backgroundColor: '{{colors.primary.main}}',
+          borderColor: '{{colors.primary.main}}',
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: {{options.legend}}
+          }
+        }
+      }
+    });
+    {{/each}}
+
+    // Populate Table
+    const tableBody = document.getElementById('tableBody');
+    mockData.table.forEach(row => {
+      const tr = document.createElement('tr');
+      tr.className = 'hover:bg-gray-50 dark:hover:bg-gray-800';
+      tr.innerHTML = `
+        {{#each table.columns}}
+        <td class="px-6 py-4 whitespace-nowrap">${row.{{key}}}</td>
+        {{/each}}
+      `;
+      tableBody.appendChild(tr);
+    });
+  </script>
+</body>
+</html>

@@ -73,6 +73,9 @@ PROD_ONLY_IGNORE_PATTERNS = {
 PROTECTED_DIRS = {
     "core/.context/sessions",
     "core/.context/codebase",
+    "core/.context/workspaces",
+    "core/agents/subagents/_local",
+    "core/skills/_local",
     "workspaces",
 }
 
@@ -394,6 +397,14 @@ def sync_directory(
     for del_path in deleted:
         # No eliminar archivos ignorados
         if not should_ignore(del_path, gitignore_patterns):
+            # [PROTECCION] No eliminar si está en directorio protegido
+            if protect_dirs and any(
+                del_path.startswith(protected) or protected in del_path
+                for protected in PROTECTED_DIRS
+            ):
+                reporter.ignore(f"[PROTEGIDO] {del_path}")
+                continue
+
             full_del_path = dest_dir / del_path
             if full_del_path.exists():
                 reporter.delete(del_path)

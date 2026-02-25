@@ -1,0 +1,186 @@
+---
+# Skill: Dashboard Pro Generator
+# Descripción: Genera dashboards profesionales en dos modos:
+#   - con-dependencias: Proyectos Next.js completos
+#   - sin-dependencias: Dashboards SPA en un solo archivo HTML
+
+id: dashboard-pro
+name: Dashboard Pro Generator
+description: |
+  Genera dashboards profesionales con diseño consistente y código mantenible.
+  
+  Dos modos de operación:
+  1. con-dependencias: Proyecto Next.js 15 completo con TypeScript, Tailwind,
+     shadcn/ui, Recharts, TanStack Table. Ideal para proyectos grandes.
+  
+  2. sin-dependencias: Dashboard autónomo en un solo archivo HTML con 
+     Tailwind CDN y charts via CDN (Chart.js, ApexCharts o Vanilla SVG).
+     Ideal para entregables rápidos, reportes o prototipos.
+
+version: 0.1.0
+author: FreakingJSON Framework
+category: ui-generation
+type: skill
+
+modes:
+  - id: con-dependencias
+    name: Con Dependencias
+    description: Proyecto Next.js completo con todas las dependencias
+    frameworks:
+      - nextjs
+    features:
+      - TypeScript estricto
+      - shadcn/ui componentes
+      - Recharts para gráficos
+      - TanStack Table para tablas
+      - Framer Motion animaciones
+      - Dark/light mode
+      - SEO optimizado
+      - Responsive completo
+
+  - id: sin-dependencias
+    name: Sin Dependencias
+    description: Dashboard SPA en archivo HTML único
+    templates:
+      - chart-js      # Prioridad 1: Chart.js (~60KB)
+      - apex-charts   # Prioridad 2: ApexCharts (~80KB)
+      - vanilla-svg   # Prioridad 3: Vanilla SVG/CSS (~0KB)
+    features:
+      - Un solo archivo HTML
+      - Tailwind CSS via CDN
+      - Charts via CDN o vanilla
+      - Responsive mobile-first
+      - Sin build step requerido
+      - Listo para abrir en navegador
+
+dependencies:
+  required:
+    - skill:doc-writer
+    - skill:template-engine
+  optional:
+    - agent:feature-architect
+    - tool:playwright-mcp  # Para verificación visual
+
+inputs:
+  - name: app_description
+    type: string
+    required: true
+    description: Descripción de la aplicación/dashboard a generar
+  
+  - name: mode
+    type: enum
+    options: [con-dependencias, sin-dependencias]
+    default: con-dependencias
+    description: Modo de generación
+  
+  - name: chart_library
+    type: enum
+    options: [chart-js, apex-charts, vanilla-svg, auto]
+    default: auto
+    description: Librería de charts (solo modo sin-dependencias)
+  
+  - name: style_preset
+    type: enum
+    options: 
+      - fintech-dark      # Dark + Gold
+      - fintech-light     # Light + Blue
+      - saas-modern       # Light + Purple
+      - enterprise        # Corporate neutro
+      - custom
+    default: fintech-dark
+    description: Preset de diseño visual
+
+outputs:
+  - name: design_brief
+    type: file
+    path: design-brief.jsonc
+    description: Design brief en formato JSONC
+  
+  - name: dashboard_code
+    type: directory|file
+    description: Código del dashboard generado
+  
+  - name: implementation_notes
+    type: file
+    path: IMPLEMENTATION.md
+    description: Notas de implementación
+
+workflow:
+  steps:
+    - id: analyze
+      name: Analizar requerimientos
+      action: detect_requirements
+      description: Detectar modo, complejidad y chart library óptima
+    
+    - id: generate_brief
+      name: Generar Design Brief
+      action: use_template
+      template: generators/design-brief.md
+      output: design-brief.jsonc
+    
+    - id: implement
+      name: Implementar Dashboard
+      action: conditional
+      conditions:
+        - if: mode == 'con-dependencias'
+          then: implement_nextjs
+        - if: mode == 'sin-dependencias'
+          then: implement_html
+    
+    - id: verify
+      name: Verificar resultado
+      action: use_template
+      template: generators/verification.md
+      description: Verificar calidad visual y funcional
+
+# Configuración de prompts
+prompts:
+  design_brief: modes/{mode}/generators/design-brief.md
+  implementation: modes/{mode}/generators/implementation.md
+  verification: modes/{mode}/generators/verification.md
+
+# Reglas de estilo por preset
+style_presets:
+  fintech-dark:
+    colors:
+      background: "#0B0D10"
+      primary: "#F5A623"      # Gold
+      secondary: "#FFB547"
+      textPrimary: "#FFFFFF"
+      textSecondary: "#B0B3B8"
+      success: "#22C55E"
+      danger: "#EF4444"
+    style: ["soft-neumorphism", "premium-fintech"]
+    mode: dark
+  
+  fintech-light:
+    colors:
+      background: "#FFFFFF"
+      primary: "#2563EB"      # Blue
+      secondary: "#3B82F6"
+      textPrimary: "#111827"
+      textSecondary: "#6B7280"
+      success: "#10B981"
+      danger: "#EF4444"
+    style: ["clean", "professional"]
+    mode: light
+  
+  saas-modern:
+    colors:
+      background: "#FAFAFA"
+      primary: "#7C3AED"      # Purple
+      secondary: "#8B5CF6"
+      textPrimary: "#1F2937"
+      textSecondary: "#6B7280"
+      success: "#059669"
+      danger: "#DC2626"
+    style: ["modern", "gradient-based"]
+    mode: light
+
+# Metadatos del framework
+framework_meta:
+  compatible_with: [FreakingJSON-PA, feature-architect]
+  local_first: true
+  vendor_agnostic: true
+  mvi_compliant: true
+---

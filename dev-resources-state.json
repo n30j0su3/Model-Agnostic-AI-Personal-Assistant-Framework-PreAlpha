@@ -1,0 +1,57 @@
+{
+  "timestamp": "2026-02-24T23:04:09.581471",
+  "dev_path": "C:\\ACTUAL\\FreakingJSON-pa\\Pa_Pre_alpha_Opus_4_6_DEV",
+  "base_path": null,
+  "resources": [
+    {
+      "path": "workspaces/professional/projects/Maaji",
+      "exists": true,
+      "size_bytes": 0,
+      "md5_hash": null,
+      "is_directory": true,
+      "last_modified": "2026-02-24T16:56:39.321440"
+    },
+    {
+      "path": "workspaces/personal",
+      "exists": true,
+      "size_bytes": 0,
+      "md5_hash": null,
+      "is_directory": true,
+      "last_modified": "2026-02-12T17:01:08.878094"
+    },
+    {
+      "path": "workspaces/development",
+      "exists": true,
+      "size_bytes": 0,
+      "md5_hash": null,
+      "is_directory": true,
+      "last_modified": "2026-02-12T16:08:27.470042"
+    },
+    {
+      "path": "core/.context/workspaces/maaji.md",
+      "exists": true,
+      "size_bytes": 5437,
+      "md5_hash": "415dbfa89ebe361c3b4fa10b58b1949c",
+      "is_directory": false,
+      "last_modified": "2026-02-24T16:18:01.121361"
+    }
+  ],
+  "missing": [
+    "core/agents/subagents/_local/maaji/maaji-master.md",
+    "core/skills/_local/maaji/atribucion/SKILL.md",
+    "core/skills/_local/maaji/checkout-con-evento/SKILL.md",
+    "core/skills/_local/maaji/checkout-sin-evento/SKILL.md",
+    "core/skills/_local/maaji/klaviyo-extract/SKILL.md",
+    "docs/MAAJI-PROMOTION-GUIDE.md"
+  ],
+  "new_in_base": [],
+  "conflicts": [],
+  "summary": {
+    "total_critical": 10,
+    "present_count": 4,
+    "missing_count": 6,
+    "new_in_base_count": 0,
+    "conflicts_count": 0,
+    "integrity_score": 40.0
+  }
+}

@@ -1,0 +1,339 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Design Tokens Schema",
+  "description": "Schema para validar Design Specification en formato JSONC",
+  "type": "object",
+  "required": ["meta", "theme", "layout", "components"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["name", "mode", "framework"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Nombre del proyecto"
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["con-dependencias", "sin-dependencias"],
+          "description": "Modo de generación"
+        },
+        "framework": {
+          "type": "string",
+          "enum": ["nextjs", "nuxt", "vanilla-html"],
+          "description": "Framework utilizado"
+        },
+        "chartLibrary": {
+          "type": "string",
+          "enum": ["chart-js", "apex-charts", "vanilla-svg", "recharts", "auto"],
+          "description": "Librería de charts"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Versión semver"
+        }
+      }
+    },
+    "theme": {
+      "type": "object",
+      "required": ["mode", "colors"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["dark", "light", "auto"]
+        },
+        "style": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "minimalist", "flat", "glassmorphism", "neumorphism",
+              "soft-neumorphism", "premium-fintech", "modern", "gradient-based"
+            ]
+          }
+        },
+        "colors": {
+          "type": "object",
+          "required": ["primary", "background", "text"],
+          "properties": {
+            "primary": {
+              "type": "object",
+              "properties": {
+                "main": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+                "light": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+                "dark": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" }
+              }
+            },
+            "secondary": {
+              "type": "object",
+              "properties": {
+                "main": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+                "light": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+                "dark": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" }
+              }
+            },
+            "background": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "surface": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+            "text": {
+              "type": "object",
+              "properties": {
+                "primary": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+                "secondary": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+                "muted": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" }
+              }
+            },
+            "semantic": {
+              "type": "object",
+              "properties": {
+                "success": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+                "warning": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+                "error": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+                "info": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" }
+              }
+            }
+          }
+        },
+        "typography": {
+          "type": "object",
+          "properties": {
+            "fontFamily": { "type": "string" },
+            "scale": {
+              "type": "object",
+              "properties": {
+                "h1": { "$ref": "#/definitions/typographyScale" },
+                "h2": { "$ref": "#/definitions/typographyScale" },
+                "h3": { "$ref": "#/definitions/typographyScale" },
+                "body": { "$ref": "#/definitions/typographyScale" },
+                "caption": { "$ref": "#/definitions/typographyScale" }
+              }
+            }
+          }
+        },
+        "spacing": {
+          "type": "object",
+          "properties": {
+            "unit": { "type": "string", "enum": ["rem", "px", "em"] },
+            "scale": {
+              "type": "array",
+              "items": { "type": "number" }
+            }
+          }
+        },
+        "borderRadius": {
+          "type": "object",
+          "properties": {
+            "sm": { "type": "string" },
+            "md": { "type": "string" },
+            "lg": { "type": "string" },
+            "xl": { "type": "string" },
+            "full": { "type": "string" }
+          }
+        }
+      }
+    },
+    "layout": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["sidebar", "top-nav", "sidebar+top", "split", "bento"]
+        },
+        "sidebar": {
+          "type": "object",
+          "properties": {
+            "width": { "type": "number" },
+            "collapsible": { "type": "boolean" },
+            "position": { "type": "string", "enum": ["left", "right"] }
+          }
+        },
+        "topbar": {
+          "type": "object",
+          "properties": {
+            "height": { "type": "number" },
+            "sticky": { "type": "boolean" }
+          }
+        },
+        "content": {
+          "type": "object",
+          "properties": {
+            "padding": { "type": "number" },
+            "maxWidth": { "type": "string" }
+          }
+        },
+        "grid": {
+          "type": "object",
+          "properties": {
+            "columns": { "type": "number" },
+            "gap": { "type": "number" },
+            "responsive": {
+              "type": "object",
+              "properties": {
+                "sm": { "$ref": "#/definitions/breakpoint" },
+                "md": { "$ref": "#/definitions/breakpoint" },
+                "lg": { "$ref": "#/definitions/breakpoint" },
+                "xl": { "$ref": "#/definitions/breakpoint" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "type": "object",
+      "properties": {
+        "kpiCards": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "title", "metric"],
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "metric": { "type": "string" },
+              "format": { "type": "string", "enum": ["currency", "number", "percentage"] },
+              "trend": {
+                "type": "object",
+                "properties": {
+                  "value": { "type": "number" },
+                  "direction": { "type": "string", "enum": ["up", "down", "neutral"] }
+                }
+              },
+              "icon": { "type": "string" },
+              "color": { "type": "string", "enum": ["primary", "secondary", "success", "warning", "error"] }
+            }
+          }
+        },
+        "charts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "type", "data"],
+            "properties": {
+              "id": { "type": "string" },
+              "type": {
+                "type": "string",
+                "enum": ["line", "bar", "area", "pie", "doughnut", "radar", "heatmap"]
+              },
+              "title": { "type": "string" },
+              "data": {
+                "type": "object",
+                "properties": {
+                  "structure": { "type": "string" },
+                  "sample": { "type": "array" }
+                }
+              },
+              "options": {
+                "type": "object",
+                "properties": {
+                  "animated": { "type": "boolean" },
+                  "legend": { "type": "boolean" },
+                  "tooltip": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "tables": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "columns"],
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "columns": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": { "type": "string" },
+                    "label": { "type": "string" },
+                    "type": { "type": "string", "enum": ["text", "number", "date", "badge", "action", "currency", "percentage"] }
+                  }
+                }
+              },
+              "features": {
+                "type": "object",
+                "properties": {
+                  "pagination": { "type": "boolean" },
+                  "sorting": { "type": "boolean" },
+                  "filtering": { "type": "boolean" },
+                  "search": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "navigation": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": { "type": "string" },
+                  "icon": { "type": "string" },
+                  "href": { "type": "string" },
+                  "active": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "data": {
+      "type": "object",
+      "properties": {
+        "mock": {
+          "type": "object",
+          "properties": {
+            "description": { "type": "string" },
+            "sources": { "type": "array" }
+          }
+        }
+      }
+    },
+    "interactions": {
+      "type": "object",
+      "properties": {
+        "hover": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" }
+          }
+        },
+        "animations": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "type": {
+              "type": "array",
+              "items": { "type": "string", "enum": ["fade", "slide", "scale"] }
+            },
+            "duration": { "type": "number" }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "typographyScale": {
+      "type": "object",
+      "properties": {
+        "size": { "type": "string" },
+        "weight": { "type": "number" },
+        "lineHeight": { "type": "number" }
+      }
+    },
+    "breakpoint": {
+      "type": "object",
+      "properties": {
+        "columns": { "type": "number" }
+      }
+    }
+  }
+}

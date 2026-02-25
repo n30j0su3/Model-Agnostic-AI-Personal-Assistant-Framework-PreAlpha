@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Component Library Schema",
+  "description": "Schema para extender la biblioteca de componentes disponibles",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "categories": {
+      "type": "object",
+      "properties": {
+        "layout": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["Card", "Grid", "Stack", "Sidebar", "Header", "Footer"]
+        },
+        "dataDisplay": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["KpiCard", "Chart", "Table", "Badge", "Avatar", "Progress"]
+        },
+        "navigation": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["NavItem", "Breadcrumb", "Tabs", "Pagination"]
+        },
+        "feedback": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["Toast", "Alert", "Skeleton", "Spinner"]
+        },
+        "overlay": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["Modal", "Tooltip", "Popover", "Drawer"]
+        },
+        "forms": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["Input", "Select", "Checkbox", "Button"]
+        }
+      }
+    },
+    "charts": {
+      "type": "object",
+      "properties": {
+        "recharts": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [
+            "LineChart", "AreaChart", "BarChart", "PieChart", "RadarChart",
+            "ComposedChart", "ScatterChart", "Treemap"
+          ]
+        },
+        "chartjs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [
+            "line", "bar", "radar", "doughnut", "pie", "polarArea", "bubble", "scatter"
+          ]
+        },
+        "apexcharts": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [
+            "line", "area", "bar", "pie", "donut", "radialBar", "scatter",
+            "bubble", "heatmap", "candlestick", "radar"
+          ]
+        }
+      }
+    },
+    "custom": {
+      "type": "array",
+      "description": "Componentes personalizados agregados por el usuario",
+      "items": {
+        "type": "object",
+        "required": ["name", "category"],
+        "properties": {
+          "name": { "type": "string" },
+          "category": { "type": "string" },
+          "description": { "type": "string" },
+          "props": { "type": "object" },
+          "modes": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["con-dependencias", "sin-dependencias"] }
+          }
+        }
+      }
+    }
+  }
+}
