@@ -1,17 +1,40 @@
 #!/usr/bin/env python3
 """
-PA Framework — Session Start (Optimized <30s)
-Secuencia de inicio rápido del día.
+PA Framework — Session Start with Multi-CLI Support
+Secuencia de inicio rápido del día con soporte para múltiples CLIs.
 
 Uso:
     python core/scripts/session-start.py
+
+Multi-CLI:
+    Este script detecta automáticamente otras instancias CLI activas
+    y coordina el acceso a recursos compartidos para prevenir
+    pérdida de datos.
+
+Autor: FreakingJSON-PA Framework
+Versión: 2.0.0 (Multi-CLI)
 """
 
 import json
 import os
 import sys
+import atexit
 from datetime import datetime
 from pathlib import Path
+
+# Configurar UTF-8 para Windows (solo si es un terminal interactivo)
+if sys.platform == "win32" and sys.stdout.isatty():
+    try:
+        import io
+
+        sys.stdout = io.TextIOWrapper(
+            sys.stdout.buffer, encoding="utf-8", errors="replace"
+        )
+        sys.stderr = io.TextIOWrapper(
+            sys.stderr.buffer, encoding="utf-8", errors="replace"
+        )
+    except (ValueError, AttributeError):
+        pass
 
 # --- PATHS ---
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -20,6 +43,9 @@ REPO_ROOT = CORE_DIR.parent
 CONTEXT_DIR = CORE_DIR / ".context"
 SESSIONS_DIR = CONTEXT_DIR / "sessions"
 CODEBASE_DIR = CONTEXT_DIR / "codebase"
+
+# --- GLOBAL COORDINATOR (inicializado en main) ---
+_coordinator = None
 
 
 # --- COLORS ---
@@ -37,6 +63,61 @@ class Colors:
 
 def c(text: str, color: str) -> str:
     return f"{color}{text}{Colors.END}"
+
+
+# --- MULTI-CLI COORDINATION ---
+def init_multi_cli_coordinator(model: str = "unknown"):
+    """Inicializa el coordinador Multi-CLI."""
+    global _coordinator
+
+    try:
+        sys.path.insert(0, str(SCRIPT_DIR))
+        from multi_cli_coordinator import MultiCLICoordinator
+
+        _coordinator = MultiCLICoordinator(model=model)
+        _coordinator.start()
+
+        # Registrar shutdown
+        atexit.register(shutdown_coordinator)
+
+        return _coordinator
+    except Exception as e:
+        print(
+            c(
+                f"[Multi-CLI] Warning: No se pudo iniciar coordinador ({e})",
+                Colors.YELLOW,
+            )
+        )
+        return None
+
+
+def shutdown_coordinator():
+    """Limpieza al salir."""
+    global _coordinator
+    if _coordinator:
+        try:
+            _coordinator.shutdown()
+        except:
+            pass
+
+
+def get_active_clis_summary() -> tuple:
+    """
+    Obtiene resumen de CLIs activas.
+
+    Returns:
+        (count, list of instance info)
+    """
+    global _coordinator
+
+    if not _coordinator:
+        return 0, []
+
+    try:
+        instances = _coordinator.get_other_active_instances()
+        return len(instances), instances
+    except:
+        return 0, []
 
 
 # --- VERIFICACIÓN DE VITALS ---
@@ -139,7 +220,7 @@ def get_last_session_summary() -> str:
         # Buscar línea con "Resumen" o "Logros"
         for line in content.split("\n"):
             if any(x in line for x in ["✅", "completad", "logro", "Listo"]):
-                return line.strip("- #*✅ ")[:60]  # Truncar a 60 chars
+                return line.strip("- #*[OK] ")[:60]  # Truncar a 60 chars
 
         return "Sesión anterior completada"
     except:
@@ -161,12 +242,38 @@ def get_recent_skills() -> list:
     return core_skills
 
 
+def detect_model_from_env() -> str:
+    """Detecta el modelo desde variables de entorno o contexto."""
+    # Intentar detectar modelo desde entorno o configuración
+    model = "unknown"
+
+    # Variable de entorno (puede ser seteada por el wrapper de la CLI)
+    if os.environ.get("PA_MODEL"):
+        model = os.environ.get("PA_MODEL")
+
+    # Intentar detectar desde opencode config
+    try:
+        opencode_config = REPO_ROOT / ".opencode" / "config.json"
+        if opencode_config.exists():
+            config = json.loads(opencode_config.read_text(encoding="utf-8"))
+            # Buscar modelo activo
+            if "providers" in config:
+                for provider, pdata in config["providers"].items():
+                    if pdata.get("enabled") and pdata.get("model"):
+                        model = pdata.get("model", model)
+                        break
+    except:
+        pass
+
+    return model
+
+
 # --- TEMPLATE DE INICIO ---
 def print_session_start():
     """Imprimir template fijo de inicio de sesión."""
     now = datetime.now()
     date_str = now.strftime("%Y-%m-%d")
-    time_str = now.strftime("%H:%M")
+    time_str = now.strftime("H:%M")
 
     # Header
     print(c("\n" + "=" * 60, Colors.HEADER))
@@ -175,6 +282,19 @@ def print_session_start():
 
     # Info básica
     print(f"\n  [DATE] {date_str} | [TIME] {time_str}")
+
+    # Multi-CLI Status
+    cli_count, cli_instances = get_active_clis_summary()
+    if cli_count > 0:
+        print(c("\n[Multi-CLI] [ACTIVE] Instancias Activas:", Colors.BOLD + Colors.CYAN))
+        for inst in cli_instances[:3]:  # Mostrar máximo 3
+            model = inst.get("model", "unknown")
+            inst_id = inst.get("instance_id", "unknown")[:12]
+            print(f"   • {inst_id}... ({model})")
+        if cli_count > 3:
+            print(f"   ... y {cli_count - 3} más")
+    else:
+        print(c("\n[Multi-CLI] [LAUNCH] Primera instancia del día", Colors.DIM))
 
     # Agentes
     print(c("\n[AGENTS] Agentes Disponibles:", Colors.BOLD + Colors.CYAN))
@@ -202,6 +322,18 @@ def print_session_start():
     print("   [3] Revisar estado (/status)")
     print("   [4] Configurar workspace")
 
+    # Multi-CLI hint
+    if cli_count > 0:
+        print(
+            c(
+                "\n[Multi-CLI] Tip: Otras CLIs pueden modificar archivos compartidos.",
+                Colors.DIM,
+            )
+        )
+        print(
+            c("            Los cambios se sincronizarán automáticamente.", Colors.DIM)
+        )
+
     # Frase insignia
     print(c("\n" + "-" * 60, Colors.DIM))
     print(c('   "El conocimiento verdadero trasciende a lo publico."', Colors.HEADER))
@@ -213,18 +345,25 @@ def main():
     """Función principal de inicio rápido."""
     start_time = datetime.now()
 
-    # 1. Validar agente (2s)
+    # Detectar modelo
+    model = detect_model_from_env()
+
+    # 1. Inicializar Multi-CLI Coordinator (PRIMERO)
+    # Esto permite detectar otras instancias antes de mostrar el banner
+    coord = init_multi_cli_coordinator(model)
+
+    # 2. Validar agente (2s)
     agent = check_agent()
     if agent and agent != "FreakingJSON-PA":
         show_agent_warning(agent)
 
-    # 2. Mostrar template de inicio (3s)
+    # 3. Mostrar template de inicio (3s)
     print_session_start()
 
-    # 3. Verificar integridad de archivos vitales (solo base/dev)
+    # 4. Verificar integridad de archivos vitales (solo base/dev)
     show_vitals_status()
 
-    # 4. Crear sesión del día si no existe
+    # 5. Crear sesión del día si no existe
     today = datetime.now().strftime("%Y-%m-%d")
     session_file = SESSIONS_DIR / f"{today}.md"
 
@@ -243,6 +382,7 @@ status: active
 ## Inicio
 - **Hora**: {datetime.now().strftime("%H:%M")}
 - **Agente**: @FreakingJSON
+- **Multi-CLI**: {"Activo (" + str(len(coord.get_other_active_instances()) if coord else 0) + " otras instancias)" if coord else "No disponible"}
 
 ## Log de Actividades
 
@@ -258,6 +398,17 @@ status: active
     # Calcular tiempo
     elapsed = (datetime.now() - start_time).total_seconds()
     print(c(f"  [OK] Sesión iniciada en {elapsed:.1f}s", Colors.GREEN))
+
+    # Mensaje final Multi-CLI
+    if coord:
+        cli_count = len(coord.get_other_active_instances())
+        if cli_count > 0:
+            print(
+                c(
+                    f"  [Multi-CLI] Coordinando con {cli_count} otra(s) instancia(s)",
+                    Colors.CYAN,
+                )
+            )
 
     return 0
 
