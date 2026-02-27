@@ -1,8 +1,8 @@
-# Model-Agnostic AI Personal Assistant Framework v0.1.0-alpha
+# Model-Agnostic AI Personal Assistant Framework v0.2.0-pre-alpha
 
 > "Tu Asistente AI Personal. Tu Conocimiento. Tu Control."
 
-[![Release](https://img.shields.io/badge/release-v0.1.0--alpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.1.0-alpha)
+[![Release](https://img.shields.io/badge/release-v0.2.0--pre--alpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.2.0-pre-alpha)
 [![Instagram](https://img.shields.io/badge/Instagram-%40freakingjson-E4405F?logo=instagram&logoColor=white)](https://instagram.com/freakingjson)
 [![Linktree](https://img.shields.io/badge/Linktree-@freakingjson-43E55C?logo=linktree&logoColor=white)](https://linktr.ee/freakingjson)
 [![Blog](https://img.shields.io/badge/Blog-freakingjson.com-FFA500?logo=firefoxbrowser&logoColor=white)](https://freakingjson.com)
@@ -13,6 +13,18 @@
 [🇺🇸 English Version](./README_en.md)
 
 > **"El conocimiento verdadero trasciende a lo público."**
+
+---
+
+## 📢 Latest Release
+
+**v0.2.0-pre-alpha** - Dashboard Pro: Generación de dashboards profesionales
+- Nueva skill @dashboard-pro para crear dashboards en 2 modos
+- Modo con-dependencias: Proyectos Next.js 15 completos
+- Modo sin-dependencias: Dashboards SPA en archivo HTML único
+- 4 presets de estilo, 3 librerías de charts, documentación completa
+
+📄 [Ver Changelog](./CHANGELOG.md) | 🏷️ [Ver Releases](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases)
 > 
 > — *FreakingJSON*
 
@@ -40,7 +52,7 @@ Un asistente de inteligencia artificial que vive en **tu computadora**, no en se
 |---------|-------------|
 | 🤖 **Multi-IA** | Compatible con OpenCode, Claude Code, Gemini CLI y más |
 | 📁 **Tus archivos** | Todo tu conocimiento en archivos `.md` que puedes editar, mover o respaldar |
-| 🛠️ **15 Skills incluidas** | Trabaja con Excel, PDF, Word, Markdown, tareas y más |
+| 🛠️ **16 Skills incluidas** | Trabaja con Excel, PDF, Word, Markdown, Dashboards, tareas y más |
 | 🌍 **Bilingüe** | Interfaz y documentación en Español e Inglés |
 | 📅 **Sesiones diarias** | El asistente recuerda contexto entre conversaciones |
 | ⚡ **Fácil de usar** | Instalación en 3 pasos, sin configuraciones complejas |

@@ -58,6 +58,8 @@ ADDITIONAL_IGNORE_PATTERNS = {
     "TEMPO",  # Directorio temporal
     "*.tmp",  # Archivos temporales
     "node_modules",  # Dependencias npm
+    "*.backup",  # [CRITICO] Backups de proteccion de sync
+    "bk",  # [CRITICO] Directorio de backup externo
 }
 
 # Archivos/directorios a ignorar SOLO en producción (pero sí en dev)

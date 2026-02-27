@@ -7,6 +7,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased] - 2026-02-26
+
+### Added
+- **INIT-PROTOCOL.md**: Complete framework initialization protocol
+  - Detectable by any AI CLI (OpenCode, Claude, Gemini, Codex)
+  - Workflow: Context → Understanding → Execution → Preservation
+  - Quick commands system (/status, /save, /session, /ideas, /pending, /help)
+- **context-scout-v2.md**: Enhanced context detection agent v2
+  - Automatic discovery of relevant context files
+  - MVI (Minimal Viable Information) principle
+- **detect-workspace.py**: Automated workspace detection script
+  - Framework and workspace detection by path
+  - Manual search fallback
+
+### Security
+- Comprehensive PROD sanitization completed
+- Removed: Template files, DEV-only tracking files, temporary reports
+- Removed: Private context files
+- Enhanced PROD_ONLY_IGNORE_PATTERNS with 20+ exclusion patterns
+- Validated: opencode.jsonc contains only public MCP tools
+
+### Pre-Deploy Validation Checklist
+- [ ] No API keys in *.jsonc files
+- [ ] No DEV tracking files
+- [ ] No temporary reports
+- [ ] core/.context/ contains only navigation.md + structure
+- [ ] workspaces/ contains only empty structure
+
+---
+
+## [0.2.0-alpha] - 2026-02-24
+
+### Added
+- **@dashboard-pro** skill completa para generación de dashboards profesionales
+  - **Modo con-dependencias**: Proyectos Next.js 15 + TypeScript + Tailwind + shadcn/ui + Recharts + TanStack Table
+  - **Modo sin-dependencias**: Dashboards SPA en archivo HTML único (Tailwind CDN + Chart.js/ApexCharts/Vanilla SVG)
+  - **4 presets de estilo**: fintech-dark, fintech-light, saas-modern, enterprise
+  - **3 templates de charts**: Chart.js, ApexCharts, Vanilla SVG
+  - **Documentación completa**: README.md, CONFIG.md, INTEGRATION.md, OPTIMIZATION.md
+  - **Ejemplo funcional**: Dashboard fintech con 8 componentes (KPIs, charts, tablas)
+- **Sistema de validación pre/post sync**:
+  - `validate-dev-resources.py` - Verifica recursos críticos antes del sync
+  - `validate-post-sync.py` - Valida integridad después del sync
+- **Scripts de sync optimizados**:
+  - `sync-prealpha-optimized.py` - Versión mejorada con reportes categorizados
+  - Protección de directorios `_local/` (agentes/skills locales)
+  - Modo `skill-only` para actualizaciones rápidas
+- **Testing completo**: Dashboards de prueba en ambos modos (Next.js y HTML)
+
+### Changed
+- **sync-prealpha.py mejorado**: Agregada protección de directorios `_local/` y `workspaces/`
+- **Documentación MVI**: Optimización de 35.2% en tamaño de documentación
+- **Templates optimizados**: Reducción de 85.7% en templates HTML
+
+### Stats
+- +20 archivos nuevos
+- +2,500 líneas de código/documentación
+- 16 skills totales
+- 35.2% optimización de templates
+
+---
+
 ## [0.1.0-alpha] - 2026-02-11
 
 ### Added
