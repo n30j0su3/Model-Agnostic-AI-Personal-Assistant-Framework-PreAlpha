@@ -14,6 +14,10 @@ core/.context/
 ├── codebase/              # Conocimiento persistente del usuario
 │   ├── recordatorios.md   # Tareas y recordatorios
 │   └── ideas.md           # Ideas, enlaces, notas
+├── workspaces/            # Configuraciones de workspaces
+│   └── _template.md       # Template para nuevos workspaces
+├── projects/              # Registro de proyectos detectados
+│   └── _registry.md      # Índice automático de proyectos
 └── backups/               # Backups automáticos de contexto
 ```
 
@@ -29,6 +33,9 @@ core/.context/
 | **Ideas y notas** | `codebase/ideas.md` |
 | **Agentes disponibles** | `../agents/AGENTS.md` |
 | **Skills disponibles** | `../skills/SKILLS.md` |
+| **Protocolo de inicio** | `../INIT-PROTOCOL.md` |
+| **Workspaces** | `workspaces/` |
+| **Proyectos registrados** | `projects/_registry.md` |
 
 ---
 

@@ -21,6 +21,18 @@
 | **@markdown-writer** | Toolkit para escribir Markdown consistente siguiendo MVI | `core/markdown-writer/` |
 | **@csv-processor** | Procesamiento de CSV para limpieza, transformación y análisis | `core/csv-processor/` |
 | **@python-standards** | Estándares cross-platform para scripts Python | `core/python-standards/` |
+| **@skill-discovery** | Helper para identificar skills apropiadas y evitar scripts duplicados | `core/skill-discovery/` |
+
+## Uso Recomendado: Skill Discovery First
+
+> **⚠️ ANTES de crear cualquier script**, consulta `@skill-discovery` para verificar
+> si existe una skill que resuelva tu necesidad. Esto evita duplicar funcionalidad.
+
+```
+1. Lee: core/skills/core/skill-discovery/SKILL.md
+2. Identifica la skill apropiada para tu tarea
+3. Usa la skill existente en lugar de crear scripts ad-hoc
+```
 
 ## Cómo Invocar
 
@@ -28,6 +40,7 @@ Desde una sesión AI, menciona el skill:
 ```
 Usa @pdf para extraer el contenido de este archivo.
 Usa @task-management para crear una nueva tarea.
+Usa @skill-discovery para encontrar la skill apropiada.
 ```
 
 ## Crear Nuevo Skill

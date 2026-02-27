@@ -172,6 +172,48 @@ task(
   </stage>
 </workflow>
 
+## Protocolo Pre-Tarea (OBLIGATORIO)
+
+Antes de **crear cualquier script o procesamiento**, DEBES:
+
+### ✅ Checklist de Skills
+
+1. **Consultar Skills Disponibles**
+   - Lee: `core/skills/SKILLS.md`
+   - Identifica si existe una skill para tu tarea
+
+2. **Mapeo Tarea → Skill (Memorizar)**
+
+| Tipo de Tarea | Skill a Usar | NO Crear |
+|---------------|--------------|----------|
+| Procesar CSV | @csv-processor | Script Python con pandas |
+| Generar Excel | @xlsx | Script con openpyxl |
+| Transformar datos | @etl | Script custom |
+| Extraer PDF | @pdf | Script PyPDF2 |
+| Crear Word | @docx | Script python-docx |
+| Crear PowerPoint | @pptx | Script manual |
+| Visualizar datos | @data-viz | Script matplotlib |
+| Generar PRD | @prd-generator | Documento manual |
+
+3. **Decisión**
+   - ✅ Si existe skill: **Usar la skill** (invocar @skill-name)
+   - ❌ Si no existe: Crear script propio **solo si es necesario**
+   - 📝 Si la tarea es recurrente: Considerar crear una **nueva skill**
+
+### ⚠️ Advertencia
+
+> **NUNCA crear scripts ad-hoc sin verificar skills primero.**
+> 
+> Esto viola el principio DRY del framework y genera deuda técnica.
+
+### Validación de Cumplimiento
+
+- [ ] ¿Consulté `core/skills/SKILLS.md`?
+- [ ] ¿Existe una skill para esta tarea?
+- [ ] ¿Estoy usando la skill apropiada o creando algo innecesario?
+
+---
+
 ## Comandos de Productividad
 
 | Comando | Acción |

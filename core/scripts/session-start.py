@@ -65,6 +65,17 @@ def c(text: str, color: str) -> str:
     return f"{color}{text}{Colors.END}"
 
 
+def safe_print(text: str, **kwargs):
+    """Print con manejo seguro de Unicode para Windows."""
+    try:
+        print(text, **kwargs)
+    except UnicodeEncodeError:
+        # Fallback: encode con reemplazo de caracteres no soportados
+        encoding = sys.stdout.encoding or "utf-8"
+        safe_text = text.encode(encoding, errors="replace").decode(encoding)
+        print(safe_text, **kwargs)
+
+
 # --- MULTI-CLI COORDINATION ---
 def init_multi_cli_coordinator(model: str = "unknown"):
     """Inicializa el coordinador Multi-CLI."""
@@ -286,7 +297,9 @@ def print_session_start():
     # Multi-CLI Status
     cli_count, cli_instances = get_active_clis_summary()
     if cli_count > 0:
-        print(c("\n[Multi-CLI] [ACTIVE] Instancias Activas:", Colors.BOLD + Colors.CYAN))
+        print(
+            c("\n[Multi-CLI] [ACTIVE] Instancias Activas:", Colors.BOLD + Colors.CYAN)
+        )
         for inst in cli_instances[:3]:  # Mostrar máximo 3
             model = inst.get("model", "unknown")
             inst_id = inst.get("instance_id", "unknown")[:12]
@@ -313,7 +326,7 @@ def print_session_start():
     # Logros sesión anterior
     summary = get_last_session_summary()
     print(c(f"\n[WINS] Logros Sesión Anterior:", Colors.BOLD + Colors.GREEN))
-    print(f"   {summary}")
+    safe_print(f"   {summary}")
 
     # Opciones
     print(c("\n[WHAT] ¿Qué necesitas hoy?", Colors.BOLD + Colors.CYAN))

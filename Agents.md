@@ -30,7 +30,12 @@ Este script:
 1. core/.context/MASTER.md         → Configuración global y preferencias
 2. core/agents/pa-assistant.md     → Agente principal FreakingJSON-PA (modo producción)
 3. core/.context/navigation.md     → Mapa de todo el conocimiento disponible
+4. core/skills/SKILLS.md           → Skills disponibles (OBLIGATORIO)
 ```
+
+> **⚠️ CRÍTICO**: Siempre consultar `core/skills/SKILLS.md` antes de crear scripts.
+> El framework tiene skills especializadas (@csv-processor, @xlsx, @etl) que deben
+> usarse preferentemente sobre soluciones ad-hoc.
 
 ### Step 4: Session Ready
 
