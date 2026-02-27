@@ -7,7 +7,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased] - 2026-02-26
+## [Unreleased]
+
+### Added
+- *(En desarrollo - ver rama DEV)*
+
+---
+
+## [0.1.1-alpha] - 2026-02-27
+
+### Added
+- **Skill Discovery System** (`@skill-discovery`)
+  - Mapeo automático de tareas a skills existentes
+  - Evita duplicación de funcionalidad (anti-patrones documentados)
+  - Tablas de referencia rápida: CSV, Excel, PDF, documentos, productividad
+  - Ubicación: `core/skills/core/skill-discovery/SKILL.md`
+  
+- **Sistema de Sync Bidireccional** (DEV ↔ BASE ↔ PROD)
+  - `sync-dev-to-base.sh`: Sync seguro DEV → BASE con detección de commits [FRAMEWORK]
+  - `sync-base-to-dev.sh`: Pull de actualizaciones de framework a DEV
+  - `sync-base-to-prod.sh`: Publicación limpia a PROD con validaciones de seguridad
+  - `sync-menu.bat`: Menú interactivo Windows para operaciones de sync
+  - Validación automática de archivos sensibles antes de cualquier sync
+  
+- **Validación de Recursos** (`validate-dev-resources.py`)
+  - Verifica recursos críticos antes de operaciones de sync
+  - Previene pérdida de datos durante migraciones
+
+### Changed
+- **AGENTS.md**: Paso 3 obligatorio ahora incluye lectura de `SKILLS.md`
+  - Los agentes AI deben verificar skills disponibles antes de crear scripts
+  - Previene duplicación de funcionalidad existente
+  
+- **pa-assistant.md**: Nuevo "Protocolo Pre-Tarea"
+  - Checklist obligatorio antes de ejecutar cualquier tarea
+  - Paso 1: Verificar skill-discovery
+  - Paso 2: Leer SKILL.md de la skill identificada
+  - Paso 3: Ejecutar según protocolo de la skill
+
+### Security
+- **Sanitización completa de PROD**
+  - Eliminados todos los archivos de usuario: sessions/, codebase/, vitals/, MASTER.md
+  - PROD ahora contiene SOLO archivos de framework
+  - Validación automática en sync-base-to-prod.sh previene subida de datos sensibles
+  - Lista de exclusiones: API keys, secrets, passwords, shop IDs específicos
+
+### Documentation
+- **docs/backlog.md**: Backlog del framework con historial de decisiones
+- **docs/backlog.view.md**: Vista alternativa del backlog (formato timeline)
+
+### Dev Notes
+- Framework versión: 0.1.0-alpha → 0.1.1-alpha (incremento menor, pre-alpha)
+- Repositorios sincronizados: DEV → BASE → PROD
+- Total de skills: 17 (incluyendo skill-discovery)
+- Total de scripts de sync: 7 archivos
+
+---
+
+## [0.1.0-alpha.2] - 2026-02-26
 
 ### Added
 - **INIT-PROTOCOL.md**: Complete framework initialization protocol

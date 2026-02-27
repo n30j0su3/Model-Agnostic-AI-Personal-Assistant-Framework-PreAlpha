@@ -23,6 +23,11 @@
 
 ## 📢 Latest Release
 
+**v0.1.1-alpha** - Skill Discovery + Sync System
+- **@skill-discovery**: Mapeo automático de tareas a skills existentes
+- **Sistema de Sync**: Scripts bidireccionales DEV ↔ BASE ↔ PROD con validaciones de seguridad
+- **Protocolo Pre-Tarea**: Checklist obligatorio antes de ejecutar cualquier tarea
+
 **v0.1.0-alpha** - Primera release oficial del framework
 - 4 skills nuevas: skill-creator, markdown-writer, csv-processor, python-standards
 - 5 agentes desplegados con arquitectura de subagentes

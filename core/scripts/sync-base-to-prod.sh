@@ -3,6 +3,12 @@
 # Sincronización BASE → PROD
 # Publica versión limpia del framework al repo público
 #
+# IMPORTANTE: Antes de ejecutar este script, asegúrate de:
+#   1. Actualizar CHANGELOG.md con los cambios de esta versión
+#   2. Actualizar README.md si hay cambios significativos
+#   3. Verificar que la versión en los archivos sea correcta
+#   4. Ejecutar: ./sync-base-to-prod.sh [--dry-run]
+#
 # Uso: ./sync-base-to-prod.sh [--dry-run]
 
 set -euo pipefail
@@ -30,6 +36,47 @@ log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 DRY_RUN=false
 TEMP_BRANCH=""
 SYNC_DATE=$(date +%Y%m%d_%H%M%S)
+
+# Verificar documentación de release
+verify_release_docs() {
+    log_info "Verificando documentación de release..."
+    
+    cd "$BASE_PATH"
+    
+    # Verificar que CHANGELOG.md fue actualizado
+    if ! git diff HEAD --name-only | grep -q "CHANGELOG.md"; then
+        log_warn "CHANGELOG.md no ha sido modificado en este commit"
+        log_info "¿Olvidaste documentar los cambios?"
+        echo ""
+        echo "Checklist de Release:"
+        echo "  [ ] Actualizar CHANGELOG.md con cambios de esta versión"
+        echo "  [ ] Verificar versión correcta en README.md (ej: v0.1.1-alpha)"
+        echo "  [ ] Actualizar docs/ si hay cambios de arquitectura"
+        echo ""
+        read -p "¿Continuar de todos modos? (yes/no): " confirm
+        if [[ "$confirm" != "yes" ]]; then
+            log_info "Cancelado. Actualiza la documentación primero."
+            exit 0
+        fi
+    else
+        log_success "CHANGELOG.md actualizado"
+    fi
+    
+    # Verificar versión en README.md coincide con CHANGELOG
+    local readme_version=$(grep -oP 'v[0-9]+\.[0-9]+\.[0-9]+(-[a-z]+)?' README.md | head -1 || echo "unknown")
+    local changelog_version=$(grep -oP '\[\K[0-9]+\.[0-9]+\.[0-9]+(-[a-z]+)?' CHANGELOG.md | head -1 || echo "unknown")
+    
+    log_info "README version: $readme_version"
+    log_info "CHANGELOG latest: $changelog_version"
+    
+    if [[ "$readme_version" != "v$changelog_version" ]]; then
+        log_warn "Versión en README ($readme_version) != CHANGELOG ($changelog_version)"
+        read -p "¿Las versiones son correctas? (yes/no): " confirm
+        if [[ "$confirm" != "yes" ]]; then
+            exit 0
+        fi
+    fi
+}
 
 # Verificar directorios
 verify_directories() {
@@ -199,7 +246,24 @@ main() {
                 echo ""
                 echo "ADVERTENCIA: Esto publica a un repositorio PÚBLICO"
                 echo ""
-                echo "Uso: $0 [--dry-run]"
+                echo "PRE-REQUISITOS (Checklist de Release):"
+                echo "  [ ] Actualizar CHANGELOG.md con cambios de esta versión"
+                echo "  [ ] Verificar versión correcta en README.md"
+                echo "  [ ] Actualizar docs/ si hay cambios de arquitectura"
+                echo "  [ ] Commitear todos los cambios en BASE"
+                echo ""
+                echo "USO:"
+                echo "  $0 [--dry-run]     # Simular sin hacer cambios"
+                echo "  $0                  # Ejecutar sync real"
+                echo ""
+                echo "PROCESO:"
+                echo "  1. Verifica directorios"
+                echo "  2. Valida documentación de release"
+                echo "  3. Valida .gitignore"
+                echo "  4. Busca archivos sensibles"
+                echo "  5. Crea rama temporal"
+                echo "  6. Valida archivos finales"
+                echo "  7. Push a PROD (público)"
                 exit 0
                 ;;
             *)
@@ -228,6 +292,7 @@ main() {
     fi
     
     verify_directories
+    verify_release_docs
     validate_gitignore
     validate_no_sensitive_files
     create_release_branch
