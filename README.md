@@ -1,221 +1,316 @@
-# Model-Agnostic AI Personal Assistant Framework v0.1.1-prealpha
+# Model-Agnostic AI Personal Assistant Framework v0.1.0-alpha
 
-> "Tu Asistente AI Personal. Tu Conocimiento. Tu Control."
+> "One Framework to rule them all, One Context to find them."
+> "El Conocimiento verdadero trasciende a lo público".
 
-[![Release](https://img.shields.io/badge/release-v0.1.1--prealpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.1.1-prealpha)
-[![Instagram](https://img.shields.io/badge/Instagram-%40freakingjson-E4405F?logo=instagram&logoColor=white)](https://instagram.com/freakingjson)
-[![Linktree](https://img.shields.io/badge/Linktree-@freakingjson-43E55C?logo=linktree&logoColor=white)](https://linktr.ee/freakingjson)
-[![Blog](https://img.shields.io/badge/Blog-freakingjson.com-FFA500?logo=firefoxbrowser&logoColor=white)](https://freakingjson.com)
+[![Release](https://img.shields.io/badge/release-v0.1.0--alpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.1.0-alpha)
 [![Changelog](https://img.shields.io/badge/changelog-keep%20a%20changelog-green)](./CHANGELOG.md)
 ![Stage](https://img.shields.io/badge/stage-alpha-red)
+
 ![License](https://img.shields.io/badge/license-MIT-green)
+![Agnostic](https://img.shields.io/badge/Model-Agnostic-orange)
 
-[🇺🇸 English Version](./README_en.md)
+---
 
-> **"El conocimiento verdadero trasciende a lo público."**
+## 👥 ¿Buscas la versión simple?
+
+**Esta es la documentación técnica completa para desarrolladores.**
+
+👉 [Ver versión simplificada para usuarios aquí](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/blob/main/README.md)  
+👉 [View simplified user version (English)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/blob/main/README_en.md)
 
 ---
 
 ## 📢 Latest Release
 
-**v0.2.0-pre-alpha** - Dashboard Pro: Generación de dashboards profesionales
-- Nueva skill @dashboard-pro para crear dashboards en 2 modos
-- Modo con-dependencias: Proyectos Next.js 15 completos
-- Modo sin-dependencias: Dashboards SPA en archivo HTML único
-- 4 presets de estilo, 3 librerías de charts, documentación completa
+**v0.1.1-alpha** - Skill Discovery + Sync System
+- **@skill-discovery**: Mapeo automático de tareas a skills existentes
+- **Sistema de Sync**: Scripts bidireccionales DEV ↔ BASE ↔ PROD con validaciones de seguridad
+- **Protocolo Pre-Tarea**: Checklist obligatorio antes de ejecutar cualquier tarea
+
+**v0.1.0-alpha** - Primera release oficial del framework
+- 4 skills nuevas: skill-creator, markdown-writer, csv-processor, python-standards
+- 5 agentes desplegados con arquitectura de subagentes
+- Sistema de sync BASE/DEV/PROD completo
 
 📄 [Ver Changelog](./CHANGELOG.md) | 🏷️ [Ver Releases](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases)
-> 
-> — *FreakingJSON*
 
 ---
 
-## 🎯 Objetivo y Filosofía
+## 🚀 Características Principales
 
-**¿Qué es esto?**
-
-Un asistente de inteligencia artificial que vive en **tu computadora**, no en servidores de terceros. Tus conversaciones, documentos y conocimiento permanecen en archivos locales que **tú controlas completamente**.
-
-**La filosofía es simple:**
-
-- 📍 **Local-first**: Todo funciona en tu PC, sin depender de internet constantemente
-- 🔐 **Tu control**: Tu información nunca se vende ni se usa para entrenar modelos ajenos
-- 🔄 **Sin vendor lock-in**: Funciona con OpenAI, Claude, Gemini, o modelos locales. Tú eliges.
-
-> *"El conocimiento verdadero trasciende a lo público, pero debe permanecer bajo tu control."*
-
----
-
-## ✨ Características Principales
-
-| Feature | Descripción |
-|---------|-------------|
-| 🤖 **Multi-IA** | Compatible con OpenCode, Claude Code, Gemini CLI y más |
-| 📁 **Tus archivos** | Todo tu conocimiento en archivos `.md` que puedes editar, mover o respaldar |
-| 🛠️ **16 Skills incluidas** | Trabaja con Excel, PDF, Word, Markdown, Dashboards, tareas y más |
-| 🌍 **Bilingüe** | Interfaz y documentación en Español e Inglés |
-| 📅 **Sesiones diarias** | El asistente recuerda contexto entre conversaciones |
-| ⚡ **Fácil de usar** | Instalación en 3 pasos, sin configuraciones complejas |
-
----
+- 🤖 **Multi-Tool Workflow**: Trabaja con OpenCode, Claude Code, Gemini CLI y Codex simultáneamente.
+- 📁 **Contexto Local**: Todo tu conocimiento reside en archivos `.md` bajo tu control.
+- 🌐 **Multidisciplinario**: 6 Workspaces pre-configurados (Personal, Professional, Research, Content, Development, Homelab).
+- 🛠 **Skills & Agents**: Sistema extensible basado en el estándar [Agent Skills](https://agentskills.io).
+- 📝 **Trazabilidad Total**: Gestión de sesiones diarias con archivo histórico automático.
+- ☁️ **Repositorio Inteligente**: Inicializa GitHub, Git local o modo Sandbox desde el instalador.
+- 🌍 **Multi-idioma**: Selector ES/EN y preferencias guardadas en el contexto.
+- 🎨 **Diseño Inteligente**: Integración nativa con `@ui-ux-pro-max` para interfaces profesionales.
 
 ## 📁 Estructura del Proyecto
 
-```
-📂 Model-Agnostic-AI-Personal-Assistant-Framework/
-├── 📁 config/                 # Configuración general
-├── 📁 core/                   # Núcleo del framework
-│   ├── 📁 .context/           # Configuración y contexto del framework
-│   │   └── 📁 sessions/       # Historial de conversaciones
-│   ├── 📁 agents/             # Definición de agentes
-│   ├── 📁 scripts/            # Scripts de automatización
-│   └── 📁 skills/             # Skills y herramientas
-├── 📁 docs/                   # Documentación
-├── 📁 logs/                   # Logs del sistema
-└── 📁 workspaces/             # ← Tus archivos de trabajo van aquí
+```text
+├── .context/       # Conocimiento central (MASTER.md)
+├── agents/         # Agentes especializados (@session-manager, etc.)
+├── skills/         # Habilidades modulares (@xlsx, @pdf, @task-mgmt)
+├── workspaces/     # Espacios aislados por disciplina
+├── sessions/       # Logs diarios y trazabilidad
+├── scripts/        # Automatización y sincronización
+└── docs/           # Documentación profesional (Mintlify style)
 ```
 
-**Tus archivos personales van en `workspaces/`**. El resto es el framework.
+## 🛠 Instalación Rápida
 
-**Todo son archivos de texto.** Puedes abrirlos, editarlos, respaldarlos o sincronizarlos con tu sistema favorito (Google Drive, Dropbox, etc.).
+1. **Clonar o descargar el repo**:
+   ```bash
+   git clone https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework.git
+   ```
+   Si usas el ZIP, extraelo y entra a la carpeta.
+2. **Ejecutar el launcher**:
+   ```bash
+   ./pa.sh
+   ```
+   En Windows usa `pa.bat`. Si es la primera ejecucion, el launcher corre el instalador automaticamente.
+   Si prefieres, puedes ejecutar `python scripts/install.py` manualmente.
+   En la primera ejecucion, el instalador pregunta idioma y CLI por defecto.
+   Si falta Python o Git, el launcher ofrece instalarlo (winget) o abrir la descarga.
+   Si eliges OpenCode y falta Node.js, el instalador ofrece instalarlo.
+3. **Configurar tu perfil**:
+   Edita `.context/MASTER.md` con tus preferencias.
+4. **Sincronizar**:
+   ```bash
+   python scripts/sync-context.py
+   ```
 
----
+## 🎛 Panel de Control (Opcional)
 
-## ⚡ Quick Start (Windows)
+Si prefieres gestionar el framework desde un unico menu interactivo:
 
-> 💡 **También disponible para Mac y Linux** - ver notas al final.
-
-### Paso 1: Descargar
-```powershell
-# Opción A: Con Git (recomendado para actualizaciones)
-git clone https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha.git
-
-# Opción B: Descargar ZIP desde la página de Releases arriba ↑
+```bash
+python scripts/pa.py
 ```
 
-### Paso 2: Ejecutar
-```powershell
-# Entra a la carpeta y ejecuta:
-cd Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha
+Atajos opcionales:
+
+```bash
+./pa.sh
+```
+
+```bat
 pa.bat
 ```
 
-### Paso 3: Configurar
-El instalador te hará 3 preguntas simples:
-1. ¿Qué idioma prefieres? (Español/English)
-2. ¿Qué herramienta de IA usarás principalmente? (OpenCode, Claude, etc.)
-3. ¿Cómo te llamas? (para personalizar el asistente)
+Desde ahi puedes sincronizar contexto, ajustar preferencias, activar orquestacion
+multi-modelo y lanzar tu sesion AI sin ejecutar scripts sueltos.
 
-### ¡Listo! 🎉
+## Dev HQ vs Public Release
 
-Tu asistente está configurado. Ahora puedes:
-- Escribir `pa.bat` para iniciar una sesión
-- Editar archivos en la carpeta `workspaces/` para darle contexto
-- Pedirle ayuda con documentos, datos, o tareas diarias
+Este repo funciona como Dev HQ (privado): contiene backlog real, sesiones y trazabilidad completa.
+La publicacion al repo publico se hace con un flujo separado y sanitizado.
 
----
+Reglas clave:
+- `origin` = repo privado (dev)
+- `upstream` = repo publico (release)
+- `main` = desarrollo privado
+- `public-release` = publicacion sanitizada
 
-## 📋 Pre-requisitos
+Comandos:
+- Iniciar sesion de features (Dev HQ):
+  - Windows: `dev.bat`
+  - macOS/Linux: `./dev.sh`
+- Publicar a repo publico (sanitizado):
+  - `python scripts/publish-release.py --push`
+
+## 🧰 Pre-requisitos (Hardware y Software)
+
+### Requisitos Mínimos
+
+| Requerimiento | Enlace de Descarga | Versión Mínima |
+|---------------|-------------------|----------------|
+| **Python** | [python.org/downloads](https://www.python.org/downloads/) | 3.11+ |
+| **Git** | [git-scm.com/downloads](https://git-scm.com/downloads) | 2.30+ |
+| **Node.js** | [nodejs.org](https://nodejs.org) | 18+ (requerido para OpenCode) |
+| **OpenCode** | `npm install -g opencode-ai` | Latest |
 
 ### Hardware
-| Mínimo | Recomendado |
-|--------|-------------|
-| 4 núcleos CPU | 8 núcleos CPU |
-| 8 GB RAM | 16 GB RAM |
-| 2 GB espacio libre | 5 GB espacio libre |
 
-### Software
-- **Windows 10/11** (también disponible para macOS 12+ y Linux moderno)
-- **Python 3.11+** *(se instala automáticamente si falta)*
-- **Git** *(opcional, solo para actualizaciones)*
+- **Hardware minimo**: CPU 4 nucleos, 8 GB RAM, 2 GB libres en disco.
+- **Hardware recomendado**: CPU 8 nucleos, 16 GB RAM, SSD.
+- **GPU (opcional)**: Recomendada si usaras modelos locales o flujos pesados.
+- **Sistema operativo**: Windows 10/11, macOS 12+ o Linux moderno.
 
-### Opcional: Cuentas de IA
-Para usar modelos avanzados (GPT-4, Claude, etc.) necesitarás:
-- Una cuenta gratuita en el proveedor que elijas
-- API key (te lo explicamos cómo obtenerlo en la documentación completa)
+### Software Adicional
 
-> 💡 **Sin API key también funciona** - puedes usar modelos locales gratuitos como Ollama.
+- **Editor de código**: VS Code o similar
+- **Cuentas IA**: Acceso a proveedores como OpenAI, Anthropic o Google si usaras sus APIs.
 
----
+## 🧭 Instalación Completa (Para Dummies)
 
-## ❓ FAQ Básico
+1. **Instala Git** desde https://git-scm.com y reinicia la terminal.
+2. **Instala Python 3.11+** desde https://www.python.org y confirma con `python --version`.
+3. **Crea una carpeta** para el proyecto y abre una terminal dentro.
+4. **Clona el repo**:
+   ```bash
+   git clone https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework.git
+   ```
+5. **Entra a la carpeta**:
+   ```bash
+   cd Model-Agnostic-AI-Personal-Assistant-Framework
+   ```
+6. **Configura tu perfil** editando `.context/MASTER.md`.
+7. **Sincroniza el contexto**:
+   ```bash
+   python scripts/sync-context.py
+   ```
+8. **Verifica** que se generaron archivos de contexto en `.context/` y `sessions/`.
+9. **Listo**: ya puedes iniciar sesiones y activar skills.
 
-**¿Necesito saber programar?**
-→ **No.** Esta guía está pensada para cualquier persona. Si sabes usar una terminal básica, es suficiente.
+## 🤖 Instalación de LLMs (IA) Paso a Paso
 
-**¿Es gratis?**
-→ **El framework es 100% gratis** (licencia MIT). Algunos proveedores de IA (OpenAI, etc.) pueden cobrar por uso intensivo, pero hay opciones gratuitas disponibles.
+1. **Crea cuentas** en los proveedores que vayas a usar (OpenAI, Anthropic, Google, etc.).
+2. **Obtén tus API Keys** desde el panel de cada proveedor.
+3. **Instala las CLIs** oficiales (OpenCode, Claude Code, Gemini CLI, Codex) siguiendo sus docs.
+4. **Configura las variables de entorno** con tus claves.
+   ```bash
+   # macOS/Linux
+   export OPENAI_API_KEY="<TU_API_KEY>"
+   export ANTHROPIC_API_KEY="<TU_API_KEY>"
+   export GEMINI_API_KEY="<TU_API_KEY>"
+   ```
+   ```powershell
+   # Windows PowerShell
+   setx OPENAI_API_KEY "<TU_API_KEY>"
+   setx ANTHROPIC_API_KEY "<TU_API_KEY>"
+   setx GEMINI_API_KEY "<TU_API_KEY>"
+   ```
+5. **Prueba cada CLI** con un comando simple (por ejemplo `--version` o un prompt corto).
+6. **Vincula el contexto** ejecutando `python scripts/sync-context.py` si aun no lo hiciste.
+7. **Valida la configuracion LLM** con el instalador:
+   ```bash
+   python scripts/install.py --llm
+   ```
 
-**¿Mis datos son míos?**
-→ **Sí, completamente.** Todo queda en tu computadora en archivos de texto. No enviamos tu información a servidores externos sin tu permiso explícito.
+### 🧠 Modelos locales (Opcional)
 
-**¿Puedo usarlo sin internet?**
-→ **Parcialmente.** El framework funciona offline, pero necesitarás internet para consultar modelos de IA en la nube. También puedes instalar modelos locales (como Ollama) para trabajo 100% offline.
+- **Ollama (Windows/macOS/Linux)**
+  1. Instala desde https://ollama.com
+  2. Descarga un modelo:
+     ```bash
+     ollama pull llama3
+     ```
+  3. Prueba el modelo:
+     ```bash
+     ollama run llama3
+     ```
+  4. Configura tu herramienta LLM para apuntar al endpoint local que expone Ollama.
 
-**¿Cómo actualizo el framework?**
-→ Si usaste Git: `git pull`. Si descargaste ZIP: descarga la nueva versión y copia:
-- `core/.context/` → configuración del framework
-- `workspaces/` → tus archivos de trabajo
-- Opcional: `docs/` y `config/` si personalizaste documentación o configuración
+- **LM Studio (Windows/macOS/Linux)**
+  1. Instala desde https://lmstudio.ai
+  2. Descarga un modelo desde la app.
+  3. Activa el servidor local desde la interfaz y usa el endpoint que te muestre la app.
 
-**¿Qué pasa si algo no funciona?**
-→ Revisa nuestra documentación completa o abre un issue en GitHub. La comunidad te ayuda.
+## 🧩 Instalador Todo-en-Uno (Comando Unico)
 
----
+```powershell
+# Windows PowerShell
+git clone https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework.git; cd Model-Agnostic-AI-Personal-Assistant-Framework; python scripts/install.py
+```
+
+```bash
+# macOS/Linux
+git clone https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework.git && cd Model-Agnostic-AI-Personal-Assistant-Framework && python3 scripts/install.py
+```
+
+Luego edita `.context/MASTER.md` con tus preferencias personales.
+
+## 🐍 Instalador Python (Multiplataforma)
+
+- **Windows**:
+  ```powershell
+  python scripts/install.py
+  # o
+  py -3 scripts/install.py
+  ```
+- **macOS/Linux**:
+  ```bash
+  python3 scripts/install.py
+  ```
+
+Para validar LLMs agrega `--llm`.
+
+## 🧪 Instalador por SO (Opcional)
+
+- **Windows PowerShell**:
+  ```powershell
+  python scripts/install.py
+  ```
+- **macOS/Linux**:
+  ```bash
+  bash core/scripts/install.sh
+  # o
+  python3 core/scripts/install.py
+  ```
+
+## 🛠 Troubleshooting Windows (PowerShell)
+
+Si PowerShell bloquea `opencode` con un error de politica de ejecucion, ejecuta:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
+```
+
+## 🧹 Desinstalacion (Opcional)
+
+Si necesitas remover el framework de forma segura:
+
+```bash
+python scripts/uninstall.py
+```
+
+Guia completa: `docs/uninstall.mdx`
+
+## ❓ FAQ Basico
+
+- **¿Necesito saber programar?** No. Esta guia esta pensada para principiantes.
+- **¿Donde vive mi conocimiento?** En archivos `.md` dentro de `.context/`, bajo tu control.
+- **¿Que pasa si no tengo API key?** Puedes usar el framework, pero sin ejecutar modelos remotos.
+- **¿Como actualizo el framework?** Entra al repo y ejecuta `git pull`.
+- **¿Esto es gratis?** El framework es MIT, pero los proveedores de IA pueden cobrar por uso.
 
 ## 🙏 Agradecimientos
 
-Gracias a Dios por la Gracia, la Revelación y el Discernimiento necesarios para construir este framework.
+Gracias a Dios por la Gracia, la Revelacion y el Discernimiento necesarios para llegar a la construccion del framework, a mi familia por su amor y paciencia, y al resto de mis seres amados y queridos (ellos saben quienes son, se los he dicho muchas veces).
 
-Un agradecimiento especial a **[NetworkChuck](https://www.youtube.com/@NetworkChuck)** por inspirar la filosofía central de este proyecto:
+Un agradecimiento especial a **[NetworkChuck](https://www.youtube.com/@NetworkChuck)** por inspirar la filosofia central de este proyecto (y gracias por tus oraciones también ;):
 
 > *"I own my context. Nothing annoys me more than when AI tries to fence me in, give me vendor lock-in. No, I reject that."*
 
-Su enfoque de soberanía de datos y aprendizaje accesible fue fundamental para el diseño de este framework.
+Su enfoque de soberania de datos y aprendizaje accesible fue fundamental para el diseno de este framework.
 
----
+## 📖 Documentación
 
-## 🔗 Documentación Completa
+La documentación completa está disponible en la carpeta `docs/`. Sigue el estándar de Mintlify para una experiencia de lectura superior.
 
-**¿Eres desarrollador o necesitas información técnica detallada?**
+### 📊 Dashboard Interactivo
 
-👉 [Ver documentación técnica completa aquí](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework/blob/main/README-FULL.md)
+El archivo `dashboard.html` es una interfaz visual standalone que te permite:
 
-Incluye:
-- Instalación avanzada por sistema operativo
-- Configuración de múltiples modelos de IA
-- Guía de desarrollo de skills personalizadas
-- Arquitectura técnica del framework
-- Troubleshooting detallado
+- Explorar el framework (introduccion, primeros pasos, filosofia)
+- Navegar Workspaces (Personal, Professional, Research, Content, Development)
+- Conocer Agentes y Skills disponibles
+- Entender el Ciclo Diario de trabajo
 
----
+Para usarlo, abre el archivo en tu navegador:
 
-## 🍎 🐧 Nota para usuarios Mac y Linux
-
-Este framework también funciona en **macOS 12+** y **Linux moderno** (Ubuntu 20.04+, Fedora, etc.).
-
-**Comandos equivalentes:**
 ```bash
-# En lugar de pa.bat, usa:
-./pa.sh
-
-# Instalación:
-python3 scripts/install.py
+open dashboard.html        # macOS
+start dashboard.html       # Windows
+xdg-open dashboard.html    # Linux
 ```
 
-La estructura y funcionamiento son idénticos. Solo cambian las extensiones de archivos de script.
+No requiere servidor ni dependencias externas.
 
 ---
-
-Hecho con ❤️ por **FreakingJSON**.
-
-### 🔗 Conecta con FreakingJSON
-
-- 📸 **Instagram**: [@freakingjson](https://instagram.com/freakingjson)
-- 🌐 **Todas las redes**: [linktr.ee/freakingjson](https://linktr.ee/freakingjson)
-- 📝 **Blog Tech & Homelab**: [freakingjson.com](https://freakingjson.com)
-- ☕ **Apoya el proyecto**: [buymeacoffee.com/freakingjson](https://buymeacoffee.com/freakingjson)
-
-> *"I own my context. I am FreakingJSON."*
-> 
-> **"El conocimiento verdadero trasciende a lo público."**
+Hecho con ❤️ por el equipo de **Advanced Agentic Coding**.
+Basado en las filosofías de **theNetworkChuck**.
