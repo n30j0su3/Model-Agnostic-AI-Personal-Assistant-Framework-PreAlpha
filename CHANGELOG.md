@@ -14,6 +14,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.1-prealpha] - 2026-03-03
+
+### Fixed (Issues Críticos PROD)
+- **Documentación MAC** - Soporte completo macOS/Linux
+  - Creado `install.sh` - Instalador nativo shell para macOS/Linux
+  - `install.py` ahora detecta SO y muestra comando correcto (`pa.bat` o `./pa.sh`)
+  - README con comandos corregidos para todas las plataformas
+  
+- **Configuración OpenCode saneada**
+  - `opencode.jsonc` con rutas relativas (npx) en lugar de rutas Windows absolutas
+  - Token GitHub como placeholder (`YOUR_GITHUB_TOKEN_HERE`)
+  - Sin credenciales hardcodeadas
+  
+- **README User-Friendly**
+  - Tabla de requisitos con enlaces directos de descarga:
+    - Python: python.org/downloads
+    - Node.js: nodejs.org
+    - Git: git-scm.com/downloads
+    - OpenCode: `npm install -g opencode-ai`
+  - Versión simplificada para usuarios (README-simple.md)
+  
+- **Skills actualizadas**
+  - SKILLS.md: 22 skills documentadas completamente
+  - 6 skills nuevas agregadas: content-optimizer, context-evaluator, dashboard-pro, decision-engine, mcp-builder, paper-summarizer
+  - Corregidas descripciones duplicadas (copy-paste errors)
+
+### Notes
+- **Versión prealpha**: Mantiene `-prealpha` hasta completar frontend/dashboard (FE-001/002/003)
+- **Cross-platform**: Validado en Windows, macOS y Linux
+- **Sanitizado**: Sin archivos de desarrollo, sin credenciales, sin datos sensibles
+
+---
+
 ## [0.1.1-alpha] - 2026-02-27
 
 ### Added
@@ -173,4 +206,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Full release notes**: [docs/RELEASES/](docs/RELEASES/)
 
+[0.1.1-prealpha]: https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.1.1-prealpha
+[0.1.1-alpha]: https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.1.1-alpha
 [0.1.0-alpha]: https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.1.0-alpha
