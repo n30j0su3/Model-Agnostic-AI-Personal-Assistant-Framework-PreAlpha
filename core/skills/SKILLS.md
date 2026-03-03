@@ -12,9 +12,9 @@
 | **@prompt-improvement** | Optimización y refinamiento de prompts | `core/prompt-improvement/` |
 | **@ui-ux-pro-max** | Diseño inteligente UI/UX con base de datos buscable | `core/ui-ux-pro-max/` |
 | **@docx** | Toolkit for creating, editing, and analyzing Word documents. | `core/docx/` |
-| **@etl** | Diseño inteligente UI/UX con base de datos buscable | `core/etl/` |
-| **@json-prompt-generator** | Diseño inteligente UI/UX con base de datos buscable | `core/json-prompt-generator/` |
-| **@pptx** | Diseño inteligente UI/UX con base de datos buscable | `core/pptx/` |
+| **@etl** | Manipulación y transformación de datos (Extract, Transform, Load) | `core/etl/` |
+| **@json-prompt-generator** | Genera prompts JSON estructurados a partir de una idea inicial para IA | `core/json-prompt-generator/` |
+| **@pptx** | Creación, edición y análisis de presentaciones PowerPoint | `core/pptx/` |
 | **@data-viz** | Visualización de datos con Seaborn/Matplotlib | `core/data-viz/` |
 | **@prd-generator** | Generación de Product Requirements Documents con historias de usuario | `core/prd-generator/` |
 | **@skill-creator** | Guía completa para crear nuevas skills en el framework | `core/skill-creator/` |
@@ -22,6 +22,12 @@
 | **@csv-processor** | Procesamiento de CSV para limpieza, transformación y análisis | `core/csv-processor/` |
 | **@python-standards** | Estándares cross-platform para scripts Python | `core/python-standards/` |
 | **@skill-discovery** | Helper para identificar skills apropiadas y evitar scripts duplicados | `core/skill-discovery/` |
+| **@content-optimizer** | Optimiza borradores de texto para SEO, legibilidad y engagement | `core/content-optimizer/` |
+| **@context-evaluator** | Framework para evaluar calidad de respuestas (LLM-as-a-Judge) | `core/context-evaluator/` |
+| **@dashboard-pro** | Genera dashboards profesionales con diseño consistente | `core/dashboard-pro/` |
+| **@decision-engine** | Decide entre ejecución local, delegación o LLM remoto | `core/decision-engine/` |
+| **@mcp-builder** | Guía para crear MCP servers con buenas prácticas | `core/mcp-builder/` |
+| **@paper-summarizer** | Analiza y resume papers científicos y documentos técnicos | `core/paper-summarizer/` |
 
 ## Uso Recomendado: Skill Discovery First
 

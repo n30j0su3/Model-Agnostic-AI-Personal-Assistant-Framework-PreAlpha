@@ -124,11 +124,25 @@ Comandos:
 
 ## 🧰 Pre-requisitos (Hardware y Software)
 
+### Requisitos Mínimos
+
+| Requerimiento | Enlace de Descarga | Versión Mínima |
+|---------------|-------------------|----------------|
+| **Python** | [python.org/downloads](https://www.python.org/downloads/) | 3.11+ |
+| **Git** | [git-scm.com/downloads](https://git-scm.com/downloads) | 2.30+ |
+| **Node.js** | [nodejs.org](https://nodejs.org) | 18+ (requerido para OpenCode) |
+| **OpenCode** | `npm install -g opencode-ai` | Latest |
+
+### Hardware
+
 - **Hardware minimo**: CPU 4 nucleos, 8 GB RAM, 2 GB libres en disco.
 - **Hardware recomendado**: CPU 8 nucleos, 16 GB RAM, SSD.
 - **GPU (opcional)**: Recomendada si usaras modelos locales o flujos pesados.
 - **Sistema operativo**: Windows 10/11, macOS 12+ o Linux moderno.
-- **Software base**: Git 2.30+, Python 3.11+ y un editor (VS Code u otro).
+
+### Software Adicional
+
+- **Editor de código**: VS Code o similar
 - **Cuentas IA**: Acceso a proveedores como OpenAI, Anthropic o Google si usaras sus APIs.
 
 ## 🧭 Instalación Completa (Para Dummies)
@@ -229,11 +243,13 @@ Para validar LLMs agrega `--llm`.
 
 - **Windows PowerShell**:
   ```powershell
-  .\scripts\install.ps1
+  python scripts/install.py
   ```
 - **macOS/Linux**:
   ```bash
-  bash scripts/install.sh
+  bash core/scripts/install.sh
+  # o
+  python3 core/scripts/install.py
   ```
 
 ## 🛠 Troubleshooting Windows (PowerShell)

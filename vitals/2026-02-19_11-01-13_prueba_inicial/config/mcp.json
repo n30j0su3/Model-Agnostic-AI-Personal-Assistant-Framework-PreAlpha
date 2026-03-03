@@ -1,0 +1,14 @@
+{
+  "active_servers": [
+    "git",
+    "filesystem",
+    "memory"
+  ],
+  "settings": {
+    "auto_approve": [
+      "git:status",
+      "git:diff"
+    ],
+    "log_level": "info"
+  }
+}

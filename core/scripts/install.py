@@ -169,12 +169,18 @@ def main():
         print_info("Sincronizando contexto...")
         subprocess.run([sys.executable, str(sync_script)], cwd=REPO_ROOT, check=False)
 
-    # Done
+    # Done - Mensaje según sistema operativo
+    system_name = platform.system()
+    if system_name == "Windows":
+        next_step = "pa.bat"
+    else:
+        next_step = "./pa.sh"
+
     print(f"\n{Colors.GREEN}{Colors.BOLD}  {'=' * 50}{Colors.END}")
     print(f"{Colors.GREEN}{Colors.BOLD}  [OK] Instalación completada.{Colors.END}")
     print(f"{Colors.GREEN}{Colors.BOLD}  {'=' * 50}{Colors.END}")
     print(
-        f"\n{Colors.CYAN}  Siguiente paso: ejecuta pa.bat para iniciar el framework.{Colors.END}\n"
+        f"\n{Colors.CYAN}  Siguiente paso: ejecuta {next_step} para iniciar el framework.{Colors.END}\n"
     )
 
 

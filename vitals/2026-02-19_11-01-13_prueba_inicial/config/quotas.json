@@ -1,0 +1,24 @@
+{
+  "limits": {
+    "gemini": {
+      "rpm": 60,
+      "tpm": 1000000,
+      "daily_budget_usd": 0.00
+    },
+    "claude": {
+      "rpm": 5,
+      "tpm": 20000,
+      "daily_budget_usd": 5.00
+    },
+    "openai": {
+      "rpm": 3,
+      "tpm": 10000,
+      "daily_budget_usd": 2.00
+    }
+  },
+  "alerts": {
+    "threshold_percent": 80,
+    "email": "user@local.framework"
+  },
+  "usage_history": "logs/quotas.jsonl"
+}
