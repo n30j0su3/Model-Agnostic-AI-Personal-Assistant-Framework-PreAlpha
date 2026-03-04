@@ -200,7 +200,7 @@ Este framework también funciona en **macOS 12+** y **Linux moderno** (Ubuntu 20
 ./pa.sh
 
 # Instalación:
-python3 scripts/install.py
+python3 core/scripts/install.py
 ```
 
 La estructura y funcionamiento son idénticos. Solo cambian las extensiones de archivos de script.
