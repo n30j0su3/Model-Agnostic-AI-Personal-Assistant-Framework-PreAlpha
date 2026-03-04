@@ -221,16 +221,146 @@ def update_with_git():
     return True
 
 
+def try_requests_download(zip_url, zip_path):
+    """Intenta descargar con requests library (opcional)."""
+    try:
+        import requests
+
+        print("[INFO] Intentando con requests library...")
+        response = requests.get(zip_url, timeout=30)
+        response.raise_for_status()
+        zip_path.write_bytes(response.content)
+        return True
+    except ImportError:
+        print("[INFO] requests no instalado (opcional)")
+        return False
+    except Exception as e:
+        print(f"[INFO] requests fallo: {e}")
+        return False
+
+
+def try_urllib_download(zip_url, zip_path, verify_ssl=True):
+    """Intenta descargar con urllib, con o sin SSL."""
+    try:
+        import ssl
+        import urllib.request
+
+        print(f"[INFO] Intentando con urllib (SSL={'ON' if verify_ssl else 'OFF'})...")
+
+        if verify_ssl:
+            # SSL normal
+            with urllib.request.urlopen(zip_url, timeout=30) as response:
+                zip_path.write_bytes(response.read())
+        else:
+            # SSL desactivado (fallback)
+            ssl_context = ssl.create_default_context()
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+
+            req = urllib.request.Request(zip_url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(
+                req, timeout=30, context=ssl_context
+            ) as response:
+                zip_path.write_bytes(response.read())
+
+        return True
+
+    except Exception as e:
+        print(f"[INFO] urllib fallo: {e}")
+        return False
+
+
+def install_certifi():
+    """Intenta instalar certificados SSL."""
+    try:
+        result = subprocess.run(
+            [sys.executable, "-m", "pip", "install", "--upgrade", "certifi"],
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        if result.returncode == 0:
+            print("[OK] certifi instalado correctamente")
+            return True
+        else:
+            print(f"[ERROR] pip fallo: {result.stderr}")
+            return False
+    except Exception as e:
+        print(f"[ERROR] No se pudo ejecutar pip: {e}")
+        return False
+
+
 def update_with_zip(zip_url):
+    """Descarga y aplica actualizacion desde ZIP con opciones de usuario."""
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir)
         zip_path = tmp_path / "update.zip"
-        try:
-            with urllib.request.urlopen(zip_url, timeout=30) as response:
-                zip_path.write_bytes(response.read())
-        except Exception as exc:
-            print(f"[ERROR] No se pudo descargar el zip: {exc}")
-            return False
+
+        # MÉTODO 1: Intentar con requests (si esta disponible)
+        if try_requests_download(zip_url, zip_path):
+            print("[OK] Descarga completada con requests")
+        # MÉTODO 2: Intentar con urllib estandar
+        elif try_urllib_download(zip_url, zip_path, verify_ssl=True):
+            print("[OK] Descarga completada con verificacion SSL")
+        # MÉTODO 3: Preguntar al usuario sobre opciones SSL
+        else:
+            print("\n" + "=" * 60)
+            print("[INFO] No se pudo descargar con verificacion SSL.")
+            print("Esto es comun en Windows con Python recien instalado.")
+            print("=" * 60 + "\n")
+
+            print("El usuario SIEMPRE tiene el control.")
+            print("El framework NUNCA decide por ti. TU eliges como proceder.\n")
+
+            print("Opciones disponibles:")
+            print("  [1] Intentar sin verificacion SSL (funciona inmediatamente)")
+            print("        - Menos seguro pero descarga desde GitHub igual")
+            print("  [2] Instalar certificados SSL (solucion permanente)")
+            print("        - Ejecuta: pip install --upgrade certifi")
+            print("        - Luego reintenta la actualizacion")
+            print("  [3] Descargar manualmente")
+            print("        - Abre el navegador con el enlace del ZIP")
+            print("        - Extrae manualmente en la carpeta del framework")
+            print("  [c] Cancelar y salir")
+            print()
+
+            choice = input("Elige una opcion [1/2/3/c]: ").strip().lower()
+
+            if choice == "1":
+                print("[INFO] Intentando descarga sin verificacion SSL...")
+                if try_urllib_download(zip_url, zip_path, verify_ssl=False):
+                    print("[OK] Descarga completada (modo compatibilidad)")
+                    print("[WARN] Recuerda: Esto es seguro para GitHub, pero")
+                    print("        considera instalar certificados SSL despues.")
+                else:
+                    print("[ERROR] Aun fallo. Intenta opcion 2 o 3.")
+                    return False
+
+            elif choice == "2":
+                print("[INFO] Instalando certificados SSL...")
+                if install_certifi():
+                    print("[OK] Certificados instalados. Reintentando...")
+                    # Recursivo - vuelve a intentar todo
+                    return update_with_zip(zip_url)
+                else:
+                    print("[ERROR] No se pudieron instalar certificados.")
+                    retry = input("¿Intentar sin verificacion SSL? [s/N]: ")
+                    if retry.lower() in ("s", "si", "y", "yes"):
+                        return try_urllib_download(zip_url, zip_path, verify_ssl=False)
+                    return False
+
+            elif choice == "3":
+                print(f"\n[INFO] Abriendo navegador con: {zip_url}")
+                print("[INFO] Despues de descargar, extrae el ZIP manualmente")
+                print("       en: {}".format(REPO_ROOT))
+                import webbrowser
+
+                webbrowser.open(zip_url)
+                return False  # No automatico, usuario continua manual
+
+            else:
+                print("[INFO] Actualizacion cancelada.")
+                return False
 
         try:
             with zipfile.ZipFile(zip_path) as zip_ref:
