@@ -458,6 +458,40 @@ def sync_directory(
     if protect_dirs and not dry_run and protected_backups:
         restore_protected_dirs(dest_dir, protected_backups, reporter)
 
+    # =============================================================================
+    # POST-PROCESAMIENTO PARA PRODUCCIÓN
+    # =============================================================================
+    if is_prod_mode and not dry_run:
+        # 1. README-simple.md -> README.md (sobrescribir)
+        readme_simple = src_dir / "README-simple.md"
+        readme_dest = dest_dir / "README.md"
+        if readme_simple.exists():
+            try:
+                shutil.copy2(readme_simple, readme_dest)
+                if "README.md" not in reporter.modified:
+                    reporter.modify("README.md (from README-simple.md)")
+            except Exception as e:
+                reporter.error(f"Error copiando README-simple.md a README.md: {e}")
+                success = False
+
+        # 2. Eliminar opencode.jsonc.CLEAN-PROD del destino (solo debe estar en BASE)
+        clean_prod_dest = dest_dir / CLEAN_CONFIG_NAME
+        if clean_prod_dest.exists():
+            try:
+                clean_prod_dest.unlink()
+                reporter.delete(CLEAN_CONFIG_NAME)
+            except Exception as e:
+                reporter.error(f"Error eliminando {CLEAN_CONFIG_NAME}: {e}")
+
+        # 3. Eliminar vitals/ del destino si existe (solo local, nunca en PROD)
+        vitals_dest = dest_dir / "vitals"
+        if vitals_dest.exists():
+            try:
+                shutil.rmtree(vitals_dest)
+                reporter.delete("vitals/")
+            except Exception as e:
+                reporter.error(f"Error eliminando vitals/: {e}")
+
     return success
 
 
