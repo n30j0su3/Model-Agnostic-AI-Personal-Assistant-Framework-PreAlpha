@@ -81,6 +81,19 @@ Este principio se aplica en:
 
 ---
 
+### 7. Structured Workflow (Flujo de Trabajo Estructurado)
+
+**Todo trabajo complejo sigue el Workflow Standard 7-pasos.**
+
+- Transparencia total: el usuario aprueba antes de ejecutar
+- Eficiencia máxima: uso óptimo de skills y recursos locales
+- Documentación automática: cada tarea queda registrada
+- Control absoluto: el usuario decide en cada paso importante
+
+> **Ver**: [WORKFLOW-STANDARD.md](WORKFLOW-STANDARD.md) — Proceso completo de 7 pasos
+
+---
+
 ## Frases Insignia
 
 ### Oficial

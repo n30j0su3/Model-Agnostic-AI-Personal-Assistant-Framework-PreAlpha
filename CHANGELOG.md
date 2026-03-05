@@ -14,6 +14,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.3-prealpha] - 2026-03-04
+
+### Added
+- **Workflow Standard v1.0**: Proceso estructurado de 7 pasos para tareas complejas
+  - Paso 1: Recepción y Comprensión
+  - Paso 2: Evaluar Recursos Locales  
+  - Paso 3: Análisis y Planificación
+  - Paso 4: Presentar Plan (autorización usuario)
+  - Paso 5: Ejecución Estructurada
+  - Paso 6: Documentación Automática
+  - Paso 7: Resumen Final
+- **Detección automática de complejidad**: Simple vs Complex vs Critical
+- **Modo Express**: Opción para saltar paso 4 (aprobación) con transparencia al usuario
+- **Configuración personalizable**: `config/workflow-config.yaml` con criterios ajustables
+- **Integración Dashboard SPA**: Tab "Workflow" con visual guide, checklist interactivo, indicador de complejidad
+- **Case Study**: Dashboard SPA v2.0 como ejemplo del workflow en acción
+- **Documentación**: `docs/WORKFLOW-STANDARD.md` completo
+
+### Changed
+- `docs/PHILOSOPHY.md`: Agregado Principio #7 "Structured Workflow"
+- `core/agents/pa-assistant.md`: Actualizado workflow a 7 pasos
+- `core/agents/AGENTS.md`: Referencia al Workflow Standard
+- `core/.context/navigation.md`: Rutas al nuevo workflow doc
+- `dashboard.html`: Nuevo tab Workflow con visual guide interactivo
+
+### Files Added/Modified
+- docs/WORKFLOW-STANDARD.md (new, 351 lines)
+- config/workflow-config.yaml (new, 212 lines)
+- docs/workflow-test-example.md (new, ejemplo vivo)
+- docs/PHILOSOPHY.md (updated)
+- core/agents/pa-assistant.md (updated)
+- core/agents/AGENTS.md (updated)
+- core/.context/navigation.md (updated)
+- dashboard.html (updated, +~100 líneas)
+
+---
+
 ## [0.1.2-prealpha] - 2026-03-04
 
 ### Added

@@ -144,6 +144,8 @@ task(
 
 ## Workflow Principal
 
+> **Referencia completa**: Ver `docs/WORKFLOW-STANDARD.md` para documentación detallada del Workflow Standard de 7 pasos.
+
 <workflow>
   <stage id="1" name="Inicialización" required="true" target="<30s">
     1. **EJECUTA** `python core/scripts/session-start.py` — Crea sesión, muestra estado, conteos.
@@ -151,24 +153,47 @@ task(
     3. Output del script incluye: fecha, agentes, skills, pendientes, logros previos.
   </stage>
 
-  <stage id="2" name="Comprensión" required="true">
+  <stage id="2" name="Detección de Complejidad" required="true">
+    1. **Evalúa automáticamente** la complejidad de la tarea:
+       - **Simple**: 1-3 archivos, cambios locales, sin dependencias cruzadas
+       - **Compleja**: Múltiples archivos, cambios estructurales, requiere análisis profundo
+       - **Crítica**: Afecta arquitectura, datos sensibles, o múltiples módulos
+    2. La complejidad determina el modo de ejecución (express vs completo).
+  </stage>
+
+  <stage id="3" name="Comprensión" required="true">
     1. Comprende la solicitud del usuario.
     2. Si necesitas más contexto, usa **ContextScout** para descubrir archivos relevantes.
     3. Si el usuario menciona un framework/librería sin contexto local, sugiere buscar documentación.
   </stage>
 
-  <stage id="3" name="Ejecución">
-    1. Ejecuta la tarea solicitada.
+  <stage id="4" name="Planificación" required="false" condition="tareas complejas">
+    1. Para tareas simples: **Modo Express** — puedes omitir este paso con transparencia.
+    2. Para tareas complejas: Crea plan detallado, identifica dependencias y riesgos.
+    3. Documenta el plan en la sesión activa para trazabilidad.
+    > **Nota**: Si omites este paso en modo express, indícalo explícitamente al usuario.
+  </stage>
+
+  <stage id="5" name="Ejecución">
+    1. Ejecuta la tarea solicitada siguiendo el Workflow Standard 7-pasos.
     2. Para tareas simples (1-3 archivos), ejecuta directamente.
     3. Para tareas complejas, delega a subagentes según su especialidad.
     4. Valida cada paso antes de continuar.
+    5. Si surgen desviaciones del plan, documenta el cambio.
   </stage>
 
-  <stage id="4" name="Preservación" required="true">
+  <stage id="6" name="Validación" required="true">
+    1. Verifica que los cambios cumplan con los requisitos.
+    2. Ejecuta validaciones automáticas si están disponibles (lint, tests, typecheck).
+    3. Confirma que no se hayan introducido regresiones.
+  </stage>
+
+  <stage id="7" name="Preservación" required="true">
     1. Guarda decisiones y resultados relevantes en la sesión del día.
     2. Actualiza `codebase/recordatorios.md` si hay pendientes nuevos.
     3. Actualiza `codebase/ideas.md` si surgieron ideas/descubrimientos.
     4. Resume la sesión si el usuario lo solicita.
+    5. Documenta cualquier desviación del plan original y su justificación.
   </stage>
 </workflow>
 

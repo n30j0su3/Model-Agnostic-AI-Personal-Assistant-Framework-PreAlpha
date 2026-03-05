@@ -1,0 +1,212 @@
+# Workflow Standard Configuration
+# FreakingJSON Framework v1.0
+# 
+# NOTA: Este archivo puede ser modificado por el usuario según sus necesidades
+# El framework usa estos valores como guía, no como restricciones rígidas
+
+workflow_standard:
+  version: "1.0"
+  description: "Proceso estructurado de 7 pasos para manejo de tareas complejas"
+  
+  # ============================================
+  # CRITERIOS DE CLASIFICACIÓN DE COMPLEJIDAD
+  # ============================================
+  
+  complexity_criteria:
+    simple:
+      description: "Tareas rápidas y directas"
+      max_files: 3
+      max_steps: 5
+      max_time_minutes: 15
+      max_skills: 2
+      examples:
+        - "Editar un archivo de configuración"
+        - "Consulta rápida de información"
+        - "Corrección de typo"
+        - "Agregar un recordatorio"
+      
+    complex:
+      description: "Tareas que requieren planificación"
+      min_files: 4
+      min_steps: 6
+      min_time_minutes: 30
+      min_skills: 3
+      examples:
+        - "Crear un nuevo sistema"
+        - "Migrar funcionalidad existente"
+        - "Diseñar arquitectura"
+        - "Integrar múltiples componentes"
+  
+  # ============================================
+  # KEYWORDS DETECTORES DE COMPLEJIDAD
+  # ============================================
+  # Si la solicitud contiene estas palabras, incrementa probabilidad de ser Complex
+  
+  keywords_complex:
+    - "crear sistema"
+    - "automatización"
+    - "framework"
+    - "de acuerdo a"
+    - "de acuerdo a los requerimientos"
+    - "planificar"
+    - "diseñar"
+    - "arquitectura"
+    - "migrar"
+    - "refactorizar"
+    - "integrar"
+    - "implementar sistema"
+    - "desarrollar módulo"
+    - "reestructurar"
+    - "organizar proyecto"
+  
+  keywords_simple:
+    - "corregir"
+    - "fix"
+    - "typo"
+    - "error tipográfico"
+    - "cambiar color"
+    - "agregar línea"
+    - "consultar"
+    - "mostrar"
+    - "listar"
+    - "buscar"
+  
+  # ============================================
+  # CONFIGURACIÓN DEL MODO EXPRESS
+  # ============================================
+  
+  express_mode:
+    enabled: true
+    description: "Saltar paso 4 (aprobación) para tareas urgentes"
+    
+    auto_express_conditions:
+      max_files: 1
+      max_time_minutes: 5
+      keywords:
+        - "corregir typo"
+        - "fix urgente"
+        - "emergencia"
+    
+    require_notification: true
+    notification_template: |
+      🚀 **Modo Express Activado**
+      
+      Salto el paso 4 (aprobación previa) porque:
+      {reason}
+      
+      **Acción**: {action_description}
+      
+      Ejecutando ahora...
+  
+  # ============================================
+  # CONFIGURACIÓN DE LOS 7 PASOS
+  # ============================================
+  
+  steps:
+    1_reception:
+      name: "Recepción y Comprensión"
+      description: "Entender completamente la solicitud del usuario"
+      required: true
+      min_output: "Comprensión clara del problema"
+      
+    2_resources:
+      name: "Evaluar Recursos Locales"
+      description: "Detectar skills, workspaces y contexto disponible"
+      required: true
+      check_skills: true
+      check_workspace: true
+      check_knowledge_base: true
+      
+    3_planning:
+      name: "Análisis y Planificación"
+      description: "Clasificar complejidad y crear plan ejecutable"
+      required: true
+      classify_complexity: true
+      select_skills: true
+      estimate_time: true
+      
+    4_presentation:
+      name: "Presentar Plan"
+      description: "Obtener autorización del usuario (resumen ejecutivo)"
+      required: true
+      skippable_in_express: true
+      format: |
+        ## Propuesta de Ejecución
+        
+        **Objetivo**: {objective}
+        **Complejidad**: {complexity}
+        **Tiempo estimado**: {estimated_time}
+        
+        ### Archivos a modificar:
+        {files_list}
+        
+        ### Skills a utilizar:
+        {skills_list}
+        
+        ### ¿Procedemos? [Sí/No/Ajustar]
+      
+    5_execution:
+      name: "Ejecución Estructurada"
+      description: "Ejecutar plan usando recursos del framework"
+      required: true
+      use_skills: true
+      follow_patterns: true
+      log_actions: true
+      
+    6_documentation:
+      name: "Documentación Automática"
+      description: "Persistir conocimiento en knowledge base"
+      required: true
+      update_session: true
+      update_insights: true
+      update_indexes: true
+      
+    7_summary:
+      name: "Resumen Final"
+      description: "Entregar resultados al usuario"
+      required: true
+      format: |
+        ✅ **Tarea Completada**
+        
+        **Archivos modificados**:
+        {files_list}
+        
+        **Resumen**: {summary}
+        
+        **Próximos pasos sugeridos**: {next_steps}
+  
+  # ============================================
+  # PLANTILLAS DE OUTPUT
+  # ============================================
+  
+  templates:
+    complexity_assessment: |
+      ### Evaluación de Complejidad
+      
+      **Tipo detectado**: {complexity_type}
+      **Razón**: {reason}
+      
+      | Métrica | Valor | Límite |
+      |---------|-------|--------|
+      | Archivos | {files_count} | {files_limit} |
+      | Tiempo est. | {time_estimate} | {time_limit} |
+      | Skills | {skills_count} | {skills_limit} |
+    
+    step_indicator: |
+      **Paso {step_number}/{total_steps}**: {step_name}
+      {step_description}
+
+# ============================================
+# NOTAS PARA EL USUARIO
+# ============================================
+# 
+# 1. Este archivo es tuyo: modifica los valores según tus necesidades
+# 2. Los números son guías, no reglas rígidas
+# 3. Puedes agregar tus propios keywords
+# 4. Puedes ajustar los tiempos según tu velocidad de trabajo
+# 5. El framework usará esta configuración para decisiones automáticas
+#
+# Ejemplo de personalización:
+#   - Si trabajas más rápido, reduce max_time_minutes
+#   - Si prefieres más control, desactiva express_mode.enabled
+#   - Agrega keywords de tu dominio específico

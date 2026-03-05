@@ -283,6 +283,56 @@ def detect_model_from_env() -> str:
     return model
 
 
+def load_knowledge_base_summary() -> dict:
+    """Cargar resumen del Knowledge Base para contexto de sesión."""
+    summary = {
+        "total_sessions": 0,
+        "last_session": None,
+        "recent_topics": [],
+        "available": False,
+    }
+
+    try:
+        kb_readme = CONTEXT_DIR / "knowledge" / "README.md"
+        sessions_index = CONTEXT_DIR / "knowledge" / "sessions-index.json"
+
+        if not kb_readme.exists():
+            return summary
+
+        summary["available"] = True
+
+        if sessions_index.exists():
+            import json
+
+            with open(sessions_index, "r", encoding="utf-8") as f:
+                index = json.load(f)
+                summary["total_sessions"] = index.get("total_sessions", 0)
+                sessions = index.get("sessions", [])
+                if sessions:
+                    last = sessions[0]
+                    summary["last_session"] = {
+                        "id": last.get("id"),
+                        "title": last.get("title", "Sin título"),
+                        "topics": last.get("topics", [])[:3],
+                    }
+                    # Collect recent topics
+                    all_topics = []
+                    for s in sessions[:5]:
+                        all_topics.extend(s.get("topics", []))
+                    # Count frequency
+                    topic_counts = {}
+                    for t in all_topics:
+                        topic_counts[t] = topic_counts.get(t, 0) + 1
+                    summary["recent_topics"] = sorted(
+                        topic_counts.items(), key=lambda x: x[1], reverse=True
+                    )[:5]
+
+    except Exception:
+        pass
+
+    return summary
+
+
 # --- TEMPLATE DE INICIO ---
 def print_session_start():
     """Imprimir template fijo de inicio de sesión."""
@@ -328,6 +378,21 @@ def print_session_start():
         skills_display = skills_preview
     print(c("\n[SKILLS] Skills Disponibles:", Colors.BOLD + Colors.CYAN))
     print(f"   {skills_display}")
+
+    # Knowledge Base
+    kb_summary = load_knowledge_base_summary()
+    if kb_summary["available"]:
+        print(c("\n[KNOWLEDGE] Base de Conocimiento:", Colors.BOLD + Colors.CYAN))
+        print(f"   {kb_summary['total_sessions']} sesiones indexadas")
+        if kb_summary["last_session"]:
+            last = kb_summary["last_session"]
+            print(f"   Última: {last['title'][:50]}...")
+        if kb_summary["recent_topics"]:
+            topics_str = ", ".join([t[0] for t in kb_summary["recent_topics"][:3]])
+            print(f"   Temas recientes: {topics_str}")
+    else:
+        print(c("\n[KNOWLEDGE] Base de Conocimiento:", Colors.BOLD + Colors.CYAN))
+        print("   No inicializado (ejecutar: python core/scripts/kb-init.py)")
 
     # Pendientes
     pending = count_pending()

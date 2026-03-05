@@ -57,6 +57,10 @@ Usuario → FreakingJSON-PA → [Comprende tarea]
                         └── FeatureArchitect (arquitectura de features - dev)
 ```
 
+> **Workflow Standard**: Todos los agentes del framework siguen el **Workflow Standard de 7 pasos** para tareas complejas. Ver documentación completa en `docs/WORKFLOW-STANDARD.md`.
+>
+> **Modo Express**: Para tareas simples (1-3 archivos), los agentes pueden operar en modo express omitiendo la planificación detallada (paso 4), siempre con transparencia hacia el usuario.
+
 ## Crear Nuevo Agente
 
 1. Crear archivo `.md` en `subagents/` con YAML frontmatter
