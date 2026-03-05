@@ -16,13 +16,14 @@
 
 ---
 
-## 📢 Latest Release
+## 📢 Última Versión
 
-**v0.2.0-pre-alpha** - Dashboard Pro: Generación de dashboards profesionales
-- Nueva skill @dashboard-pro para crear dashboards en 2 modos
-- Modo con-dependencias: Proyectos Next.js 15 completos
-- Modo sin-dependencias: Dashboards SPA en archivo HTML único
-- 4 presets de estilo, 3 librerías de charts, documentación completa
+**v0.1.3-prealpha** - Workflow Standard: Proceso estructurado de 7 pasos para tareas complejas
+- Workflow Standard v1.0 con detección automática de complejidad
+- Modo Express para tareas urgentes con transparencia total
+- Configuración personalizable del framework
+- Integración visual en Dashboard SPA
+- Case study: Dashboard SPA v2.0 como ejemplo del workflow
 
 📄 [Ver Changelog](./CHANGELOG.md) | 🏷️ [Ver Releases](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases)
 > 
@@ -52,32 +53,12 @@ Un asistente de inteligencia artificial que vive en **tu computadora**, no en se
 |---------|-------------|
 | 🤖 **Multi-IA** | Compatible con OpenCode, Claude Code, Gemini CLI y más |
 | 📁 **Tus archivos** | Todo tu conocimiento en archivos `.md` que puedes editar, mover o respaldar |
-| 🛠️ **16 Skills incluidas** | Trabaja con Excel, PDF, Word, Markdown, Dashboards, tareas y más |
+| 🛠️ **22 Skills incluidas** | Trabaja con Excel, PDF, Word, Markdown, Dashboards, tareas y más |
 | 🌍 **Bilingüe** | Interfaz y documentación en Español e Inglés |
 | 📅 **Sesiones diarias** | El asistente recuerda contexto entre conversaciones |
 | ⚡ **Fácil de usar** | Instalación en 3 pasos, sin configuraciones complejas |
-
----
-
-## 📁 Estructura del Proyecto
-
-```
-📂 Model-Agnostic-AI-Personal-Assistant-Framework/
-├── 📁 config/                 # Configuración general
-├── 📁 core/                   # Núcleo del framework
-│   ├── 📁 .context/           # Configuración y contexto del framework
-│   │   └── 📁 sessions/       # Historial de conversaciones
-│   ├── 📁 agents/             # Definición de agentes
-│   ├── 📁 scripts/            # Scripts de automatización
-│   └── 📁 skills/             # Skills y herramientas
-├── 📁 docs/                   # Documentación
-├── 📁 logs/                   # Logs del sistema
-└── 📁 workspaces/             # ← Tus archivos de trabajo van aquí
-```
-
-**Tus archivos personales van en `workspaces/`**. El resto es el framework.
-
-**Todo son archivos de texto.** Puedes abrirlos, editarlos, respaldarlos o sincronizarlos con tu sistema favorito (Google Drive, Dropbox, etc.).
+| 🎛️ **Dashboard SPA** | Visualiza el estado del framework en tu navegador |
+| 📊 **Workflow Standard** | Proceso estructurado para tareas complejas con transparencia total |
 
 ---
 
@@ -110,8 +91,8 @@ El instalador te hará 3 preguntas simples:
 
 Tu asistente está configurado. Ahora puedes:
 - Escribir `pa.bat` para iniciar una sesión
-- Editar archivos en la carpeta `workspaces/` para darle contexto
 - Pedirle ayuda con documentos, datos, o tareas diarias
+- Usar el Dashboard SPA para visualizar el estado del framework
 
 ---
 
@@ -153,10 +134,7 @@ Para usar modelos avanzados (GPT-4, Claude, etc.) necesitarás:
 → **Parcialmente.** El framework funciona offline, pero necesitarás internet para consultar modelos de IA en la nube. También puedes instalar modelos locales (como Ollama) para trabajo 100% offline.
 
 **¿Cómo actualizo el framework?**
-→ Si usaste Git: `git pull`. Si descargaste ZIP: descarga la nueva versión y copia:
-- `core/.context/` → configuración del framework
-- `workspaces/` → tus archivos de trabajo
-- Opcional: `docs/` y `config/` si personalizaste documentación o configuración
+→ Si usaste Git: `git pull`. Si descargaste ZIP: descarga la nueva versión y copia tus archivos personales a la nueva carpeta.
 
 **¿Qué pasa si algo no funciona?**
 → Revisa nuestra documentación completa o abre un issue en GitHub. La comunidad te ayuda.
