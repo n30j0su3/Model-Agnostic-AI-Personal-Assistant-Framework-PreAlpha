@@ -61,6 +61,7 @@ ADDITIONAL_IGNORE_PATTERNS = {
     "*.backup",  # [CRITICO] Backups de proteccion de sync
     "bk",  # [CRITICO] Directorio de backup externo
     "vitals",  # [CRITICO] Backups históricos y snapshots (solo local)
+    "docs/technical",  # [CRITICO] Documentación técnica avanzada (solo BASE)
 }
 
 # Archivos/directorios a ignorar SOLO en producción (pero sí en dev)

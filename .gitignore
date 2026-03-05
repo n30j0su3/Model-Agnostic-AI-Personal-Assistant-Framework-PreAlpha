@@ -60,5 +60,8 @@ idea-chat.png
 # VITALS - Backups históricos y snapshots (solo local, nunca en git)
 vitals/
 
+# Documentación técnica avanzada (solo BASE, no PROD)
+docs/technical/
+
 # Obsolete/Historical (preserved but excluded from sync)
 OBSOLETE/
