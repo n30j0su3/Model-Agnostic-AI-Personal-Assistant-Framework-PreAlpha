@@ -678,9 +678,16 @@ def main():
         install_script = SCRIPT_DIR / "install.py"
         if install_script.exists():
             print_info("Primera ejecución detectada. Iniciando instalador...")
-            subprocess.run(
+            result = subprocess.run(
                 [get_python(), str(install_script)], cwd=REPO_ROOT, check=False
             )
+            # Verificar que la instalación fue exitosa
+            if not (CONTEXT_DIR / "profile.md").exists():
+                print_error("La instalación no se completó correctamente.")
+                print_info(
+                    "Verifica los mensajes de error arriba e intenta nuevamente."
+                )
+                sys.exit(1)
 
     main_menu()
 

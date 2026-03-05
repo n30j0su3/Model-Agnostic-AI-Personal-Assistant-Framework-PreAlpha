@@ -14,6 +14,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.2-prealpha] - 2026-03-04
+
+### Added
+- **Dynamic Skill Scanning** (`core/scripts/session-start.py`)
+  - `get_all_skills()`: Escanear `core/skills/core/` dinámicamente
+  - Skills reales detectadas (~22) en lugar de subset hardcodeado (7)
+  - Display actualizado: `"skill1, skill2... (+N más)"`
+
+### Fixed
+- **Loop de instalación en primera ejecución** (Issue crítico)
+  - `install.py`: Fallback para crear `MASTER.md` si `MASTER.template.md` no existe
+  - `pa.py`: Verificación post-instalación - sale con error si instalación falla
+  - Evita loop infinito: "No se encontró MASTER.md" → "Sincroniza contexto primero"
+
+---
+
 ## [0.1.1-prealpha] - 2026-03-03
 
 ### Fixed (Issues Críticos PROD)

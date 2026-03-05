@@ -238,19 +238,23 @@ def get_last_session_summary() -> str:
         return "No hay datos previos"
 
 
+def get_all_skills() -> list:
+    """Escanea core/skills/core/ y retorna todas las skills disponibles."""
+    skills_dir = CORE_DIR / "skills" / "core"
+    if not skills_dir.exists():
+        return []
+
+    skills = []
+    for item in skills_dir.iterdir():
+        if item.is_dir() and (item / "SKILL.md").exists():
+            skills.append(item.name)
+
+    return sorted(skills)
+
+
 def get_recent_skills() -> list:
-    """Retornar skills más usadas o variadas si no hay uso."""
-    # Por ahora, retornar un subset variado
-    core_skills = [
-        "skill-creator",
-        "markdown-writer",
-        "csv-processor",
-        "python-standards",
-        "xlsx",
-        "pdf",
-        "task-management",
-    ]
-    return core_skills
+    """Retorna todas las skills disponibles (escaneo real)."""
+    return get_all_skills()
 
 
 def detect_model_from_env() -> str:
@@ -313,10 +317,17 @@ def print_session_start():
     print(c("\n[AGENTS] Agentes Disponibles:", Colors.BOLD + Colors.CYAN))
     print("   FreakingJSON-PA, context-scout, session-manager, doc-writer")
 
-    # Skills (recientes/variadas)
+    # Skills (todas disponibles - escaneo real)
+    all_skills = get_all_skills()
+    skills_count = len(all_skills)
+    skills_preview = ", ".join(all_skills[:4])
+    remaining = skills_count - 4
+    if remaining > 0:
+        skills_display = f"{skills_preview}... (+{remaining} más)"
+    else:
+        skills_display = skills_preview
     print(c("\n[SKILLS] Skills Disponibles:", Colors.BOLD + Colors.CYAN))
-    skills = get_recent_skills()
-    print(f"   {', '.join(skills[:4])}... (+11 más)")
+    print(f"   {skills_display}")
 
     # Pendientes
     pending = count_pending()
