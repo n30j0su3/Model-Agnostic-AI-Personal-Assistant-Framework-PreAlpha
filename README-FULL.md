@@ -1,11 +1,11 @@
-# Model-Agnostic AI Personal Assistant Framework v0.1.0-alpha
+# Model-Agnostic AI Personal Assistant Framework v0.1.3-prealpha
 
 > "One Framework to rule them all, One Context to find them."
 > "El Conocimiento verdadero trasciende a lo público".
 > 
 > **"True knowledge transcends to the public."**
 
-[![Release](https://img.shields.io/badge/release-v0.1.0--alpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.1.0-alpha)
+[![Release](https://img.shields.io/badge/release-v0.1.0--alpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.1.3-prealpha)
 [![Changelog](https://img.shields.io/badge/changelog-keep%20a%20changelog-green)](./CHANGELOG.md)
 [![Instagram](https://img.shields.io/badge/Instagram-%40freakingjson-E4405F?logo=instagram&logoColor=white)](https://instagram.com/freakingjson)
 [![Linktree](https://img.shields.io/badge/Linktree-@freakingjson-43E55C?logo=linktree&logoColor=white)](https://linktr.ee/freakingjson)
@@ -19,9 +19,13 @@
 
 ## 📢 Latest Release
 
-**v0.1.0-alpha** - Primera release oficial del framework
-- 4 skills nuevas: skill-creator, markdown-writer, csv-processor, python-standards
-- 5 agentes desplegados con arquitectura de subagentes
+**v0.1.3-prealpha** - Workflow Standard: Proceso estructurado de 7 pasos
+- Workflow Standard v1.0 con detección automática de complejidad
+- Modo Express para tareas urgentes con transparencia total
+- Configuración personalizable: `config/workflow-config.yaml`
+- Integración visual en Dashboard SPA (tab Workflow)
+- Case study: Dashboard SPA v2.0 como ejemplo del workflow
+- 22 skills incluidas, 5 agentes desplegados
 - Sistema de sync BASE/DEV/PROD completo
 
 📄 [Ver Changelog](./CHANGELOG.md) | 🏷️ [Ver Releases](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases)

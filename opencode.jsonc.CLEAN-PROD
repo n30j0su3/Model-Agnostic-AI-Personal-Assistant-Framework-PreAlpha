@@ -50,5 +50,6 @@
       }
     }
   },
-  "comment": "Configuracion saneada para PROD - v0.1.1-prealpha"
+  "agent": "FreakingJSON-PA",
+  "comment": "Configuracion saneada para PROD - v0.1.3-prealpha"
 }

@@ -60,12 +60,30 @@ ADDITIONAL_IGNORE_PATTERNS = {
     "node_modules",  # Dependencias npm
     "*.backup",  # [CRITICO] Backups de proteccion de sync
     "bk",  # [CRITICO] Directorio de backup externo
+    "vitals",  # [CRITICO] Backups históricos y snapshots (solo local)
 }
 
 # Archivos/directorios a ignorar SOLO en producción (pero sí en dev)
+# Estos son documentos de desarrollo interno que NO deben estar en PROD
 PROD_ONLY_IGNORE_PATTERNS = {
+    # Backlogs y planificación (desarrollo interno)
     "docs/backlog.md",
     "docs/backlog.view.md",
+    # Configuración de agentes (interna)
+    "docs/AGENT-CONFIGURATION.md",
+    # Multi-CLI workflow (desarrollo)
+    "docs/MULTI-CLI.md",
+    # Procesos de release (interno)
+    "docs/RELEASE-CHECKLIST.md",
+    # VITALS - herramientas internas de desarrollo
+    "docs/VITALS-GUARDIAN.md",
+    "docs/VITALS-QUICKSTART.md",
+    # Documentación técnica del workflow (avanzada)
+    "docs/WORKFLOW-STANDARD.md",
+    # PRDs de desarrollo
+    "docs/prd-*.md",
+    # Ejemplos técnicos de desarrollo
+    "docs/workflow-test-*.md",
 }
 
 # =============================================================================

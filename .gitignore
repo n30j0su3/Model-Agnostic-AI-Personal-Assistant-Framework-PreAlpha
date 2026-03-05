@@ -57,5 +57,8 @@ opencode.jsonc_bk
 opencode.jsonc.template
 idea-chat.png
 
+# VITALS - Backups históricos y snapshots (solo local, nunca en git)
+vitals/
+
 # Obsolete/Historical (preserved but excluded from sync)
 OBSOLETE/

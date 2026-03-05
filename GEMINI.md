@@ -1,65 +1,142 @@
-# Model-Agnostic AI Personal Assistant Framework
+# Guía de Uso: Framework con Gemini CLI
 
-## Project Overview
+> Cómo usar el Model-Agnostic AI Personal Assistant Framework con **Gemini CLI**
 
-The **Model-Agnostic AI Personal Assistant Framework** (Pre-Alpha 0.1.0) is a unified system designed to manage personal AI assistants with local context. It empowers users to own their data and leverage multiple AI tools (Gemini, Claude, OpenCode, Codex) seamlessly.
+---
 
-**Key Features:**
-*   **Local Context:** All knowledge is stored in `.md` files under user control.
-*   **Multi-Tool Workflow:** Supports simultaneous operation of major AI CLIs.
-*   **Modular Architecture:** Extensible via **Agents** and **Skills**.
-*   **Workspaces:** Pre-configured environments for different disciplines.
-*   **Privacy-First:** All data stays local. No external telemetry.
+## 🚀 Instalación Rápida
 
-## Building and Running
+### Requisitos
+- **Gemini CLI** instalado: https://github.com/google-gemini/gemini-cli
+- **Python 3.11+**
+- **Git** (opcional pero recomendado)
 
-### Prerequisites
-*   **Python:** 3.11+
-*   **Git:** 2.30+ (optional)
-*   **OS:** Windows 10/11, macOS 12+, or Linux.
+### Paso 1: Descargar el Framework
+```bash
+# Con Git
+git clone https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha.git
 
-### Key Commands
+# O descarga el ZIP desde Releases
+```
 
-**Start the Framework:**
-*   **Windows:** `pa.bat`
-*   **macOS/Linux:** `./pa.sh`
+### Paso 2: Configurar Gemini CLI
+```bash
+# Inicia sesión con tu cuenta Google
+gemini login
 
-**Menu Options:**
-1. 🔄 Sincronizar Contexto
-2. 🚀 Iniciar Sesión AI (OpenCode, Gemini, Claude, Codex)
-3. ⚙️ Configuración (Estado, Perfil, Workspaces)
-4. 🔄 Buscar Actualizaciones
-0. 🚪 Salir
+# Verifica que funciona
+gemini --version
+```
 
-## Architecture
+### Paso 3: Instalar el Framework
+```bash
+cd Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha
+python3 core/scripts/install.py
+```
 
-**Directory Structure:**
-*   `core/.context/`: Central knowledge base (MASTER.md, sessions, codebase).
-*   `core/agents/`: Specialized AI agents (FreakingJSON-PA, context-scout, session-manager).
-*   `core/skills/`: Modular tools/capabilities (@pdf, @xlsx, @task-management).
-*   `core/scripts/`: Python automation scripts (pa.py, install, sync).
-*   `workspaces/`: Isolated domains for tasks.
-*   `docs/`: Documentation.
+Durante la instalación, selecciona **Gemini** como tu CLI principal.
 
-## Key Components
+---
 
-### Core Agent: @FreakingJSON-PA
-*   Manages sessions, context, and task delegation in production mode.
-*   Delegates to subagents: @context-scout, @session-manager, @doc-writer.
+## 🎯 Uso Básico
 
-### Core Skills
-*   **@task-management:** Task tracking across workspaces.
-*   **@pdf:** PDF processing.
-*   **@xlsx:** Spreadsheet processing.
-*   **@prompt-improvement:** Prompt optimization.
+### Iniciar una Sesión
 
-## Development Conventions
+```bash
+# Opción A: Usar el launcher del framework
+./pa.sh        # macOS/Linux
+pa.bat         # Windows
 
-### Git Workflow
-*   **Commit Messages:** In Spanish (`feat:`, `fix:`, `docs:`).
-*   **Privacy:** NEVER commit real sessions or sensitive data.
+# Opción B: Directamente con Gemini
+gemini
+```
 
-### Critical Rules
-*   All knowledge stored in `.md` files locally.
-*   MVI Principle: Minimal Viable Information.
-*   Framework-agnostic: Works with any AI CLI.
+### Flujo de Trabajo Típico
+
+1. **Iniciar sesión del día**:
+   ```bash
+   ./pa.sh
+   # Selecciona "Iniciar Sesión AI"
+   ```
+
+2. **Trabajar con el agente**:
+   - El framework carga automáticamente tu contexto
+   - Usa comandos como `/status`, `/session`, `/help`
+   - El agente FreakingJSON-PA te guiará
+
+3. **Finalizar sesión**:
+   - Todo el contexto se guarda automáticamente
+   - Revisa tu sesión en `core/.context/sessions/`
+
+---
+
+## ⚡ Comandos Útiles
+
+| Comando | Descripción |
+|---------|-------------|
+| `./pa.sh` | Menú principal del framework |
+| `gemini` | Iniciar Gemini CLI directamente |
+| `gemini --help` | Ayuda de Gemini CLI |
+| `./pa.sh --status` | Ver estado del framework |
+
+---
+
+## 🔧 Configuración Avanzada
+
+### Variables de Entorno (opcional)
+```bash
+# macOS/Linux - agrega a ~/.bashrc o ~/.zshrc
+export GEMINI_API_KEY="tu-api-key"
+
+# Windows PowerShell
+setx GEMINI_API_KEY "tu-api-key"
+```
+
+### Configurar Modelo
+Por defecto, Gemini CLI usa el modelo más reciente. Puedes especificar:
+```bash
+# Usar Gemini 2.5 Pro
+gemini --model gemini-2.5-pro
+
+# Ver modelos disponibles
+gemini models list
+```
+
+---
+
+## 📚 Recursos del Framework
+
+- **Dashboard SPA**: Abre `dashboard.html` en tu navegador
+- **Documentación**: Ver `docs/PHILOSOPHY.md` y `docs/WORKFLOW-STANDARD.md`
+- **Skills disponibles**: Ver `core/skills/SKILLS.md`
+- **Changelog**: Ver `CHANGELOG.md`
+
+---
+
+## ❓ Troubleshooting
+
+**"Gemini command not found"**
+→ Asegúrate de que Gemini CLI esté instalado y en tu PATH
+
+**"No se detecta el contexto del framework"**
+→ Ejecuta `./pa.sh` primero para inicializar el entorno
+
+**"Error de permisos en pa.sh"**
+→ Ejecuta: `chmod +x pa.sh`
+
+---
+
+## 🌐 Recursos Externos
+
+- **Gemini CLI Docs**: https://github.com/google-gemini/gemini-cli
+- **Framework Releases**: https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases
+- **Reportar Issues**: Usa GitHub Issues en el repositorio
+
+---
+
+> **Nota**: Esta es una guía específica para usuarios de Gemini CLI. El framework también funciona con OpenCode, Claude Code, y otras herramientas.
+
+---
+
+*Framework versión: v0.1.3-prealpha*  
+*Última actualización: 2026-03-05*
