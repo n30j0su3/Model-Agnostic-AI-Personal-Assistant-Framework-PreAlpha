@@ -159,7 +159,7 @@ His focus on data sovereignty and accessible learning was fundamental to the des
 
 **Are you a developer or need detailed technical information?**
 
-👉 [View complete technical documentation here](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework/blob/main/docs/README.md)
+👉 [View complete technical documentation in the development repository](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework/tree/main/docs/technical)
 
 Includes:
 - Advanced installation by operating system

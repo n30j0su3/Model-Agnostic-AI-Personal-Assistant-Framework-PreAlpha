@@ -141,23 +141,11 @@ Para usar modelos avanzados (GPT-4, Claude, etc.) necesitarás:
 
 ---
 
-## 🙏 Agradecimientos
-
-Gracias a Dios por la Gracia, la Revelación y el Discernimiento necesarios para construir este framework.
-
-Un agradecimiento especial a **[NetworkChuck](https://www.youtube.com/@NetworkChuck)** por inspirar la filosofía central de este proyecto:
-
-> *"I own my context. Nothing annoys me more than when AI tries to fence me in, give me vendor lock-in. No, I reject that."*
-
-Su enfoque de soberanía de datos y aprendizaje accesible fue fundamental para el diseño de este framework.
-
----
-
 ## 🔗 Documentación Completa
 
 **¿Eres desarrollador o necesitas información técnica detallada?**
 
-👉 [Ver documentación técnica completa aquí](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework/blob/main/README-FULL.md)
+👉 [Ver documentación técnica completa en el repositorio de desarrollo](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework/tree/main/docs/technical)
 
 Incluye:
 - Instalación avanzada por sistema operativo
