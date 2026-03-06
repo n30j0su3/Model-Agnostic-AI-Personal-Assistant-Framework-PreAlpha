@@ -255,6 +255,9 @@
     </style>
 </head>
 <body class="bg-slate-950 text-slate-50 min-h-screen">
+    <!-- Dashboard Data (Embedded for file:// compatibility) -->
+    <script src="dashboard-data.js"></script>
+    
     <div id="app">
         <!-- Loading State -->
         <div id="loading-screen" class="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center">
@@ -357,6 +360,7 @@
                         this.loadSessions(),
                         this.loadInteractions(),
                         this.loadSkills(),
+                        this.loadAgents(),
                         this.loadLPSErrors()
                     ]);
                     this.calculateStats();
@@ -375,49 +379,55 @@
                         const data = await response.json();
                         store.sessions = data.sessions || [];
                         store.stats.totalSessions = data.total_sessions || 0;
+                        return;
                     }
                 } catch (e) {
-                    console.log('Using demo sessions data');
+                    console.warn('[Sessions] Fetch failed (CORS), using embedded data');
                 }
+                // Fallback a datos incrustados (file:// compatible)
+                store.sessions = window.DASHBOARD_DATA?.sessions || [];
+                store.stats.totalSessions = store.sessions.length;
             },
 
             async loadInteractions() {
-                // Simulate interaction data
-                store.interactions = [
-                    { tool: 'read', count: 450 },
-                    { tool: 'edit', count: 280 },
-                    { tool: 'write', count: 120 },
-                    { tool: 'bash', count: 200 },
-                    { tool: 'grep', count: 184 }
-                ];
-                store.stats.totalInteractions = 1234;
+                store.stats.totalInteractions = 0;  // 0 por defecto (file:// no soporta fetch)
             },
 
             async loadSkills() {
-                store.skills = [
-                    { name: 'task-management', category: 'core', description: 'Gestión de tareas y seguimiento' },
-                    { name: 'pdf', category: 'core', description: 'Procesamiento de archivos PDF' },
-                    { name: 'xlsx', category: 'core', description: 'Procesamiento de hojas de cálculo' },
-                    { name: 'prompt-improvement', category: 'core', description: 'Optimización y refinamiento de prompts' },
-                    { name: 'ui-ux-pro-max', category: 'core', description: 'Diseño inteligente UI/UX con base de datos buscable' },
-                    { name: 'docx', category: 'core', description: 'Creación y edición de documentos Word' },
-                    { name: 'etl', category: 'core', description: 'Manipulación y transformación de datos (Extract, Transform, Load)' },
-                    { name: 'json-prompt-generator', category: 'core', description: 'Genera prompts JSON estructurados para IA' },
-                    { name: 'pptx', category: 'core', description: 'Creación y edición de presentaciones PowerPoint' },
-                    { name: 'data-viz', category: 'core', description: 'Visualización de datos con Seaborn/Matplotlib' },
-                    { name: 'prd-generator', category: 'core', description: 'Generación de Product Requirements Documents' },
-                    { name: 'skill-creator', category: 'core', description: 'Guía completa para crear nuevas skills' },
-                    { name: 'markdown-writer', category: 'core', description: 'Toolkit para escribir Markdown consistente' },
-                    { name: 'csv-processor', category: 'core', description: 'Procesamiento de CSV para limpieza y análisis' },
-                    { name: 'python-standards', category: 'core', description: 'Estándares cross-platform para scripts Python' },
-                    { name: 'skill-discovery', category: 'core', description: 'Helper para identificar skills apropiadas' },
-                    { name: 'content-optimizer', category: 'core', description: 'Optimiza texto para SEO, legibilidad y engagement' },
-                    { name: 'context-evaluator', category: 'core', description: 'Framework para evaluar calidad de respuestas (LLM-as-a-Judge)' },
-                    { name: 'dashboard-pro', category: 'core', description: 'Genera dashboards profesionales con diseño consistente' },
-                    { name: 'decision-engine', category: 'core', description: 'Decide entre ejecución local, delegación o LLM remoto' },
-                    { name: 'mcp-builder', category: 'core', description: 'Guía para crear MCP servers con buenas prácticas' },
-                    { name: 'paper-summarizer', category: 'core', description: 'Analiza y resume papers científicos y documentos técnicos' }
-                ];
+                try {
+                    const response = await fetch('core/.context/knowledge/skills-index.json');
+                    if (response.ok) {
+                        const data = await response.json();
+                        store.skills = data.skills || [];
+                        store.stats.totalSkills = data.total_skills || 0;
+                        console.log('[Skills] Loaded via fetch');
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('[Skills] Fetch failed (CORS)');
+                }
+                // Fallback a datos incrustados (file:// compatible)
+                store.skills = window.DASHBOARD_DATA?.skills || [];
+                store.stats.totalSkills = store.skills.length;
+                console.log('[Skills] Using embedded data: ' + store.skills.length + ' skills');
+            },
+            
+            async loadAgents() {
+                try {
+                    const response = await fetch('core/.context/knowledge/agents-index.json');
+                    if (response.ok) {
+                        const data = await response.json();
+                        store.agents = data.agents || [];
+                        store.stats.totalAgents = data.total_agents || 0;
+                        console.log('[Agents] Loaded via fetch');
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('[Agents] Fetch failed (CORS)');
+                }
+                // Fallback a datos incrustados (file:// compatible)
+                store.agents = window.DASHBOARD_DATA?.agents || [];
+                console.log('[Agents] Using embedded data: ' + store.agents.length + ' agents');
             },
 
             async loadLPSErrors() {
@@ -427,16 +437,13 @@
             },
 
             calculateStats() {
-                // Calculate derived metrics
-                if (store.sessions.length > 0) {
-                    const totalWords = store.sessions.reduce((sum, s) => sum + (s.stats?.word_count || 0), 0);
-                    const totalDecisions = store.sessions.reduce((sum, s) => sum + (s.stats?.decisions || 0), 0);
-                    const totalFiles = store.sessions.reduce((sum, s) => sum + (s.stats?.files_modified || 0), 0);
-                    
-                    store.stats.avgSessionDuration = Math.round(totalWords / store.sessions.length / 100); // Rough estimate
-                    store.stats.totalDecisions = totalDecisions;
-                    store.stats.totalFiles = totalFiles;
-                }
+                store.stats.totalSessions = store.sessions.length;
+                store.stats.totalSkills = store.skills.length;
+                store.stats.totalInteractions = 0;  // File:// no soporta fetch de logs
+                store.stats.codeQuality = Math.max(0, 100 - (store.lspErrors.length * 2));
+                
+                // Weekly Growth: 0 si no hay datos históricos
+                store.stats.weeklyGrowth = 0;
             },
 
             loadDemoData() {
@@ -525,6 +532,44 @@
                         <div class="max-w-6xl mx-auto">
                             <h2 class="text-3xl font-bold text-center mb-4">Objetivo y Filosofía</h2>
                             <p class="text-center text-slate-400 mb-12 max-w-2xl mx-auto">"El conocimiento verdadero trasciende a lo público"</p>
+                            
+                            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-blue-500/50 transition-all cursor-pointer group" onclick="modalManager.showObjectiveModal()">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                            </svg>
+                                        </div>
+                                        <h3 class="text-xl font-semibold">Objetivo del Framework</h3>
+                                    </div>
+                                    <p class="text-slate-400 mb-4">Proporcionar un asistente de IA personal que resida completamente en tu control local.</p>
+                                    <div class="text-blue-400 text-sm flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <span>Ver más detalles</span>
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-purple-500/50 transition-all cursor-pointer group" onclick="modalManager.showPhilosophyModal()">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                            </svg>
+                                        </div>
+                                        <h3 class="text-xl font-semibold">Filosofía</h3>
+                                    </div>
+                                    <p class="text-slate-400 mb-4">7 principios fundamentales que guían el diseño y uso del framework.</p>
+                                    <div class="text-purple-400 text-sm flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <span>Ver principios</span>
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
                             
                             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                                 ${components.featureCard('Local-first', 'Todo en tus archivos locales. Nada en la nube.', 'shield', 'blue')}
@@ -638,6 +683,17 @@
             },
 
             sessions() {
+                // Empty state si no hay sesiones
+                if (!store.sessions || store.sessions.length === 0) {
+                    return `
+                        <div class="h-full flex flex-col page-transition">
+                            <div class="flex-1 overflow-y-auto">
+                                ${emptyStateFactory.sessions()}
+                            </div>
+                        </div>
+                    `;
+                }
+                
                 const sessionList = store.sessions.map(s => `
                     <div class="p-3 rounded-lg hover:bg-slate-800 cursor-pointer transition-all ${store.currentSession?.id === s.id ? 'bg-slate-800 border-l-2 border-blue-500' : ''}" 
                          onclick="app.selectSession('${s.id}')">
@@ -1054,17 +1110,23 @@
                             <h2 class="text-xl font-bold mb-4">Skills Disponibles</h2>
                             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                                 ${store.skills.map(skill => `
-                                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 hover:border-blue-500/50 transition-colors group">
+                                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 hover:border-blue-500/50 transition-all cursor-pointer group hover:scale-[1.02]" onclick="modalManager.showSkillDetail(${JSON.stringify(skill).replace(/"/g, '&quot;')})">
                                         <div class="flex items-center gap-2 mb-2">
-                                            <span class="px-2 py-1 bg-blue-500/10 text-blue-400 rounded text-xs font-mono">@${skill.name}</span>
+                                            <span class="px-2 py-1 bg-blue-500/10 text-blue-400 rounded text-xs font-mono">${skill.displayName || '@' + skill.name}</span>
                                         </div>
-                                        <p class="text-sm text-slate-400">${skill.description}</p>
+                                        <p class="text-sm text-slate-400 line-clamp-2">${skill.description || 'Sin descripción'}</p>
+                                        <div class="mt-3 text-xs text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                            <span>Ver detalle</span>
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                            </svg>
+                                        </div>
                                     </div>
                                 `).join('')}
                             </div>
                             
                             <div class="text-center">
-                                <span class="text-slate-500 text-sm">${store.skills.length} skills disponibles · Ver catálogo completo en core/skills/SKILLS.md</span>
+                                <span class="text-slate-500 text-sm">${store.skills.length} skills disponibles · Click para ver detalle</span>
                             </div>
                         </div>
 
@@ -1072,60 +1134,24 @@
                         <div id="fw-tab-agents" class="fw-tab-content hidden">
                             <h2 class="text-xl font-bold mb-4">Agentes del Sistema</h2>
                             <div class="space-y-4">
-                                <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">F</div>
-                                        <div>
-                                            <h3 class="font-semibold">@FreakingJSON-PA</h3>
-                                            <p class="text-xs text-slate-400">Agente Principal</p>
+                                ${(store.agents && store.agents.length > 0 ? store.agents : [
+                                    { name: 'FreakingJSON-PA', type: 'core', description: 'Agente Principal', purpose: 'Orquestación y coordinación del framework' },
+                                    { name: 'context-scout', type: 'subagent', description: 'Descubrimiento de Contexto', purpose: 'Descubre archivos relevantes' },
+                                    { name: 'session-manager', type: 'subagent', description: 'Gestión de Sesiones', purpose: 'Gestión de sesiones diarias' },
+                                    { name: 'doc-writer', type: 'subagent', description: 'Documentación', purpose: 'Generación de documentación MVI' },
+                                    { name: 'feature-architect', type: 'subagent', description: 'Arquitecto de Features', purpose: 'Evalúa y ejecuta features del backlog' }
+                                ]).map(agent => `
+                                    <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl hover:border-purple-500/50 transition-all cursor-pointer" onclick="modalManager.showAgentDetail(${JSON.stringify(agent).replace(/"/g, '&quot;')})">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-${agent.type === 'core' ? 'blue' : 'slate'}-500 to-purple-600 flex items-center justify-center text-white font-bold">${agent.name.charAt(0).toUpperCase()}</div>
+                                            <div>
+                                                <h3 class="font-semibold">@${agent.name}</h3>
+                                                <p class="text-xs text-slate-400">${agent.type === 'core' ? 'Agente Principal' : agent.description}</p>
+                                            </div>
                                         </div>
+                                        <p class="text-sm text-slate-400">${agent.purpose || agent.description || 'Sin descripción'}</p>
                                     </div>
-                                    <p class="text-sm text-slate-400">Orquestación y coordinación del framework. Punto de entrada para todas las sesiones.</p>
-                                </div>
-                                
-                                <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold">C</div>
-                                        <div>
-                                            <h3 class="font-semibold">@context-scout</h3>
-                                            <p class="text-xs text-slate-400">Descubrimiento de Contexto</p>
-                                        </div>
-                                    </div>
-                                    <p class="text-sm text-slate-400">Descubre archivos de contexto relevantes antes de cada sesión.</p>
-                                </div>
-                                
-                                <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold">S</div>
-                                        <div>
-                                            <h3 class="font-semibold">@session-manager</h3>
-                                            <p class="text-xs text-slate-400">Gestión de Sesiones</p>
-                                        </div>
-                                    </div>
-                                    <p class="text-sm text-slate-400">Gestión de sesiones diarias y trazabilidad del conocimiento.</p>
-                                </div>
-                                
-                                <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold">D</div>
-                                        <div>
-                                            <h3 class="font-semibold">@doc-writer</h3>
-                                            <p class="text-xs text-slate-400">Documentación</p>
-                                        </div>
-                                    </div>
-                                    <p class="text-sm text-slate-400">Generación de documentación MVI (Minimal Viable Information).</p>
-                                </div>
-                                
-                                <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold">A</div>
-                                        <div>
-                                            <h3 class="font-semibold">@feature-architect</h3>
-                                            <p class="text-xs text-slate-400">Arquitecto de Features · DEV-ONLY</p>
-                                        </div>
-                                    </div>
-                                    <p class="text-sm text-slate-400">Arquitecto de producto y guardián de la filosofía. Evalúa, planea y ejecuta features del backlog sin solapamientos.</p>
-                                </div>
+                                `).join('')}
                             </div>
                         </div>
 
@@ -1276,7 +1302,7 @@
                             <a href="https://linktr.ee/freakingjson" target="_blank" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-2">
                                 <span>🔗</span> Linktree
                             </a>
-                            <a href="https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework" target="_blank" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-2">
+                            <a href="https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha" target="_blank" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-2">
                                 <span>🐙</span> GitHub
                             </a>
                             <a href="https://www.threads.com/@freakingjson" target="_blank" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-2">
@@ -1362,13 +1388,29 @@
                 const ctx = document.getElementById('activityChart');
                 if (!ctx) return;
                 
+                // BL-120: Leer data real de sessions en lugar de Math.random()
+                const sessionDates = store.sessions.map(s => s.date || s.id).sort();
+                const last30Days = Array.from({length: 30}, (_, i) => {
+                    const d = new Date();
+                    d.setDate(d.getDate() - (29 - i));
+                    return d.toISOString().split('T')[0];
+                });
+                
+                // Contar sesiones por día
+                const sessionCount = last30Days.map(date => {
+                    return store.sessions.filter(s => {
+                        const sDate = s.date || s.id || '';
+                        return sDate.includes(date);
+                    }).length;
+                });
+                
                 new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: Array.from({length: 30}, (_, i) => `${i+1}`),
+                        labels: last30Days.map(d => d.split('-')[2]), // Día del mes
                         datasets: [{
                             label: 'Sesiones',
-                            data: Array.from({length: 30}, () => Math.floor(Math.random() * 5)),
+                            data: sessionCount,
                             borderColor: '#3b82f6',
                             backgroundColor: 'rgba(59, 130, 246, 0.1)',
                             fill: true,
@@ -1379,15 +1421,33 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: { display: false }
+                            legend: { display: false },
+                            title: {
+                                display: true,
+                                text: 'Sesiones por día (últimos 30 días)',
+                                color: '#94a3b8',
+                                font: { size: 14, weight: 'bold' }
+                            }
                         },
                         scales: {
                             y: {
                                 beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Cantidad de Sesiones',
+                                    color: '#94a3b8',
+                                    font: { size: 12 }
+                                },
                                 grid: { color: '#334155' },
                                 ticks: { color: '#94a3b8' }
                             },
                             x: {
+                                title: {
+                                    display: true,
+                                    text: 'Día del Mes',
+                                    color: '#94a3b8',
+                                    font: { size: 12 }
+                                },
                                 grid: { display: false },
                                 ticks: { color: '#94a3b8' }
                             }
@@ -1462,11 +1522,16 @@
 
             toggleExpressMode() {
                 this.state.expressMode = !this.state.expressMode;
-                this.saveState();
-                this.updateUI();
                 
-                // Show toast notification
-                this.showToast(this.state.expressMode ? 'Modo Express activado - Se saltará planificación' : 'Modo Express desactivado');
+                // Guardar en localStorage para persistencia entre sesiones
+                configManager.setSetting('expressMode', this.state.expressMode);
+                
+                this.updateUI();
+                this.showToast(
+                    this.state.expressMode 
+                        ? 'Modo Express ACTIVADO - Salta planificación (paso 3). Ideal para tareas simples.' 
+                        : 'Modo Express DESACTIVADO - Flujo completo de 7 pasos. Recomendado para features complejas.'
+                );
             },
 
             toggleComplexity() {
@@ -1589,6 +1654,11 @@
                     if (saved) {
                         this.state = { ...this.state, ...JSON.parse(saved) };
                     }
+                    
+                    // Cargar modo express de config
+                    const expressMode = configManager.getSetting('expressMode', false);
+                    this.state.expressMode = expressMode;
+                    
                 } catch (e) {
                     console.warn('Could not load workflow state:', e);
                 }
@@ -1615,6 +1685,448 @@
                     toast.style.transform = 'translateX(100%)';
                     setTimeout(() => toast.remove(), 300);
                 }, 3000);
+            }
+        };
+
+        // ============================================
+        // MODAL MANAGER - Sistema de modales reutilizable
+        // ============================================
+        const modalManager = {
+            open(content, options = {}) {
+                const { maxWidth = 'max-w-2xl', onClose } = options;
+                
+                const overlay = document.createElement('div');
+                overlay.className = 'fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in';
+                overlay.onclick = () => this.close(overlay);
+                
+                const modal = document.createElement('div');
+                modal.className = `${maxWidth} bg-slate-900 border border-slate-800 rounded-xl shadow-2xl max-h-[80vh] overflow-y-auto animate-slide-in`;
+                modal.onclick = e => e.stopPropagation();
+                
+                modal.innerHTML = `
+                    <div class="sticky top-0 bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between">
+                        <button onclick="modalManager.close(this.closest('.fixed'))" class="text-slate-400 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="p-6">${content}</div>
+                `;
+                
+                overlay.appendChild(modal);
+                document.body.appendChild(overlay);
+                
+                // Keyboard escape
+                const handleEsc = e => {
+                    if (e.key === 'Escape') {
+                        this.close(overlay);
+                        document.removeEventListener('keydown', handleEsc);
+                    }
+                };
+                document.addEventListener('keydown', handleEsc);
+                
+                if (onClose) onClose();
+            },
+            
+            close(overlay) {
+                if (!overlay) return;
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.remove(), 300);
+            },
+            
+            showSkillDetail(skill) {
+                const content = `
+                    <div class="space-y-6">
+                        <!-- Header con badges -->
+                        <div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-sm font-mono">${skill.displayName || '@' + skill.name}</span>
+                                <span class="px-2 py-1 bg-slate-800 text-slate-400 rounded text-xs uppercase">${skill.category || 'core'}</span>
+                                ${skill.status === 'active' ? '<span class="px-2 py-1 bg-green-500/10 text-green-400 rounded text-xs">✅ Activa</span>' : ''}
+                            </div>
+                            <h2 class="text-2xl font-bold text-white">${skill.name}</h2>
+                        </div>
+                        
+                        <!-- Descripción -->
+                        <div>
+                            <h3 class="text-lg font-semibold mb-2">Descripción</h3>
+                            <p class="text-slate-400">${skill.description || 'Sin descripción disponible'}</p>
+                        </div>
+                        
+                        <!-- CUÁNDO USAR (si existe) -->
+                        ${skill.whenToUse && skill.whenToUse.length > 0 ? `
+                        <div class="bg-blue-500/5 border border-blue-500/20 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold text-blue-400 mb-2">🎯 Cuándo Usar</h3>
+                            <ul class="space-y-1 text-slate-300">
+                                ${skill.whenToUse.map(u => `<li class="flex items-start gap-2"><span class="text-blue-400 mt-1">•</span><span>${u}</span></li>`).join('')}
+                            </ul>
+                        </div>
+                        ` : `
+                        <div class="bg-amber-500/5 border border-amber-500/20 rounded-lg p-4">
+                            <p class="text-amber-400 text-sm">
+                                <strong>💡 Tip:</strong> Esta skill es útil para tareas de ${skill.category}.
+                                Consultá el SKILL.md para casos de uso específicos.
+                            </p>
+                        </div>
+                        `}
+                        
+                        <!-- EJEMPLOS -->
+                        ${skill.examples && skill.examples.length > 0 ? `
+                        <div>
+                            <h3 class="text-lg font-semibold mb-2">💡 Ejemplos de Uso</h3>
+                            <div class="space-y-2">
+                                ${skill.examples.map(ex => `
+                                    <div class="bg-slate-800 rounded-lg p-3 font-mono text-sm text-blue-400">
+                                        ${ex}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        <!-- COMANDOS -->
+                        ${skill.commands && skill.commands.length > 0 ? `
+                        <div>
+                            <h3 class="text-lg font-semibold mb-2">⌨️ Comandos</h3>
+                            <div class="flex flex-wrap gap-2">
+                                ${skill.commands.map(cmd => `
+                                    <code class="px-2 py-1 bg-slate-800 rounded text-xs text-slate-300">${cmd}</code>
+                                `).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        <!-- UBICACIÓN -->
+                        <div class="text-xs text-slate-500">
+                            📁 <code class="bg-slate-800 px-2 py-1 rounded">${skill.location}</code>
+                        </div>
+                        
+                        <div class="pt-4 border-t border-slate-800 flex justify-between items-center">
+                            <a href="${(skill.location || '#').replace(/\\/g, '/').replace(/^core\//, '../../core/')}" target="_blank" class="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                </svg>
+                                Ver SKILL.md completo
+                            </a>
+                            <button onclick="modalManager.close(this.closest('.fixed'))" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm">
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                this.open(content, { maxWidth: 'max-w-3xl' });
+            },
+            
+            showAgentDetail(agent) {
+                const safeLocation = (agent.location || '#').replace(/\\/g, '/').replace(/^core\//, '../../core/');
+                const content = `
+                    <div class="space-y-6">
+                        <div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="px-3 py-1 bg-purple-500/10 text-purple-400 rounded-full text-sm font-mono">@${agent.name.replace(/\s/g, '-').toLowerCase()}</span>
+                                <span class="px-2 py-1 bg-green-500/10 text-green-400 rounded text-xs">Operativo</span>
+                            </div>
+                            <h2 class="text-2xl font-bold text-white">${agent.name}</h2>
+                            <p class="text-slate-400 text-sm">${agent.type === 'subagent' ? 'Subagente especializado' : 'Agente principal del framework'}</p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-lg font-semibold mb-2">Propósito</h3>
+                            <p class="text-slate-400">${agent.purpose || agent.description || 'Sin descripción disponible'}</p>
+                        </div>
+                        
+                        ${agent.whenToUse && agent.whenToUse.length > 0 ? `
+                        <div>
+                            <h3 class="text-lg font-semibold mb-2">Cuándo Usar</h3>
+                            <ul class="space-y-1 text-slate-400">
+                                ${agent.whenToUse.map(u => `<li class="flex items-start gap-2"><span class="text-purple-400 mt-1">•</span><span>${u}</span></li>`).join('')}
+                            </ul>
+                        </div>
+                        ` : ''}
+                        
+                        ${agent.dependencies && agent.dependencies.length > 0 ? `
+                        <div>
+                            <h3 class="text-lg font-semibold mb-2">Dependencias</h3>
+                            <div class="flex flex-wrap gap-2">
+                                ${agent.dependencies.map(d => `<span class="px-2 py-1 bg-slate-800 rounded text-xs font-mono text-blue-400">@${d}</span>`).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="pt-4 border-t border-slate-800 flex justify-between items-center">
+                            <a href="${safeLocation}" target="_blank" class="text-purple-400 hover:text-purple-300 text-sm flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                </svg>
+                                Ver documentación completa
+                            </a>
+                            <button onclick="modalManager.close(this.closest('.fixed'))" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm">
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                this.open(content, { maxWidth: 'max-w-3xl' });
+            },
+            
+            showPhilosophyModal() {
+                const content = `
+                    <div class="space-y-6">
+                        <div class="text-center mb-8">
+                            <h2 class="text-3xl font-bold gradient-text mb-2">Filosofía del Framework</h2>
+                            <p class="text-slate-400 italic">"El conocimiento verdadero trasciende a lo público"</p>
+                        </div>
+                        
+                        <div class="grid gap-4">
+                            ${[
+                                { title: '1. Local-First', desc: 'Todo tu conocimiento reside en archivos locales que tú controlas. Sin dependencia de servidores externos.' },
+                                { title: '2. User Sovereignty', desc: 'El usuario SIEMPRE tiene el control. El framework NUNCA decide por ti. Tú eliges cómo proceder.' },
+                                { title: '3. Vendor-Agnostic', desc: 'Funciona con cualquier proveedor de IA o modelo local. Sin vendor lock-in.' },
+                                { title: '4. MVI', desc: 'Minimal Viable Information. Solo la información esencial, referencia el resto.' },
+                                { title: '5. Transparency & Trust', desc: 'El framework explica qué hace y por qué. Sin procesos ocultos o mágicos.' },
+                                { title: '6. Graceful Degradation', desc: 'Funciona incluso cuando algo falla. Siempre hay un plan B (y C, y D...).' },
+                                { title: '7. Structured Workflow', desc: 'Todo trabajo complejo sigue el Workflow Standard de 7 pasos.' }
+                            ].map(principle => `
+                                <div class="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+                                    <h3 class="font-semibold text-blue-400 mb-1">${principle.title}</h3>
+                                    <p class="text-slate-400 text-sm">${principle.desc}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="pt-6 border-t border-slate-800 text-center">
+                            <p class="text-slate-500 text-sm mb-3">Frase insignia:</p>
+                            <blockquote class="text-lg text-slate-300 italic">
+                                "I own my context. I am FreakingJSON."
+                            </blockquote>
+                            <p class="text-slate-500 text-sm mt-2">— NetworkChuck (inspiración)</p>
+                        </div>
+                    </div>
+                `;
+                
+                this.open(content, { maxWidth: 'max-w-4xl' });
+            },
+            
+            showObjectiveModal() {
+                const content = `
+                    <div class="space-y-6">
+                        <div class="text-center mb-8">
+                            <h2 class="text-3xl font-bold gradient-text mb-2">Objetivo del Framework</h2>
+                            <p class="text-slate-400">"Tu conocimiento. Tu control."</p>
+                        </div>
+                        
+                        <div class="bg-slate-800/50 rounded-lg p-6 border border-slate-700">
+                            <h3 class="text-xl font-semibold mb-4">Propósito Principal</h3>
+                            <p class="text-slate-400 leading-relaxed">
+                                Proporcionar un asistente de IA personal que resida completamente en tu control local, 
+                                sin dependencia de servidores externos. Gestiona tu conocimiento, automatiza tareas y 
+                                colabora con IA manteniendo el control total de tus datos.
+                            </p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-lg font-semibold mb-3">Características Clave</h3>
+                            <div class="grid md:grid-cols-2 gap-3">
+                                ${[
+                                    ['Contexto local', 'Archivos .md bajo tu control'],
+                                    ['Multi-CLI', 'OpenCode, Claude, Gemini, Codex'],
+                                    ['Skills extensibles', 'Sistema modular de habilidades'],
+                                    ['Agentes especializados', 'Delegación inteligente de tareas'],
+                                    ['Trazabilidad total', 'Sesiones diarias con histórico'],
+                                    ['Privacy-first', 'Sin exposición de credenciales']
+                                ].map(([feature, desc]) => `
+                                    <div class="flex items-start gap-3 bg-slate-800/30 rounded-lg p-3">
+                                        <svg class="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                        <div>
+                                            <div class="font-semibold text-white text-sm">${feature}</div>
+                                            <div class="text-slate-400 text-xs">${desc}</div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                this.open(content, { maxWidth: 'max-w-4xl' });
+            }
+        };
+
+        // ============================================
+        // CONFIG MANAGER - Persistencia de configuracion
+        // ============================================
+        const configManager = {
+            configPath: 'core/.context/knowledge/dashboard-config.json',
+            defaultConfig: {
+                version: '2.0.0',
+                lastUpdated: new Date().toISOString(),
+                settings: {
+                    expressMode: false,
+                    defaultComplexity: 'simple',
+                    autoSaveSession: true,
+                    confirmBeforeExec: false
+                },
+                ui: {
+                    theme: 'dark',
+                    sidebarCollapsed: false,
+                    animationsEnabled: true
+                }
+            },
+            
+            async load() {
+                try {
+                    const response = await fetch(this.configPath);
+                    if (response.ok) {
+                        return await response.json();
+                    }
+                } catch (e) {
+                    console.log('Config no existe, usando defaults');
+                }
+                return this.defaultConfig;
+            },
+            
+            async save(config) {
+                // NOTA: Esto requiere backend para escritura real
+                // Por ahora guardamos en localStorage como fallback
+                localStorage.setItem('dashboard-config', JSON.stringify(config));
+                console.log('[ConfigManager] Config guardada (localStorage)');
+            },
+            
+            getSetting(key, defaultValue) {
+                const saved = localStorage.getItem('dashboard-config');
+                if (saved) {
+                    try {
+                        const config = JSON.parse(saved);
+                        return config.settings?.[key] ?? defaultValue;
+                    } catch (e) {
+                        return defaultValue;
+                    }
+                }
+                return defaultValue;
+            },
+            
+            setSetting(key, value) {
+                const config = {
+                    ...this.defaultConfig,
+                    ...JSON.parse(localStorage.getItem('dashboard-config') || '{}')
+                };
+                config.settings[key] = value;
+                config.lastUpdated = new Date().toISOString();
+                this.save(config);
+            },
+            
+            reset() {
+                localStorage.removeItem('dashboard-config');
+                console.log('[ConfigManager] Config reseteada a defaults');
+            }
+        };
+
+        // ============================================
+        // EMPTY STATE FACTORY - Estados vacios educativos
+        // ============================================
+        const emptyStateFactory = {
+            sessions() {
+                return `
+                    <div class="flex flex-col items-center justify-center py-20 px-4 text-center">
+                        <div class="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center mb-6">
+                            <svg class="w-12 h-12 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                        </div>
+                        
+                        <h2 class="text-2xl font-bold mb-3">¿Qué son las Sesiones?</h2>
+                        <p class="text-slate-400 max-w-md mb-6">
+                            Las sesiones son el corazón del framework. Cada vez que trabajas con una IA, 
+                            se crea un registro con todo lo importante.
+                        </p>
+                        
+                        <div class="grid md:grid-cols-2 gap-4 mb-8 max-w-2xl">
+                            <div class="bg-slate-800/50 rounded-lg p-4 text-left">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span class="font-semibold text-sm">Temas tratados</span>
+                                </div>
+                                <p class="text-xs text-slate-400">Registro de qué se trabajó en cada sesión</p>
+                            </div>
+                            
+                            <div class="bg-slate-800/50 rounded-lg p-4 text-left">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span class="font-semibold text-sm">Decisiones tomadas</span>
+                                </div>
+                                <p class="text-xs text-slate-400">Decisiones importantes y alternativas consideradas</p>
+                            </div>
+                            
+                            <div class="bg-slate-800/50 rounded-lg p-4 text-left">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span class="font-semibold text-sm">Pendientes generados</span>
+                                </div>
+                                <p class="text-xs text-slate-400">Tareas identificadas para futuro seguimiento</p>
+                            </div>
+                            
+                            <div class="bg-slate-800/50 rounded-lg p-4 text-left">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span class="font-semibold text-sm">Archivos modificados</span>
+                                </div>
+                                <p class="text-xs text-slate-400">Traza completa de cambios en el código</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <button onclick="app.startFramework()" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-blue-500/25 flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                </svg>
+                                Iniciar tu Primera Sesión
+                            </button>
+                            <button onclick="app.showSessionDemo()" class="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl transition-all border border-slate-700">
+                                Ver ejemplo de sesión
+                            </button>
+                        </div>
+                        
+                        <p class="text-slate-500 text-sm mt-8 max-w-md">
+                            Las sesiones se crean automáticamente al ejecutar 
+                            <code class="bg-slate-800 px-2 py-1 rounded text-xs">session-start.py</code>
+                        </p>
+                    </div>
+                `;
+            },
+            
+            skills() {
+                return `
+                    <div class="flex flex-col items-center justify-center py-20 px-4 text-center">
+                        <div class="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center mb-6">
+                            <svg class="w-12 h-12 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                            </svg>
+                        </div>
+                        
+                        <h2 class="text-2xl font-bold mb-3">Sin Skills Disponibles</h2>
+                        <p class="text-slate-400 max-w-md">
+                            Las skills son habilidades especializadas del framework. 
+                            Aún no hay skills indexadas.
+                        </p>
+                        
+                        <button onclick="app.runIndexer()" class="mt-6 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-all">
+                            Ejecutar Indexer de Skills
+                        </button>
+                    </div>
+                `;
             }
         };
 
@@ -1663,6 +2175,40 @@
 
             startFramework() {
                 alert('Ejecuta pa.bat (Windows) o ./pa.sh (Mac/Linux) en tu terminal');
+            },
+            
+            showSessionDemo() {
+                // Muestra una sesion de ejemplo en un modal
+                modalManager.open(`
+                    <div class="space-y-6">
+                        <h2 class="text-2xl font-bold">Ejemplo de Sesión</h2>
+                        <div class="bg-slate-800/50 rounded-lg p-4">
+                            <h3 class="font-semibold mb-2"># Sesión 2026-03-06</h3>
+                            <div class="text-sm text-slate-400 space-y-2">
+                                <p><strong class="text-white">Inicio:</strong> 08:01</p>
+                                <p><strong class="text-white">Temas Tratados:</strong></p>
+                                <ul class="list-disc list-inside ml-4">
+                                    <li>Inicialización de sesión</li>
+                                    <li>Lectura de contexto base</li>
+                                    <li>Planificación de tareas críticas</li>
+                                </ul>
+                                <p><strong class="text-white">Decisiones:</strong></p>
+                                <ul class="list-disc list-inside ml-4">
+                                    <li>Operar en modo "contexto local primero"</li>
+                                    <li>Continuar en modo express para tareas simples</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <p class="text-slate-400 text-sm">
+                            Esta es una sesión real generada por el framework. 
+                            Cada sesión captura automáticamente todo el contexto de tu trabajo con IA.
+                        </p>
+                    </div>
+                `, { maxWidth: 'max-w-3xl' });
+            },
+            
+            runIndexer() {
+                alert('Para ejecutar el indexer de skills:\n\npython core/scripts/generate-dashboard-indexes.py --skills\n\nEsto generará skills-index.json con todas las skills disponibles.');
             },
 
             handleSearch(query) {
