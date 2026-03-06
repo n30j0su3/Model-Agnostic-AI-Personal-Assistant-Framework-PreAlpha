@@ -14,6 +14,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.4-prealpha] - 2026-03-06
+
+### Added
+- **Dashboard 2.0**: SPA completamente funcional con datos embebidos
+  - CORS-free: Compatible con protocolo file://
+  - Modales/Popups operativos (16 componentes interactivos)
+  - Visualización de workflows, skills, agentes y sesiones
+  - Generador de datos: `generate-dashboard-data.py`
+- **Knowledge-base System**: Infraestructura de conocimiento
+  - `knowledge-indexer.py`: Indexación de patrones y tendencias
+  - `interaction-logger.py`: Logging estructurado de interacciones
+  - `optimization-reporter.py`: Reportes de optimización automáticos
+- **Comandos Opencode**: 7 comandos personalizados (.opencode/commands/)
+  - `ideas`, `optimize`, `pa-help`, `pa-status`, `pending`, `save`, `session`
+- **Sync System v2**: Protecciones extendidas para entorno DEV
+  - Nunca elimina contenido de `_local/`, `workspaces/`, `.context/`
+  - Nunca elimina backlog, comandos personalizados, ni scripts locales
+  - Solo agrega archivos nuevos desde BASE
+
+### Fixed
+- Restauración de funcionalidades críticas dañadas por sync anterior
+- Corrección de CORS para uso offline (file://)
+- Modales del Dashboard operativos nuevamente
+
+---
+
 ## [0.1.3-prealpha] - 2026-03-04
 
 ### Added

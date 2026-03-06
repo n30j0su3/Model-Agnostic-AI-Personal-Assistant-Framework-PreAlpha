@@ -1,9 +1,9 @@
-# Model-Agnostic AI Personal Assistant Framework v0.1.0-alpha
+# Model-Agnostic AI Personal Assistant Framework v0.1.4-prealpha
 
 > "One Framework to rule them all, One Context to find them."
 > "El Conocimiento verdadero trasciende a lo público".
 
-[![Release](https://img.shields.io/badge/release-v0.1.0--alpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.1.0-alpha)
+[![Release](https://img.shields.io/badge/release-v0.1.4--prealpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.1.4-prealpha)
 [![Changelog](https://img.shields.io/badge/changelog-keep%20a%20changelog-green)](./CHANGELOG.md)
 ![Stage](https://img.shields.io/badge/stage-alpha-red)
 
@@ -23,7 +23,13 @@
 
 ## 📢 Latest Release
 
-**v0.1.1-alpha** - Skill Discovery + Sync System
+**v0.1.4-prealpha** - Dashboard 2.0 + Knowledge-base Restoration
+- **Dashboard 2.0**: Restauración completa con CORS fix y modales funcionales
+- **Knowledge-base**: Sistema de indexación y logging de interacciones operativo
+- **Sync System**: Protecciones extendidas para DEV (nunca elimina contenido local)
+- **Comandos Opencode**: 7 comandos personalizados para el framework
+
+**v0.1.3-prealpha** - Workflow Standard: Proceso estructurado de 7 pasos
 - **@skill-discovery**: Mapeo automático de tareas a skills existentes
 - **Sistema de Sync**: Scripts bidireccionales DEV ↔ BASE ↔ PROD con validaciones de seguridad
 - **Protocolo Pre-Tarea**: Checklist obligatorio antes de ejecutar cualquier tarea

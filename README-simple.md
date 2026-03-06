@@ -1,8 +1,8 @@
-# Model-Agnostic AI Personal Assistant Framework v0.1.3-prealpha
+# Model-Agnostic AI Personal Assistant Framework v0.1.4-prealpha
 
 > "Tu Asistente AI Personal. Tu Conocimiento. Tu Control."
 
-[![Release](https://img.shields.io/badge/release-v0.1.3--prealpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.1.3-prealpha)
+[![Release](https://img.shields.io/badge/release-v0.1.4--prealpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.1.4-prealpha)
 [![Instagram](https://img.shields.io/badge/Instagram-%40freakingjson-E4405F?logo=instagram&logoColor=white)](https://instagram.com/freakingjson)
 [![Linktree](https://img.shields.io/badge/Linktree-@freakingjson-43E55C?logo=linktree&logoColor=white)](https://linktr.ee/freakingjson)
 [![Blog](https://img.shields.io/badge/Blog-freakingjson.com-FFA500?logo=firefoxbrowser&logoColor=white)](https://freakingjson.com)
@@ -18,7 +18,13 @@
 
 ## 📢 Última Versión
 
-**v0.1.3-prealpha** - Workflow Standard: Proceso estructurado de 7 pasos para tareas complejas
+**v0.1.4-prealpha** - Dashboard 2.0 + Knowledge-base Restoration
+- Dashboard 2.0 funcional (file:// compatible, CORS-free)
+- Sistema de knowledge-base con indexación de patrones
+- Logging de interacciones y reportes de optimización
+- Comandos personalizados para opencode CLI
+
+**v0.1.3-prealpha** - Workflow Standard: Proceso estructurado de 7 pasos
 - Workflow Standard v1.0 con detección automática de complejidad
 - Modo Express para tareas urgentes con transparencia total
 - Configuración personalizable del framework
