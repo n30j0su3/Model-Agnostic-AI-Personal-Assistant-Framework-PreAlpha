@@ -7,10 +7,9 @@
 [![Linktree](https://img.shields.io/badge/Linktree-@freakingjson-43E55C?logo=linktree&logoColor=white)](https://linktr.ee/freakingjson)
 [![Blog](https://img.shields.io/badge/Blog-freakingjson.com-FFA500?logo=firefoxbrowser&logoColor=white)](https://freakingjson.com)
 [![Changelog](https://img.shields.io/badge/changelog-keep%20a%20changelog-green)](./CHANGELOG.md)
+[![English](https://img.shields.io/badge/🇺🇸%20English-README-blue)](./README_en.md)
 ![Stage](https://img.shields.io/badge/stage-alpha-red)
 ![License](https://img.shields.io/badge/license-MIT-green)
-
-[🇺🇸 English Version](./README_en.md)
 
 > **"El conocimiento verdadero trasciende a lo público."**
 
