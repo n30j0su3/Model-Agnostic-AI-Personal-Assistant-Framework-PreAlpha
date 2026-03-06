@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreakingJSON Dashboard v2.0</title>
+    <meta name="description" content="Dashboard profesional del FreakingJSON Personal Assistant Framework">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#1e293b',
+                            900: '#0f172a',
+                            950: '#020617',
+                        },
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+        .animate-slide-in { animation: slideInLeft 0.3s ease-out; }
+        
+        /* KPI Card hover effect */
+        .kpi-card {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        }
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Glass effect */
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Gradient text */
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Skeleton loading */
+        .skeleton {
+            background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        
+        /* Page transition */
+        .page-transition {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        /* Sidebar active state */
+        .nav-item {
+            position: relative;
+            transition: all 0.2s;
+        }
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 0;
+            background: #3b82f6;
+            transition: height 0.2s;
+            border-radius: 0 3px 3px 0;
+        }
+        .nav-item:hover::before,
+        .nav-item.active::before {
+            height: 60%;
+        }
+        .nav-item.active {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        
+        /* Chat message styles */
+        .message-agent {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px 12px 12px 4px;
+        }
+        .message-user {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border-radius: 12px 12px 4px 12px;
+        }
+        
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: slideInLeft 0.3s ease-out;
+        }
+        
+        /* Workflow Styles */
+        .workflow-step {
+            transition: all 0.3s ease;
+        }
+        
+        .workflow-step:hover {
+            transform: translateX(4px);
+        }
+        
+        .step-checkbox {
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #475569;
+            border-radius: 0.375rem;
+            background-color: #1e293b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .step-checkbox:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        
+        .step-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 2px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        
+        .step-checkbox:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Workflow Toast */
+        .workflow-toast {
+            animation: slideInRight 0.3s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        /* Mobile responsiveness for workflow */
+        @media (max-width: 768px) {
+            .workflow-step {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            .workflow-step .step-indicator {
+                align-self: flex-start;
+            }
+        }
+        
+        /* Toggle Switch Animation */
+        .peer:checked ~ .peer-checked\:bg-amber-500 {
+            background-color: #f59e0b;
+        }
+        
+        .peer:checked ~ .peer-checked\:after\:translate-x-full::after {
+            transform: translateX(100%);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-50 min-h-screen">
+    <div id="app">
+        <!-- Loading State -->
+        <div id="loading-screen" class="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center">
+                <div class="text-center">
+                <img src="Logo-freakinjson-blanco-alta.png" alt="FreakingJSON" class="w-16 h-16 mx-auto mb-4 rounded-xl animate-pulse object-contain">
+                <h2 class="text-xl font-semibold">FreakingJSON Dashboard</h2>
+                <p class="text-slate-400 text-sm mt-2">Cargando...</p>
+            </div>
+        </div>
+
+        <!-- Main Layout -->
+        <div id="main-layout" class="hidden h-screen flex flex-col">
+            <!-- Header -->
+            <header class="h-16 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 flex items-center justify-between px-4 lg:px-6 shrink-0 z-40">
+                <div class="flex items-center gap-3">
+                    <button id="menu-toggle" class="lg:hidden p-2 hover:bg-slate-800 rounded-lg transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <img src="Logo-freakinjson-blanco-alta.png" alt="FreakingJSON" class="w-8 h-8 rounded-lg object-contain">
+                        <div class="hidden sm:block">
+                            <h1 class="font-semibold text-sm">FreakingJSON</h1>
+                            <p class="text-xs text-slate-400">v0.1.2-prealpha</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <div class="relative hidden md:block">
+                        <input type="text" id="global-search" placeholder="Buscar sesiones, skills..." 
+                            class="w-64 bg-slate-800 border border-slate-700 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-500 transition-colors">
+                        <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                    
+                    <nav class="flex items-center gap-1">
+                        <button onclick="router.navigate('home')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="home" title="Inicio">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                            </svg>
+                        </button>
+                        <button onclick="router.navigate('sessions')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="sessions" title="Sesiones">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                            </svg>
+                        </button>
+                        <button onclick="router.navigate('internals')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="internals" title="Framework">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                            </svg>
+                        </button>
+                        <button onclick="router.navigate('about')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="about" title="Acerca de">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </button>
+                    </nav>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main id="page-container" class="flex-1 overflow-hidden relative">
+                <!-- Pages will be rendered here -->
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // DATA STORE - Framework Data
+        // ============================================
+        const store = {
+            sessions: [],
+            interactions: [],
+            skills: [],
+            lspErrors: [],
+            stats: {
+                totalSessions: 0,
+                totalSkills: 22,
+                totalProjects: 0,
+                totalInteractions: 0,
+                avgSessionDuration: 0,
+                codeQuality: 98,
+                weeklyGrowth: 12
+            },
+            currentSession: null,
+            isLoading: true
+        };
+
+        // ============================================
+        // DATA LOADER - Fetch framework data
+        // ============================================
+        const dataLoader = {
+            async loadAll() {
+                try {
+                    await Promise.all([
+                        this.loadSessions(),
+                        this.loadInteractions(),
+                        this.loadSkills(),
+                        this.loadLPSErrors()
+                    ]);
+                    this.calculateStats();
+                    return true;
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                    this.loadDemoData();
+                    return false;
+                }
+            },
+
+            async loadSessions() {
+                try {
+                    const response = await fetch('core/.context/knowledge/sessions-index.json');
+                    if (response.ok) {
+                        const data = await response.json();
+                        store.sessions = data.sessions || [];
+                        store.stats.totalSessions = data.total_sessions || 0;
+                    }
+                } catch (e) {
+                    console.log('Using demo sessions data');
+                }
+            },
+
+            async loadInteractions() {
+                // Simulate interaction data
+                store.interactions = [
+                    { tool: 'read', count: 450 },
+                    { tool: 'edit', count: 280 },
+                    { tool: 'write', count: 120 },
+                    { tool: 'bash', count: 200 },
+                    { tool: 'grep', count: 184 }
+                ];
+                store.stats.totalInteractions = 1234;
+            },
+
+            async loadSkills() {
+                store.skills = [
+                    { name: 'task-management', category: 'core', description: 'Gestión de tareas y seguimiento' },
+                    { name: 'pdf', category: 'core', description: 'Procesamiento de archivos PDF' },
+                    { name: 'xlsx', category: 'core', description: 'Procesamiento de hojas de cálculo' },
+                    { name: 'prompt-improvement', category: 'core', description: 'Optimización y refinamiento de prompts' },
+                    { name: 'ui-ux-pro-max', category: 'core', description: 'Diseño inteligente UI/UX con base de datos buscable' },
+                    { name: 'docx', category: 'core', description: 'Creación y edición de documentos Word' },
+                    { name: 'etl', category: 'core', description: 'Manipulación y transformación de datos (Extract, Transform, Load)' },
+                    { name: 'json-prompt-generator', category: 'core', description: 'Genera prompts JSON estructurados para IA' },
+                    { name: 'pptx', category: 'core', description: 'Creación y edición de presentaciones PowerPoint' },
+                    { name: 'data-viz', category: 'core', description: 'Visualización de datos con Seaborn/Matplotlib' },
+                    { name: 'prd-generator', category: 'core', description: 'Generación de Product Requirements Documents' },
+                    { name: 'skill-creator', category: 'core', description: 'Guía completa para crear nuevas skills' },
+                    { name: 'markdown-writer', category: 'core', description: 'Toolkit para escribir Markdown consistente' },
+                    { name: 'csv-processor', category: 'core', description: 'Procesamiento de CSV para limpieza y análisis' },
+                    { name: 'python-standards', category: 'core', description: 'Estándares cross-platform para scripts Python' },
+                    { name: 'skill-discovery', category: 'core', description: 'Helper para identificar skills apropiadas' },
+                    { name: 'content-optimizer', category: 'core', description: 'Optimiza texto para SEO, legibilidad y engagement' },
+                    { name: 'context-evaluator', category: 'core', description: 'Framework para evaluar calidad de respuestas (LLM-as-a-Judge)' },
+                    { name: 'dashboard-pro', category: 'core', description: 'Genera dashboards profesionales con diseño consistente' },
+                    { name: 'decision-engine', category: 'core', description: 'Decide entre ejecución local, delegación o LLM remoto' },
+                    { name: 'mcp-builder', category: 'core', description: 'Guía para crear MCP servers con buenas prácticas' },
+                    { name: 'paper-summarizer', category: 'core', description: 'Analiza y resume papers científicos y documentos técnicos' }
+                ];
+            },
+
+            async loadLPSErrors() {
+                store.lspErrors = [
+                    { file: 'session-start.py', line: 283, severity: 'warning', message: 'Type hint mismatch' }
+                ];
+            },
+
+            calculateStats() {
+                // Calculate derived metrics
+                if (store.sessions.length > 0) {
+                    const totalWords = store.sessions.reduce((sum, s) => sum + (s.stats?.word_count || 0), 0);
+                    const totalDecisions = store.sessions.reduce((sum, s) => sum + (s.stats?.decisions || 0), 0);
+                    const totalFiles = store.sessions.reduce((sum, s) => sum + (s.stats?.files_modified || 0), 0);
+                    
+                    store.stats.avgSessionDuration = Math.round(totalWords / store.sessions.length / 100); // Rough estimate
+                    store.stats.totalDecisions = totalDecisions;
+                    store.stats.totalFiles = totalFiles;
+                }
+            },
+
+            loadDemoData() {
+                store.sessions = [
+                    { id: '2026-03-04', title: 'Release v0.1.2 + Knowledge Base', summary: 'Release oficial con implementación completa', topics: ['release', 'knowledge-base'], type: 'release', stats: { interactions: 85, files_modified: 15, decisions: 5 } },
+                    { id: '2026-03-03', title: 'Fix README técnico', summary: 'Corrección de documentación en PROD', topics: ['fix', 'docs'], type: 'bugfix', stats: { interactions: 25, files_modified: 3, decisions: 2 } },
+                    { id: '2026-02-28', title: 'Investigación MCP', summary: 'Research sobre Model Context Protocol', topics: ['research', 'mcp'], type: 'research', stats: { interactions: 45, files_modified: 2, decisions: 3 } }
+                ];
+                store.stats.totalSessions = 7;
+            }
+        };
+
+        // ============================================
+        // ROUTER - SPA Navigation
+        // ============================================
+        const router = {
+            currentPage: 'home',
+            
+            navigate(page) {
+                this.currentPage = page;
+                this.updateNavState();
+                this.render();
+                window.scrollTo(0, 0);
+            },
+
+            updateNavState() {
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    const isActive = btn.dataset.page === this.currentPage;
+                    btn.classList.toggle('bg-blue-500', isActive);
+                    btn.classList.toggle('text-white', isActive);
+                });
+            },
+
+            render() {
+                const container = document.getElementById('page-container');
+                container.innerHTML = pages[this.currentPage]();
+                
+                // Initialize page-specific JS
+                if (this.currentPage === 'internals') {
+                    charts.init();
+                }
+            }
+        };
+
+        // ============================================
+        // PAGES - HTML Templates
+        // ============================================
+        const pages = {
+            home() {
+                return `
+                <div class="h-full overflow-y-auto page-transition">
+                    <!-- Hero Section -->
+                    <section class="relative min-h-[70vh] flex items-center justify-center px-4 py-20">
+                        <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-slate-950"></div>
+                        <div class="relative max-w-4xl mx-auto text-center">
+                            <div class="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/30 rounded-full text-blue-400 text-sm mb-8">
+                                <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+                                Framework v0.1.2-prealpha
+                            </div>
+                            
+                            <h1 class="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
+                                Tu Asistente AI Personal.
+                                <span class="gradient-text block mt-2">Tu Conocimiento. Tu Control.</span>
+                            </h1>
+                            
+                            <p class="text-xl text-slate-400 mb-10 max-w-2xl mx-auto">
+                                Gestiona tu conocimiento, automatiza tareas y colabora con IA manteniendo el control total de tus datos. 100% local, 100% privado.
+                            </p>
+                            
+                            <div class="flex flex-wrap justify-center gap-4">
+                                <button onclick="app.startFramework()" class="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-blue-500/25 flex items-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                    </svg>
+                                    Iniciar Framework
+                                </button>
+                                <button onclick="router.navigate('sessions')" class="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl transition-all border border-slate-700">
+                                    Explorar Sesiones
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Philosophy Section -->
+                    <section class="py-20 px-4 border-t border-slate-800">
+                        <div class="max-w-6xl mx-auto">
+                            <h2 class="text-3xl font-bold text-center mb-4">Objetivo y Filosofía</h2>
+                            <p class="text-center text-slate-400 mb-12 max-w-2xl mx-auto">"El conocimiento verdadero trasciende a lo público"</p>
+                            
+                            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                ${components.featureCard('Local-first', 'Todo en tus archivos locales. Nada en la nube.', 'shield', 'blue')}
+                                ${components.featureCard('Privacy-first', 'Sin credenciales expuestas. Tu privacidad primero.', 'lock', 'purple')}
+                                ${components.featureCard('MVI', 'Minimal Viable Information. Solo lo esencial.', 'zap', 'green')}
+                                ${components.featureCard('Multi-CLI', 'OpenCode, Claude, Gemini, Codex. Todos soportados.', 'terminal', 'amber')}
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Quick Start -->
+                    <section class="py-20 px-4 bg-slate-900/50">
+                        <div class="max-w-4xl mx-auto">
+                            <h2 class="text-3xl font-bold text-center mb-12">Cómo Empezar</h2>
+                            
+                            <div class="grid md:grid-cols-3 gap-8">
+                                <div class="relative">
+                                    <div class="absolute -top-4 left-6 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center font-bold text-sm">1</div>
+                                    <div class="p-6 bg-slate-800 rounded-xl border border-slate-700 pt-8">
+                                        <h3 class="font-semibold mb-2">Ejecuta el Framework</h3>
+                                        <p class="text-slate-400 text-sm mb-4">Abre tu terminal y ejecuta:</p>
+                                        <code class="block bg-slate-950 p-3 rounded text-xs text-blue-400 font-mono">pa.bat</code>
+                                        <p class="text-xs text-slate-500 mt-2">Windows</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="relative">
+                                    <div class="absolute -top-4 left-6 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center font-bold text-sm">2</div>
+                                    <div class="p-6 bg-slate-800 rounded-xl border border-slate-700 pt-8">
+                                        <h3 class="font-semibold mb-2">Configura tu Perfil</h3>
+                                        <p class="text-slate-400 text-sm mb-4">En el menú selecciona:</p>
+                                        <p class="text-sm text-slate-300">Configuración → Perfil</p>
+                                        <p class="text-xs text-slate-500 mt-4">Elige idioma y CLI</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="relative">
+                                    <div class="absolute -top-4 left-6 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center font-bold text-sm">3</div>
+                                    <div class="p-6 bg-slate-800 rounded-xl border border-slate-700 pt-8">
+                                        <h3 class="font-semibold mb-2">Inicia tu Primera Sesión</h3>
+                                        <p class="text-slate-400 text-sm mb-4">Selecciona:</p>
+                                        <p class="text-sm text-slate-300">Iniciar Sesión AI</p>
+                                        <p class="text-xs text-slate-500 mt-4">Elige tu CLI favorito</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Migration Section -->
+                    <section class="py-20 px-4">
+                        <div class="max-w-4xl mx-auto">
+                            <div class="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-2xl p-8">
+                                <h2 class="text-2xl font-bold mb-4">Migrar tus Archivos a Workspaces</h2>
+                                <p class="text-slate-300 mb-6">¿Tienes archivos dispersos? Organízalo todo en workspaces temáticos.</p>
+                                
+                                <div class="grid md:grid-cols-3 gap-4 mb-6">
+                                    <div class="flex items-center gap-3">
+                                        <span class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center text-sm font-bold">1</span>
+                                        <div>
+                                            <div class="font-medium">Crea Workspaces</div>
+                                            <div class="text-sm text-slate-400">personal, professional...</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <span class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center text-sm font-bold">2</span>
+                                        <div>
+                                            <div class="font-medium">Copia Archivos</div>
+                                            <div class="text-sm text-slate-400">Arrastra o copia</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <span class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center text-sm font-bold">3</span>
+                                        <div>
+                                            <div class="font-medium">Organiza</div>
+                                            <div class="text-sm text-slate-400">Usa el asistente</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Stats Preview -->
+                    <section class="py-20 px-4 border-t border-slate-800">
+                        <div class="max-w-6xl mx-auto">
+                            <h2 class="text-3xl font-bold text-center mb-12">Framework Internals</h2>
+                            
+                            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+                                ${components.kpiCard(store.stats.totalSessions, 'Sesiones', '+3 esta semana', 'blue')}
+                                ${components.kpiCard(store.stats.totalSkills, 'Skills', '+2 nuevas', 'purple')}
+                                ${components.kpiCard(store.stats.totalInteractions, 'Interacciones', '+156 hoy', 'green')}
+                                ${components.kpiCard(store.stats.codeQuality + '%', 'Calidad', '3 errores', 'amber')}
+                            </div>
+                            
+                            <div class="text-center">
+                                <button onclick="router.navigate('internals')" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl transition-colors border border-slate-700">
+                                    Ver detalles completos →
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Footer -->
+                    <footer class="py-12 px-4 border-t border-slate-800 text-center text-slate-500">
+                        <p>FreakingJSON Framework v0.1.2-prealpha · MIT License</p>
+                        <p class="mt-2 text-sm">"El conocimiento verdadero trasciende a lo público"</p>
+                    </footer>
+                </div>
+                `;
+            },
+
+            sessions() {
+                const sessionList = store.sessions.map(s => `
+                    <div class="p-3 rounded-lg hover:bg-slate-800 cursor-pointer transition-all ${store.currentSession?.id === s.id ? 'bg-slate-800 border-l-2 border-blue-500' : ''}" 
+                         onclick="app.selectSession('${s.id}')">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-lg ${app.getSessionTypeColor(s.type)} flex items-center justify-center shrink-0">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                                </svg>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="font-medium text-sm truncate">${s.title}</div>
+                                <div class="text-xs text-slate-500">${s.id}</div>
+                                <div class="flex flex-wrap gap-1 mt-1">
+                                    ${s.topics?.map(t => `<span class="px-1.5 py-0.5 bg-slate-700 rounded text-[10px] text-slate-300">${t}</span>`).join('') || ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                return `
+                <div class="h-full flex page-transition">
+                    <!-- Sidebar -->
+                    <aside class="w-72 bg-slate-900 border-r border-slate-800 flex flex-col hidden lg:flex">
+                        <div class="p-4 border-b border-slate-800">
+                            <button onclick="app.startFramework()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors font-medium">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                Nueva Sesión
+                            </button>
+                        </div>
+                        
+                        <div class="flex-1 overflow-y-auto p-2 space-y-1">
+                            <div class="px-3 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Sesiones Recientes</div>
+                            ${sessionList || '<div class="px-3 py-8 text-center text-slate-500 text-sm">No hay sesiones</div>'}
+                        </div>
+                    </aside>
+
+                    <!-- Chat Area -->
+                    <div class="flex-1 flex flex-col bg-slate-950">
+                        <!-- Warning Banner -->
+                        <div class="bg-amber-500/10 border-b border-amber-500/30 p-3 flex items-center gap-3">
+                            <svg class="w-5 h-5 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            <div class="text-sm text-amber-200">
+                                <span class="font-semibold">MODO LECTURA</span> — Explora sesiones históricas aquí. Integración completa con CLI: Próximamente
+                            </div>
+                        </div>
+
+                        <!-- Messages -->
+                        <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                            <div class="flex gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shrink-0">F</div>
+                                <div class="message-agent p-4 max-w-3xl">
+                                    <p class="text-slate-200">¡Hola! Selecciona una sesión del menú lateral para explorar tu historial de conversaciones.</p>
+                                </div>
+                            </div>
+                            
+                            ${store.currentSession ? `
+                            <div class="flex gap-3 flex-row-reverse">
+                                <div class="w-10 h-10 rounded-full bg-slate-600 flex items-center justify-center text-white shrink-0">👤</div>
+                                <div class="message-user p-4 max-w-3xl">
+                                    <p>Ver sesión: ${store.currentSession.title}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shrink-0">F</div>
+                                <div class="message-agent p-4 max-w-3xl space-y-3">
+                                    <h4 class="font-semibold text-lg">${store.currentSession.title}</h4>
+                                    <p class="text-slate-300">${store.currentSession.summary}</p>
+                                    <div class="flex flex-wrap gap-2">
+                                        ${store.currentSession.topics?.map(t => `<span class="px-2 py-1 bg-slate-700 rounded text-xs text-slate-300">${t}</span>`).join('') || ''}
+                                    </div>
+                                    <div class="pt-2 border-t border-slate-700">
+                                        <p class="text-slate-400 text-sm">📊 Stats: ${store.currentSession.stats?.interactions || 0} interacciones · ${store.currentSession.stats?.files_modified || 0} archivos · ${store.currentSession.stats?.decisions || 0} decisiones</p>
+                                    </div>
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+
+                        <!-- Input -->
+                        <div class="p-4 border-t border-slate-800 bg-slate-900/50">
+                            <div class="relative">
+                                <input type="text" disabled placeholder="El chat estará disponible en una futura actualización..." 
+                                    class="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 pl-4 pr-12 text-slate-400 cursor-not-allowed">
+                                <button disabled class="absolute right-2 top-2 p-1.5 bg-slate-700 rounded-lg cursor-not-allowed">
+                                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            },
+
+            internals() {
+                return `
+                <div class="h-full overflow-y-auto p-4 lg:p-8 page-transition">
+                    <div class="max-w-6xl mx-auto">
+                        <h1 class="text-3xl font-bold mb-8">Framework Internals</h1>
+                        
+                        <!-- Tabs -->
+                        <div class="flex gap-2 mb-6 border-b border-slate-800 pb-2" id="framework-tabs">
+                            <button onclick="app.switchFrameworkTab('overview')" class="fw-tab-btn px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors" data-tab="overview">Overview</button>
+                            <button onclick="app.switchFrameworkTab('workflow')" class="fw-tab-btn px-4 py-2 hover:bg-slate-800 text-slate-300 rounded-lg text-sm font-medium transition-colors" data-tab="workflow">Workflow</button>
+                            <button onclick="app.switchFrameworkTab('skills')" class="fw-tab-btn px-4 py-2 hover:bg-slate-800 text-slate-300 rounded-lg text-sm font-medium transition-colors" data-tab="skills">Skills</button>
+                            <button onclick="app.switchFrameworkTab('agents')" class="fw-tab-btn px-4 py-2 hover:bg-slate-800 text-slate-300 rounded-lg text-sm font-medium transition-colors" data-tab="agents">Agents</button>
+                            <button onclick="app.switchFrameworkTab('stats')" class="fw-tab-btn px-4 py-2 hover:bg-slate-800 text-slate-300 rounded-lg text-sm font-medium transition-colors" data-tab="stats">Stats</button>
+                        </div>
+
+                        <!-- Tab: Overview -->
+                        <div id="fw-tab-overview" class="fw-tab-content">
+                            <!-- KPIs -->
+                            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                                ${components.kpiCard(store.stats.totalSessions, 'Sesiones Totales', '+12% vs mes anterior', 'blue')}
+                                ${components.kpiCard(store.stats.totalSkills, 'Skills Disponibles', '+2 este mes', 'purple')}
+                                ${components.kpiCard(store.stats.totalInteractions, 'Interacciones', '+156 esta semana', 'green')}
+                                ${components.kpiCard(store.stats.codeQuality + '%', 'Calidad Código', '3 errores LSP', 'amber')}
+                            </div>
+
+                            <!-- Charts -->
+                            <div class="grid lg:grid-cols-2 gap-6 mb-8">
+                                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                                    <h3 class="font-semibold mb-4">Actividad de Sesiones (30 días)</h3>
+                                    <div class="h-64">
+                                        <canvas id="activityChart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                                    <h3 class="font-semibold mb-4">Distribución de Topics</h3>
+                                    <div class="h-64">
+                                        <canvas id="topicsChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Stats -->
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                                <h3 class="font-semibold mb-4">Resumen del Framework</h3>
+                                <div class="grid md:grid-cols-3 gap-4">
+                                    <div class="p-4 bg-slate-800 rounded-lg">
+                                        <div class="text-2xl font-bold text-blue-400">${store.sessions.length}</div>
+                                        <div class="text-sm text-slate-400">Sesiones registradas</div>
+                                    </div>
+                                    <div class="p-4 bg-slate-800 rounded-lg">
+                                        <div class="text-2xl font-bold text-purple-400">${store.skills.length}</div>
+                                        <div class="text-sm text-slate-400">Skills activas</div>
+                                    </div>
+                                    <div class="p-4 bg-slate-800 rounded-lg">
+                                        <div class="text-2xl font-bold text-green-400">${store.interactions.reduce((a,b) => a + b.count, 0)}</div>
+                                        <div class="text-sm text-slate-400">Total interacciones</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab: Workflow -->
+                        <div id="fw-tab-workflow" class="fw-tab-content hidden">
+                            <!-- Workflow Header with Controls -->
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6">
+                                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+                                    <div>
+                                        <h2 class="text-2xl font-bold mb-2">Workflow Standard 7-Pasos</h2>
+                                        <p class="text-slate-400">Guía visual interactiva para ejecutar tareas dentro del framework</p>
+                                    </div>
+                                    <div class="flex flex-wrap items-center gap-3">
+                                        <!-- Complexity Indicator -->
+                                        <div id="complexity-badge" class="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg flex items-center gap-2">
+                                            <span class="text-sm text-slate-400">Complejidad:</span>
+                                            <span id="complexity-value" class="font-semibold text-blue-400">Simple</span>
+                                        </div>
+                                        <!-- Express Mode Toggle -->
+                                        <div class="flex items-center gap-2 px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg" title="Activa modo express para ejecutar directamente sin plan intermedio">
+                                            <label class="relative inline-flex items-center cursor-pointer">
+                                                <input type="checkbox" id="express-mode-toggle" class="sr-only peer" onchange="workflowManager.toggleExpressMode()">
+                                                <div class="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                                                <span class="ml-2 text-sm font-medium text-slate-300">Modo Express</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Progress Bar -->
+                                <div class="mb-4">
+                                    <div class="flex justify-between text-sm text-slate-400 mb-2">
+                                        <span>Progreso</span>
+                                        <span id="progress-text">0/7 pasos completados</span>
+                                    </div>
+                                    <div class="h-3 bg-slate-800 rounded-full overflow-hidden">
+                                        <div id="progress-bar" class="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Workflow Timeline -->
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h3 class="text-lg font-semibold">Timeline de Ejecución</h3>
+                                    <div class="flex gap-2 text-xs">
+                                        <span class="flex items-center gap-1"><span class="w-3 h-3 bg-blue-500 rounded-full"></span> Completado</span>
+                                        <span class="flex items-center gap-1"><span class="w-3 h-3 bg-amber-500 rounded-full"></span> En Progreso</span>
+                                        <span class="flex items-center gap-1"><span class="w-3 h-3 bg-slate-600 rounded-full"></span> Pendiente</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Timeline Steps -->
+                                <div class="relative">
+                                    <!-- Connection Line -->
+                                    <div class="absolute left-6 top-8 bottom-8 w-0.5 bg-slate-700 hidden md:block"></div>
+                                    
+                                    <!-- Step 1: Inicialización -->
+                                    <div class="workflow-step relative flex gap-4 mb-6 group" data-step="1">
+                                        <div class="step-indicator flex-shrink-0 w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold z-10 transition-all duration-300 ring-4 ring-blue-500/20">
+                                            1
+                                        </div>
+                                        <div class="flex-1 p-4 bg-slate-800/50 border border-slate-700 rounded-lg hover:border-blue-500/50 transition-all cursor-pointer" onclick="workflowManager.toggleStep(1)">
+                                            <div class="flex items-start justify-between gap-4">
+                                                <div class="flex-1">
+                                                    <div class="flex items-center gap-2 mb-1">
+                                                        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                                        </svg>
+                                                        <h4 class="font-semibold text-white">Inicialización</h4>
+                                                        <span class="text-xs text-slate-500">&lt;30s</span>
+                                                    </div>
+                                                    <p class="text-sm text-slate-400">Ejecuta session-start.py, verifica contexto del día, carga skills y pendientes heredados.</p>
+                                                </div>
+                                                <input type="checkbox" class="step-checkbox w-5 h-5 rounded border-slate-600 text-blue-500 focus:ring-blue-500 bg-slate-700 cursor-pointer" data-step="1">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 2: Comprensión -->
+                                    <div class="workflow-step relative flex gap-4 mb-6 group" data-step="2">
+                                        <div class="step-indicator flex-shrink-0 w-12 h-12 rounded-full bg-slate-600 flex items-center justify-center text-white font-bold z-10 transition-all duration-300">
+                                            2
+                                        </div>
+                                        <div class="flex-1 p-4 bg-slate-800/50 border border-slate-700 rounded-lg hover:border-blue-500/50 transition-all cursor-pointer" onclick="workflowManager.toggleStep(2)">
+                                            <div class="flex items-start justify-between gap-4">
+                                                <div class="flex-1">
+                                                    <div class="flex items-center gap-2 mb-1">
+                                                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                                        </svg>
+                                                        <h4 class="font-semibold text-white">Comprensión</h4>
+                                                    </div>
+                                                    <p class="text-sm text-slate-400">Analiza la solicitud del usuario, identifica contexto necesario, consulta @context-scout si es necesario.</p>
+                                                </div>
+                                                <input type="checkbox" class="step-checkbox w-5 h-5 rounded border-slate-600 text-blue-500 focus:ring-blue-500 bg-slate-700 cursor-pointer" data-step="2">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 3: Planificación -->
+                                    <div class="workflow-step relative flex gap-4 mb-6 group" data-step="3">
+                                        <div class="step-indicator flex-shrink-0 w-12 h-12 rounded-full bg-slate-600 flex items-center justify-center text-white font-bold z-10 transition-all duration-300">
+                                            3
+                                        </div>
+                                        <div class="flex-1 p-4 bg-slate-800/50 border border-slate-700 rounded-lg hover:border-blue-500/50 transition-all cursor-pointer" onclick="workflowManager.toggleStep(3)">
+                                            <div class="flex items-start justify-between gap-4">
+                                                <div class="flex-1">
+                                                    <div class="flex items-center gap-2 mb-1">
+                                                        <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                                                        </svg>
+                                                        <h4 class="font-semibold text-white">Planificación</h4>
+                                                        <span class="express-skip text-xs text-amber-500 hidden">(Saltado en Express)</span>
+                                                    </div>
+                                                    <p class="text-sm text-slate-400">Consulta SKILLS.md, decide approach (directo vs delegado), determina complejidad de la tarea.</p>
+                                                </div>
+                                                <input type="checkbox" class="step-checkbox w-5 h-5 rounded border-slate-600 text-blue-500 focus:ring-blue-500 bg-slate-700 cursor-pointer" data-step="3">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 4: Ejecución -->
+                                    <div class="workflow-step relative flex gap-4 mb-6 group" data-step="4">
+                                        <div class="step-indicator flex-shrink-0 w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-white font-bold z-10 transition-all duration-300 ring-4 ring-amber-500/20 animate-pulse">
+                                            4
+                                        </div>
+                                        <div class="flex-1 p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg hover:border-amber-500/50 transition-all cursor-pointer" onclick="workflowManager.toggleStep(4)">
+                                            <div class="flex items-start justify-between gap-4">
+                                                <div class="flex-1">
+                                                    <div class="flex items-center gap-2 mb-1">
+                                                        <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                        </svg>
+                                                        <h4 class="font-semibold text-white">Ejecución</h4>
+                                                        <span class="text-xs text-amber-400 animate-pulse">● En Progreso</span>
+                                                    </div>
+                                                    <p class="text-sm text-slate-400">Implementa cambios siguiendo estándares, usa skills especializadas, valida cada paso.</p>
+                                                </div>
+                                                <input type="checkbox" class="step-checkbox w-5 h-5 rounded border-slate-600 text-blue-500 focus:ring-blue-500 bg-slate-700 cursor-pointer" data-step="4">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 5: Validación -->
+                                    <div class="workflow-step relative flex gap-4 mb-6 group" data-step="5">
+                                        <div class="step-indicator flex-shrink-0 w-12 h-12 rounded-full bg-slate-600 flex items-center justify-center text-white font-bold z-10 transition-all duration-300">
+                                            5
+                                        </div>
+                                        <div class="flex-1 p-4 bg-slate-800/50 border border-slate-700 rounded-lg hover:border-blue-500/50 transition-all cursor-pointer" onclick="workflowManager.toggleStep(5)">
+                                            <div class="flex items-start justify-between gap-4">
+                                                <div class="flex-1">
+                                                    <div class="flex items-center gap-2 mb-1">
+                                                        <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                        </svg>
+                                                        <h4 class="font-semibold text-white">Validación</h4>
+                                                    </div>
+                                                    <p class="text-sm text-slate-400">Ejecuta tests, linting, typecheck. Verifica que no se rompió funcionalidad existente.</p>
+                                                </div>
+                                                <input type="checkbox" class="step-checkbox w-5 h-5 rounded border-slate-600 text-blue-500 focus:ring-blue-500 bg-slate-700 cursor-pointer" data-step="5">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 6: Documentación -->
+                                    <div class="workflow-step relative flex gap-4 mb-6 group" data-step="6">
+                                        <div class="step-indicator flex-shrink-0 w-12 h-12 rounded-full bg-slate-600 flex items-center justify-center text-white font-bold z-10 transition-all duration-300">
+                                            6
+                                        </div>
+                                        <div class="flex-1 p-4 bg-slate-800/50 border border-slate-700 rounded-lg hover:border-blue-500/50 transition-all cursor-pointer" onclick="workflowManager.toggleStep(6)">
+                                            <div class="flex items-start justify-between gap-4">
+                                                <div class="flex-1">
+                                                    <div class="flex items-center gap-2 mb-1">
+                                                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                                        </svg>
+                                                        <h4 class="font-semibold text-white">Documentación</h4>
+                                                    </div>
+                                                    <p class="text-sm text-slate-400">Guarda en sesión del día, actualiza pendientes/ideas, resume decisiones importantes.</p>
+                                                </div>
+                                                <input type="checkbox" class="step-checkbox w-5 h-5 rounded border-slate-600 text-blue-500 focus:ring-blue-500 bg-slate-700 cursor-pointer" data-step="6">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Step 7: Cierre -->
+                                    <div class="workflow-step relative flex gap-4 group" data-step="7">
+                                        <div class="step-indicator flex-shrink-0 w-12 h-12 rounded-full bg-slate-600 flex items-center justify-center text-white font-bold z-10 transition-all duration-300">
+                                            7
+                                        </div>
+                                        <div class="flex-1 p-4 bg-slate-800/50 border border-slate-700 rounded-lg hover:border-blue-500/50 transition-all cursor-pointer" onclick="workflowManager.toggleStep(7)">
+                                            <div class="flex items-start justify-between gap-4">
+                                                <div class="flex-1">
+                                                    <div class="flex items-center gap-2 mb-1">
+                                                        <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                        </svg>
+                                                        <h4 class="font-semibold text-white">Cierre</h4>
+                                                    </div>
+                                                    <p class="text-sm text-slate-400">Confirma completitud con usuario, entrega resumen final, cierra sesión si es necesario.</p>
+                                                </div>
+                                                <input type="checkbox" class="step-checkbox w-5 h-5 rounded border-slate-600 text-blue-500 focus:ring-blue-500 bg-slate-700 cursor-pointer" data-step="7">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex flex-wrap gap-3 mb-6">
+                                <button onclick="workflowManager.markAllComplete()" class="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    Marcar Todo Completado
+                                </button>
+                                <button onclick="workflowManager.resetAll()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                    </svg>
+                                    Reiniciar
+                                </button>
+                                <button onclick="workflowManager.toggleComplexity()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                    </svg>
+                                    Cambiar Complejidad
+                                </button>
+                            </div>
+
+                            <!-- Documentation Link -->
+                            <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                    </svg>
+                                    <div>
+                                        <h4 class="font-medium">Documentación Completa</h4>
+                                        <p class="text-sm text-slate-400">Referencia detallada del workflow y mejores prácticas</p>
+                                    </div>
+                                </div>
+                                <a href="docs/WORKFLOW-STANDARD.md" target="_blank" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                                    Ver Docs
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Tab: Skills -->
+                        <div id="fw-tab-skills" class="fw-tab-content hidden">
+                            <h2 class="text-xl font-bold mb-4">Skills Disponibles</h2>
+                            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                                ${store.skills.map(skill => `
+                                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 hover:border-blue-500/50 transition-colors group">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <span class="px-2 py-1 bg-blue-500/10 text-blue-400 rounded text-xs font-mono">@${skill.name}</span>
+                                        </div>
+                                        <p class="text-sm text-slate-400">${skill.description}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            
+                            <div class="text-center">
+                                <span class="text-slate-500 text-sm">${store.skills.length} skills disponibles · Ver catálogo completo en core/skills/SKILLS.md</span>
+                            </div>
+                        </div>
+
+                        <!-- Tab: Agents -->
+                        <div id="fw-tab-agents" class="fw-tab-content hidden">
+                            <h2 class="text-xl font-bold mb-4">Agentes del Sistema</h2>
+                            <div class="space-y-4">
+                                <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">F</div>
+                                        <div>
+                                            <h3 class="font-semibold">@FreakingJSON-PA</h3>
+                                            <p class="text-xs text-slate-400">Agente Principal</p>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-slate-400">Orquestación y coordinación del framework. Punto de entrada para todas las sesiones.</p>
+                                </div>
+                                
+                                <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold">C</div>
+                                        <div>
+                                            <h3 class="font-semibold">@context-scout</h3>
+                                            <p class="text-xs text-slate-400">Descubrimiento de Contexto</p>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-slate-400">Descubre archivos de contexto relevantes antes de cada sesión.</p>
+                                </div>
+                                
+                                <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold">S</div>
+                                        <div>
+                                            <h3 class="font-semibold">@session-manager</h3>
+                                            <p class="text-xs text-slate-400">Gestión de Sesiones</p>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-slate-400">Gestión de sesiones diarias y trazabilidad del conocimiento.</p>
+                                </div>
+                                
+                                <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold">D</div>
+                                        <div>
+                                            <h3 class="font-semibold">@doc-writer</h3>
+                                            <p class="text-xs text-slate-400">Documentación</p>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-slate-400">Generación de documentación MVI (Minimal Viable Information).</p>
+                                </div>
+                                
+                                <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold">A</div>
+                                        <div>
+                                            <h3 class="font-semibold">@feature-architect</h3>
+                                            <p class="text-xs text-slate-400">Arquitecto de Features · DEV-ONLY</p>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-slate-400">Arquitecto de producto y guardián de la filosofía. Evalúa, planea y ejecuta features del backlog sin solapamientos.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab: Stats -->
+                        <div id="fw-tab-stats" class="fw-tab-content hidden">
+                            <h2 class="text-xl font-bold mb-4">Estadísticas Detalladas</h2>
+                            
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6">
+                                <h3 class="font-semibold mb-4">Herramientas Más Usadas</h3>
+                                <div class="space-y-3">
+                                    ${store.interactions.map(i => `
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-3">
+                                                <span class="px-2 py-1 bg-slate-800 rounded text-sm font-mono text-blue-400">${i.tool}</span>
+                                            </div>
+                                            <div class="flex items-center gap-4">
+                                                <div class="w-48 h-2 bg-slate-800 rounded-full overflow-hidden">
+                                                    <div class="h-full bg-blue-500 rounded-full" style="width: ${(i.count / 450) * 100}%"></div>
+                                                </div>
+                                                <span class="text-sm text-slate-400 w-12 text-right">${i.count}</span>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                                    <h3 class="font-semibold mb-4">Sesiones por Tipo</h3>
+                                    <div class="space-y-2">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-slate-400">Features</span>
+                                            <span class="text-white font-medium">45%</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-slate-400">Bugfix</span>
+                                            <span class="text-white font-medium">20%</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-slate-400">Research</span>
+                                            <span class="text-white font-medium">25%</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-slate-400">Planning</span>
+                                            <span class="text-white font-medium">10%</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+                                    <h3 class="font-semibold mb-4">Métricas de Calidad</h3>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <div class="flex justify-between mb-1">
+                                                <span class="text-slate-400 text-sm">Cobertura de Documentación</span>
+                                                <span class="text-white font-medium">92%</span>
+                                            </div>
+                                            <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                                                <div class="h-full bg-green-500 rounded-full" style="width: 92%"></div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <div class="flex justify-between mb-1">
+                                                <span class="text-slate-400 text-sm">Tests Pasando</span>
+                                                <span class="text-white font-medium">87%</span>
+                                            </div>
+                                            <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                                                <div class="h-full bg-blue-500 rounded-full" style="width: 87%"></div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <div class="flex justify-between mb-1">
+                                                <span class="text-slate-400 text-sm">Code Quality</span>
+                                                <span class="text-white font-medium">${store.stats.codeQuality}%</span>
+                                            </div>
+                                            <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                                                <div class="h-full bg-purple-500 rounded-full" style="width: ${store.stats.codeQuality}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            },
+
+            about() {
+                return `
+                <div class="h-full overflow-y-auto p-4 lg:p-8 page-transition">
+                    <div class="max-w-2xl mx-auto text-center py-12">
+                        <img src="Logo-freakinjson-blanco-alta.png" alt="FreakingJSON" class="w-24 h-24 mx-auto mb-6 rounded-2xl object-contain">
+                        
+                        <h1 class="text-4xl font-bold mb-2">FreakingJSON</h1>
+                        <p class="text-xl text-slate-400 mb-8">Personal Assistant Framework</p>
+                        
+                        <p class="text-2xl font-light italic text-slate-300 mb-12">
+                            "El conocimiento verdadero trasciende a lo público"
+                        </p>
+
+                        <div class="grid md:grid-cols-2 gap-4 text-left mb-12">
+                            <div class="p-6 bg-slate-900 border border-slate-800 rounded-xl">
+                                <h3 class="font-semibold mb-2 flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                    </svg>
+                                    Local-first
+                                </h3>
+                                <p class="text-sm text-slate-400">Todo en tus archivos locales. Nada en la nube.</p>
+                            </div>
+                            
+                            <div class="p-6 bg-slate-900 border border-slate-800 rounded-xl">
+                                <h3 class="font-semibold mb-2 flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                    </svg>
+                                    Privacy-first
+                                </h3>
+                                <p class="text-sm text-slate-400">Sin credenciales expuestas. Tu privacidad primero.</p>
+                            </div>
+                            
+                            <div class="p-6 bg-slate-900 border border-slate-800 rounded-xl">
+                                <h3 class="font-semibold mb-2 flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                    </svg>
+                                    MVI
+                                </h3>
+                                <p class="text-sm text-slate-400">Minimal Viable Information. Solo lo esencial.</p>
+                            </div>
+                            
+                            <div class="p-6 bg-slate-900 border border-slate-800 rounded-xl">
+                                <h3 class="font-semibold mb-2 flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    Multi-CLI
+                                </h3>
+                                <p class="text-sm text-slate-400">OpenCode, Claude, Gemini, Codex. Todos soportados.</p>
+                            </div>
+                        </div>
+
+                        <h2 class="text-xl font-bold mb-4">Conecta</h2>
+                        <div class="flex flex-wrap justify-center gap-3 mb-8">
+                            <a href="https://linktr.ee/freakingjson" target="_blank" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-2">
+                                <span>🔗</span> Linktree
+                            </a>
+                            <a href="https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework" target="_blank" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-2">
+                                <span>🐙</span> GitHub
+                            </a>
+                            <a href="https://www.threads.com/@freakingjson" target="_blank" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-2">
+                                <span>🧵</span> Threads
+                            </a>
+                        </div>
+
+                        <h2 class="text-xl font-bold mb-4">Apoya el Proyecto</h2>
+                        <p class="text-slate-400 mb-4">Este framework es open-source y gratuito. Tu apoyo ayuda a mantenerlo y mejorarlo.</p>
+                        <div class="flex flex-wrap justify-center gap-3">
+                            <a href="https://buymeacoffee.com/freakingjson" target="_blank" class="px-4 py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/50 rounded-lg transition-colors">
+                                ☕ Buy Me a Coffee
+                            </a>
+                        </div>
+
+                        <div class="mt-12 pt-8 border-t border-slate-800 text-slate-500 text-sm">
+                            <p>v0.1.2-prealpha · MIT License</p>
+                            <p class="mt-1">Agradecimientos a NetworkChuck y la comunidad open source</p>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }
+        };
+
+        // ============================================
+        // COMPONENTS - Reusable UI elements
+        // ============================================
+        const components = {
+            kpiCard(value, label, change, color) {
+                const colors = {
+                    blue: 'from-blue-500 to-blue-600',
+                    purple: 'from-purple-500 to-purple-600',
+                    green: 'from-green-500 to-green-600',
+                    amber: 'from-amber-500 to-amber-600'
+                };
+                return `
+                <div class="kpi-card bg-slate-900 border border-slate-800 rounded-xl p-6">
+                    <div class="text-3xl font-bold text-white mb-1">${value}</div>
+                    <div class="text-sm text-slate-400">${label}</div>
+                    <div class="text-xs ${change.includes('+') ? 'text-green-400' : 'text-slate-500'} mt-2 font-medium">${change}</div>
+                </div>
+                `;
+            },
+
+            featureCard(title, description, icon, color) {
+                const colors = {
+                    blue: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+                    purple: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
+                    green: 'bg-green-500/10 text-green-400 border-green-500/30',
+                    amber: 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                };
+                const icons = {
+                    shield: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>',
+                    lock: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>',
+                    zap: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>',
+                    terminal: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>'
+                };
+                return `
+                <div class="p-6 bg-slate-900 border ${colors[color]} rounded-xl transition-all hover:scale-[1.02]">
+                    <div class="w-12 h-12 ${colors[color].split(' ')[0]} rounded-lg flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 ${colors[color].split(' ')[1]}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            ${icons[icon]}
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold mb-2">${title}</h3>
+                    <p class="text-sm text-slate-400">${description}</p>
+                </div>
+                `;
+            }
+        };
+
+        // ============================================
+        // CHARTS - Chart.js integration
+        // ============================================
+        const charts = {
+            init() {
+                this.activityChart();
+                this.topicsChart();
+            },
+
+            activityChart() {
+                const ctx = document.getElementById('activityChart');
+                if (!ctx) return;
+                
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({length: 30}, (_, i) => `${i+1}`),
+                        datasets: [{
+                            label: 'Sesiones',
+                            data: Array.from({length: 30}, () => Math.floor(Math.random() * 5)),
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: '#334155' },
+                                ticks: { color: '#94a3b8' }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: '#94a3b8' }
+                            }
+                        }
+                    }
+                });
+            },
+
+            topicsChart() {
+                const ctx = document.getElementById('topicsChart');
+                if (!ctx) return;
+                
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['features', 'bugfix', 'research', 'planning', 'release'],
+                        datasets: [{
+                            data: [45, 20, 25, 15, 10],
+                            backgroundColor: [
+                                '#3b82f6',
+                                '#8b5cf6',
+                                '#22c55e',
+                                '#eab308',
+                                '#ef4444'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: { color: '#94a3b8' }
+                            }
+                        }
+                    }
+                });
+            }
+        };
+
+        // ============================================
+        // WORKFLOW MANAGER - Interactive Workflow Guide
+        // ============================================
+        const workflowManager = {
+            state: {
+                steps: {},
+                expressMode: false,
+                complexity: 'simple'
+            },
+
+            init() {
+                this.loadState();
+                this.updateUI();
+                
+                // Add event listeners to checkboxes
+                document.querySelectorAll('.step-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', (e) => {
+                        const step = parseInt(e.target.dataset.step);
+                        this.state.steps[step] = e.target.checked;
+                        this.saveState();
+                        this.updateUI();
+                    });
+                });
+            },
+
+            toggleStep(step) {
+                this.state.steps[step] = !this.state.steps[step];
+                this.saveState();
+                this.updateUI();
+            },
+
+            toggleExpressMode() {
+                this.state.expressMode = !this.state.expressMode;
+                this.saveState();
+                this.updateUI();
+                
+                // Show toast notification
+                this.showToast(this.state.expressMode ? 'Modo Express activado - Se saltará planificación' : 'Modo Express desactivado');
+            },
+
+            toggleComplexity() {
+                this.state.complexity = this.state.complexity === 'simple' ? 'complex' : 'simple';
+                this.saveState();
+                this.updateUI();
+            },
+
+            markAllComplete() {
+                for (let i = 1; i <= 7; i++) {
+                    this.state.steps[i] = true;
+                }
+                this.saveState();
+                this.updateUI();
+                this.showToast('¡Todos los pasos completados!');
+            },
+
+            resetAll() {
+                this.state.steps = {};
+                this.state.expressMode = false;
+                this.saveState();
+                this.updateUI();
+                this.showToast('Workflow reiniciado');
+            },
+
+            updateUI() {
+                // Update checkboxes
+                document.querySelectorAll('.step-checkbox').forEach(checkbox => {
+                    const step = parseInt(checkbox.dataset.step);
+                    checkbox.checked = !!this.state.steps[step];
+                });
+
+                // Update step indicators
+                document.querySelectorAll('.workflow-step').forEach((stepEl, index) => {
+                    const step = index + 1;
+                    const isCompleted = !!this.state.steps[step];
+                    const isInProgress = !isCompleted && this.isStepInProgress(step);
+                    const indicator = stepEl.querySelector('.step-indicator');
+                    
+                    // Update indicator appearance
+                    if (isCompleted) {
+                        indicator.className = 'step-indicator flex-shrink-0 w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white font-bold z-10 transition-all duration-300 ring-4 ring-green-500/20';
+                        indicator.innerHTML = '✓';
+                        stepEl.classList.add('opacity-75');
+                    } else if (isInProgress) {
+                        indicator.className = 'step-indicator flex-shrink-0 w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-white font-bold z-10 transition-all duration-300 ring-4 ring-amber-500/20 animate-pulse';
+                        indicator.innerHTML = step;
+                        stepEl.classList.remove('opacity-75');
+                    } else {
+                        indicator.className = 'step-indicator flex-shrink-0 w-12 h-12 rounded-full bg-slate-600 flex items-center justify-center text-white font-bold z-10 transition-all duration-300';
+                        indicator.innerHTML = step;
+                        stepEl.classList.remove('opacity-75');
+                    }
+                });
+
+                // Update express mode UI
+                const expressToggle = document.getElementById('express-mode-toggle');
+                if (expressToggle) {
+                    expressToggle.checked = this.state.expressMode;
+                }
+
+                // Show/hide express skip text for step 3
+                document.querySelectorAll('.express-skip').forEach(el => {
+                    el.classList.toggle('hidden', !this.state.expressMode);
+                });
+
+                // Update complexity badge
+                const complexityValue = document.getElementById('complexity-value');
+                const complexityBadge = document.getElementById('complexity-badge');
+                if (complexityValue && complexityBadge) {
+                    if (this.state.complexity === 'simple') {
+                        complexityValue.textContent = 'Simple';
+                        complexityValue.className = 'font-semibold text-blue-400';
+                        complexityBadge.className = 'px-4 py-2 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-center gap-2';
+                    } else {
+                        complexityValue.textContent = 'Complex';
+                        complexityValue.className = 'font-semibold text-purple-400';
+                        complexityBadge.className = 'px-4 py-2 bg-purple-500/10 border border-purple-500/30 rounded-lg flex items-center gap-2';
+                    }
+                }
+
+                // Update progress bar
+                const completedSteps = Object.values(this.state.steps).filter(Boolean).length;
+                const totalSteps = 7;
+                const progressPercent = (completedSteps / totalSteps) * 100;
+                
+                const progressBar = document.getElementById('progress-bar');
+                const progressText = document.getElementById('progress-text');
+                
+                if (progressBar) {
+                    progressBar.style.width = progressPercent + '%';
+                }
+                if (progressText) {
+                    progressText.textContent = `${completedSteps}/${totalSteps} pasos completados`;
+                }
+            },
+
+            isStepInProgress(step) {
+                // Step 4 (Execution) is always "in progress" until completed
+                if (step === 4) return true;
+                
+                // Previous steps should be completed for next step to be in progress
+                for (let i = 1; i < step; i++) {
+                    if (!this.state.steps[i]) return false;
+                }
+                return true;
+            },
+
+            saveState() {
+                try {
+                    localStorage.setItem('freakingjson-workflow-state', JSON.stringify(this.state));
+                } catch (e) {
+                    console.warn('Could not save workflow state:', e);
+                }
+            },
+
+            loadState() {
+                try {
+                    const saved = localStorage.getItem('freakingjson-workflow-state');
+                    if (saved) {
+                        this.state = { ...this.state, ...JSON.parse(saved) };
+                    }
+                } catch (e) {
+                    console.warn('Could not load workflow state:', e);
+                }
+            },
+
+            showToast(message) {
+                const existing = document.querySelector('.workflow-toast');
+                if (existing) existing.remove();
+
+                const toast = document.createElement('div');
+                toast.className = 'workflow-toast fixed bottom-20 right-4 px-4 py-3 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-50 animate-slide-in';
+                toast.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span class="text-sm">${message}</span>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+        };
+
+        // ============================================
+        // APP - Main application logic
+        // ============================================
+        const app = {
+            async init() {
+                // Load data
+                await dataLoader.loadAll();
+                
+                // Hide loading screen
+                document.getElementById('loading-screen').classList.add('hidden');
+                document.getElementById('main-layout').classList.remove('hidden');
+                
+                // Initial render
+                router.render();
+                router.updateNavState();
+                
+                // Mobile menu toggle
+                document.getElementById('menu-toggle')?.addEventListener('click', () => {
+                    document.querySelector('aside')?.classList.toggle('hidden');
+                });
+                
+                // Search functionality
+                document.getElementById('global-search')?.addEventListener('input', (e) => {
+                    this.handleSearch(e.target.value);
+                });
+            },
+
+            selectSession(id) {
+                store.currentSession = store.sessions.find(s => s.id === id);
+                router.render();
+            },
+
+            getSessionTypeColor(type) {
+                const colors = {
+                    release: 'bg-green-500',
+                    bugfix: 'bg-amber-500',
+                    research: 'bg-purple-500',
+                    features: 'bg-blue-500',
+                    other: 'bg-slate-500'
+                };
+                return colors[type] || colors.other;
+            },
+
+            startFramework() {
+                alert('Ejecuta pa.bat (Windows) o ./pa.sh (Mac/Linux) en tu terminal');
+            },
+
+            handleSearch(query) {
+                if (!query) return;
+                // Implement search logic here
+                console.log('Searching:', query);
+            },
+
+            switchFrameworkTab(tabName) {
+                // Hide all tab contents
+                document.querySelectorAll('.fw-tab-content').forEach(tab => {
+                    tab.classList.add('hidden');
+                });
+                
+                // Show selected tab
+                document.getElementById(`fw-tab-${tabName}`)?.classList.remove('hidden');
+                
+                // Update button styles
+                document.querySelectorAll('.fw-tab-btn').forEach(btn => {
+                    if (btn.dataset.tab === tabName) {
+                        btn.classList.remove('hover:bg-slate-800', 'text-slate-300');
+                        btn.classList.add('bg-blue-600', 'text-white');
+                    } else {
+                        btn.classList.add('hover:bg-slate-800', 'text-slate-300');
+                        btn.classList.remove('bg-blue-600', 'text-white');
+                    }
+                });
+                
+                // Re-init charts if on overview tab
+                if (tabName === 'overview') {
+                    setTimeout(() => charts.init(), 100);
+                }
+                
+                // Init workflow manager if on workflow tab
+                if (tabName === 'workflow') {
+                    setTimeout(() => workflowManager.init(), 100);
+                }
+            }
+        };
+
+        // Initialize app when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
+    </script>
+</body>
+</html>
