@@ -100,16 +100,9 @@ El instalador te hará 3 preguntas simples:
 Tu asistente está configurado. Ahora puedes:
 - Escribir `pa.bat` para iniciar una sesión
 - Pedirle ayuda con documentos, datos, o tareas diarias
-- Usar el Dashboard SPA para visualizar el estado del framework
+- Usar el [Dashboard SPA](./docs/dashboard/dashboard.html) para visualizar el estado del framework
 
 ---
-
-## 🤝 Comunidad y Soporte
-
-- 📸 **Instagram**: [@freakingjson](https://instagram.com/freakingjson)
-- 🌐 **Todas las redes**: [linktr.ee/freakingjson](https://linktr.ee/freakingjson)
-- 📝 **Blog Tech & Homelab**: [freakingjson.com](https://freakingjson.com)
-- ☕ **Apoya el proyecto**: [buymeacoffee.com/freakingjson](https://buymeacoffee.com/freakingjson)
 
 ### 🍎 🐧 Nota para usuarios Mac y Linux
 
@@ -125,6 +118,15 @@ python3 core/scripts/install.py
 ```
 
 La estructura y funcionamiento son idénticos. Solo cambian las extensiones de archivos de script.
+
+---
+
+## 🤝 Comunidad y Soporte
+
+- 📸 **Instagram**: [@freakingjson](https://instagram.com/freakingjson)
+- 🌐 **Todas las redes**: [linktr.ee/freakingjson](https://linktr.ee/freakingjson)
+- 📝 **Blog Tech & Homelab**: [freakingjson.com](https://freakingjson.com)
+- ☕ **Apoya el proyecto**: [buymeacoffee.com/freakingjson](https://buymeacoffee.com/freakingjson)
 
 ---
 
