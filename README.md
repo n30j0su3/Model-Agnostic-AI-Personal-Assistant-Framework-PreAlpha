@@ -124,15 +124,15 @@ La estructura y funcionamiento son idénticos. Solo cambian las extensiones de a
 
 ## 🙏 Agradecimientos
 
-Este framework existe gracias a:
+Gracias a Dios por la Gracia, la Revelación y el Discernimiento necesarios para construir este framework.
 
-- **La comunidad open source** - Por las herramientas y librerías que hacen esto posible
-- **OpenCode, Claude Code, Gemini CLI** - Por democratizar el acceso a la IA
-- **Agent Skills** - Por el estándar que inspira nuestra arquitectura
-- **Todos los contribuidores** - Que reportan issues, sugieren mejoras y comparten el proyecto
-- **La comunidad de usuarios** - Que confían en este framework para su trabajo diario
+Gracias a mi familia por su amor y paciencia, y a todos mis seres queridos (ellos saben quiénes son).
 
-> *"El conocimiento crece cuando se comparte."*
+Un agradecimiento especial a **[NetworkChuck](https://www.youtube.com/@NetworkChuck)** por inspirar la filosofía central de este proyecto:
+
+> *"I own my context. Nothing annoys me more than when AI tries to fence me in, give me vendor lock-in. No, I reject that."*
+
+Su enfoque de soberanía de datos y aprendizaje accesible fue fundamental para el diseño de este framework.
 
 ---
 
