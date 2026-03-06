@@ -14,6 +14,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.5-prealpha] - 2026-03-06
+
+### Fixed (Críticos)
+- **Estructura docs/dashboard/**: Creado en BASE y DEV para consistencia con PROD
+- **Ruta dashboard-data.js**: Corregida a `docs/dashboard/dashboard-data.js` en dashboard.html
+- **Agradecimientos**: Restaurados agradecimientos personales (Dios, familia, NetworkChuck)
+- **Badge English**: Agregado enlace a README_en.md
+- **Sanitización PROD**: Eliminados docs internos (SYNC-PROTOCOL, AGENT-CONFIGURATION, prd-dashboard-spa)
+- **VERSION bump**: Corrección de versionado para activar updates automáticos
+
+---
+
 ## [0.1.4-prealpha] - 2026-03-06
 
 ### Added
