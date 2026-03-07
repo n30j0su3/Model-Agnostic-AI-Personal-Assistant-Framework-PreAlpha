@@ -118,47 +118,6 @@ window.DASHBOARD_DATA = {
       "status": "active"
     },
     {
-      "name": "atribucion",
-      "displayName": "@atribucion",
-      "description": "Skill para analisis de metricas de atribucion por canal. Procesa Excel, calcula metricas (RPS, CR) y genera reportes HTML con variacion semanal.",
-      "category": "maaji",
-      "location": "core/skills/local/atribucion/",
-      "skillFile": "SKILL.md",
-      "examples": [
-        "cd workspaces/professional/projects/Maaji/Automatizaciones/DEV/atribucion\n\n# Ejecutar flujo completo\npython scripts/generar_reportes_fix.py"
-      ],
-      "commands": [],
-      "whenToUse": [],
-      "status": "active",
-      "workspace": "maaji"
-    },
-    {
-      "name": "checkout-con-evento",
-      "displayName": "@checkout-con-evento",
-      "description": "Skill para generar analisis de checkout CR con evento comercial. Lee datos raw centralizados en Maaji y genera dashboard con analisis de impacto.",
-      "category": "maaji",
-      "location": "core/skills/local/checkout-con-evento/",
-      "skillFile": "SKILL.md",
-      "examples": [],
-      "commands": [],
-      "whenToUse": [],
-      "status": "active",
-      "workspace": "maaji"
-    },
-    {
-      "name": "checkout-sin-evento",
-      "displayName": "@checkout-sin-evento",
-      "description": "Skill para generar analisis de checkout CR sin evento comercial. Lee datos raw centralizados en Maaji, procesa con Python y genera dashboard HTML + analisis Markdown.",
-      "category": "maaji",
-      "location": "core/skills/local/checkout-sin-evento/",
-      "skillFile": "SKILL.md",
-      "examples": [],
-      "commands": [],
-      "whenToUse": [],
-      "status": "active",
-      "workspace": "maaji"
-    },
-    {
       "name": "csv-processor",
       "displayName": "@csv-processor",
       "description": "Procesa archivos CSV para limpieza, transformación y análisis de datos tabulares. Esta skill debe usarse cuando el usuario necesite manipular datos CSV, incluyendo limpieza de datos, transformaciones (filtros, agregaciones, joins), conversión a otros formatos, o análisis exploratorio de datasets en formato CSV.",
@@ -227,19 +186,6 @@ window.DASHBOARD_DATA = {
       "commands": [],
       "whenToUse": [],
       "status": "active"
-    },
-    {
-      "name": "klaviyo-extract",
-      "displayName": "@klaviyo-extract",
-      "description": "Skill para extraer datos de Klaviyo (segments, lists, campaigns) usando MCP tools. Soporta empresas INT y COL. Ejecuta desde BASE/klaviyo-extract/.",
-      "category": "maaji",
-      "location": "core/skills/local/klaviyo-extract/",
-      "skillFile": "SKILL.md",
-      "examples": [],
-      "commands": [],
-      "whenToUse": [],
-      "status": "active",
-      "workspace": "maaji"
     },
     {
       "name": "markdown-writer",
