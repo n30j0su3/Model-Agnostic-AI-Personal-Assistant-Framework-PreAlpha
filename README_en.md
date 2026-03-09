@@ -1,8 +1,8 @@
-# Model-Agnostic AI Personal Assistant Framework v0.1.3-prealpha
+# Model-Agnostic AI Personal Assistant Framework v0.1.7-prealpha
 
 > "Your Personal AI Assistant. Your Knowledge. Your Control."
 
-[![Release](https://img.shields.io/badge/release-v0.1.3--prealpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.1.3-prealpha)
+[![Release](https://img.shields.io/badge/release-v0.1.7--prealpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.1.7-prealpha)
 [![Instagram](https://img.shields.io/badge/Instagram-%40freakingjson-E4405F?logo=instagram&logoColor=white)](https://instagram.com/freakingjson)
 [![Linktree](https://img.shields.io/badge/Linktree-@freakingjson-43E55C?logo=linktree&logoColor=white)](https://linktr.ee/freakingjson)
 [![Blog](https://img.shields.io/badge/Blog-freakingjson.com-FFA500?logo=firefoxbrowser&logoColor=white)](https://freakingjson.com)
@@ -18,7 +18,13 @@
 
 ## 📢 Latest Release
 
-**v0.1.3-prealpha** - Workflow Standard: Structured 7-step process for complex tasks
+**v0.1.7-prealpha** - Initialization Fix
+- Fixed error when starting session
+- Knowledge Base now functional
+- Codebase (pending/ideas) available
+- Script kb-init.py for manual initialization
+
+**v0.1.6-prealpha** - Critical structure fixes
 - Workflow Standard v1.0 with automatic complexity detection
 - Express Mode for urgent tasks with full transparency
 - Customizable framework configuration
@@ -58,7 +64,7 @@ An artificial intelligence assistant that lives on **your computer**, not on thi
 | 📅 **Daily sessions** | The assistant remembers context between conversations |
 | ⚡ **Easy to use** | 3-step installation, no complex configurations |
 | 🎛️ **Dashboard SPA** | Visualize framework status in your browser |
-| 📊 **Workflow Standard** | Structured 7-step process for complex tasks with full transparency |
+| 📊 **Workflow Standard** | Structured process for complex tasks with full transparency |
 
 ---
 
@@ -141,20 +147,6 @@ To use advanced models (GPT-4, Claude, etc.) you'll need:
 
 ---
 
-## 🙏 Acknowledgments
-
-Thank you to God for the Grace, Revelation, and Discernment necessary to build this framework.
-
-Thank you to my family for their love and patience, and to all my loved ones (they know who they are).
-
-Special thanks to **[NetworkChuck](https://www.youtube.com/@NetworkChuck)** for inspiring the core philosophy of this project:
-
-> *"I own my context. Nothing annoys me more than when AI tries to fence me in, give me vendor lock-in. No, I reject that."*
-
-His focus on data sovereignty and accessible learning was fundamental to the design of this framework.
-
----
-
 ## 🔗 Complete Documentation
 
 **Are you a developer or need detailed technical information?**
@@ -184,6 +176,20 @@ python3 core/scripts/install.py
 ```
 
 The structure and functionality are identical. Only script file extensions change.
+
+---
+
+## 🙏 Acknowledgments
+
+Thank you to God for the Grace, Revelation, and Discernment necessary to build this framework.
+
+Thank you to my family for their love and patience, and to all my loved ones (they know who they are).
+
+Special thanks to **[NetworkChuck](https://www.youtube.com/@NetworkChuck)** for inspiring the core philosophy of this project:
+
+> *"I own my context. Nothing annoys me more than when AI tries to fence me in, give me vendor lock-in. No, I reject that."*
+
+His focus on data sovereignty and accessible learning was fundamental to the design of this framework.
 
 ---
 
