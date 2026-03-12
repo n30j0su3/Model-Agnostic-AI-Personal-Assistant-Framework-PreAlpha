@@ -1,0 +1,142 @@
+{
+  "agents": [
+    {
+      "id": "FreakingJSON-PA",
+      "name": "@FreakingJSON-PA",
+      "description": "Agente principal del Personal Assistant Framework en modo producción. Gestiona sesiones, contexto y delegación a subagentes para usuarios finales.",
+      "type": "primary",
+      "location": "core/agents/pa-assistant.md",
+      "dependencies": [],
+      "tools": [],
+      "status": "operativo",
+      "scripts": {
+        "session_start": "core/scripts/session-start\\.py",
+        "session_end": "core/scripts/session-end\\.py"
+      },
+      "mode": "primary",
+      "version": "0.1.0",
+      "category": "core",
+      "tags": [
+        "assistant",
+        "core",
+        "orchestration"
+      ]
+    },
+    {
+      "id": "context-scout",
+      "name": "@ContextScout",
+      "description": "Todo el detalle de detección",
+      "type": "subagent",
+      "location": "core/agents/subagents/context-scout-v2.md",
+      "dependencies": [],
+      "tools": [],
+      "status": "operativo",
+      "scripts": {},
+      "mode": "always-on",
+      "version": "2.0.0",
+      "category": "core",
+      "tags": [
+        "context",
+        "discovery",
+        "detection",
+        "read-only"
+      ]
+    },
+    {
+      "id": "context-scout",
+      "name": "@ContextScout",
+      "description": "Descubre y recomienda archivos de contexto desde core/.context/ ordenados por prioridad. Agente read-only.",
+      "type": "subagent",
+      "location": "core/agents/subagents/context-scout.md",
+      "dependencies": [],
+      "tools": [],
+      "status": "operativo",
+      "scripts": {},
+      "mode": "subagent",
+      "version": "0.1.0",
+      "category": "subagents",
+      "tags": [
+        "context",
+        "search",
+        "discovery",
+        "subagent"
+      ]
+    },
+    {
+      "id": "doc-writer",
+      "name": "@DocWriter",
+      "description": "Genera documentación de sesiones, hallazgos y conocimiento siguiendo el principio MVI.",
+      "type": "subagent",
+      "location": "core/agents/subagents/doc-writer.md",
+      "dependencies": [],
+      "tools": [],
+      "status": "operativo",
+      "scripts": {},
+      "mode": "subagent",
+      "version": "0.1.0",
+      "category": "subagents",
+      "tags": [
+        "documentation",
+        "knowledge",
+        "subagent"
+      ]
+    },
+    {
+      "id": "feature-architect",
+      "name": "@FeatureArchitect",
+      "description": "Arquitecto de producto y guardián de la filosofía. Evalúa, planea y ejecuta features del backlog con enfoque user-friendly y sin solapamientos.",
+      "type": "subagent",
+      "location": "core/agents/subagents/feature-architect.md",
+      "dependencies": [
+        "skill:prd-generator",
+        "skill:task-management",
+        "context:core/.context/MASTER.md",
+        "context:core/.context/codebase/backlog.md",
+        "context:core/skills/catalog.json",
+        "context:core/agents/AGENTS.md"
+      ],
+      "tools": [],
+      "status": "operativo",
+      "scripts": {},
+      "mode": "subagent",
+      "version": "0.1.0",
+      "category": "subagents",
+      "tags": [
+        "architecture",
+        "product",
+        "backlog",
+        "planning",
+        "dev-only"
+      ]
+    },
+    {
+      "id": "session-manager",
+      "name": "@SessionManager",
+      "description": "Gestiona sesiones diarias: crea, actualiza y cierra sesiones en core/.context/sessions/.",
+      "type": "subagent",
+      "location": "core/agents/subagents/session-manager.md",
+      "dependencies": [],
+      "tools": [],
+      "status": "operativo",
+      "scripts": {
+        "session_start": "core/scripts/session-start\\.py",
+        "session_end": "core/scripts/session-end\\.py",
+        "session_indexer": "core/scripts/session-indexer\\.py"
+      },
+      "mode": "subagent",
+      "version": "0.1.0",
+      "category": "subagents",
+      "tags": [
+        "sessions",
+        "tracking",
+        "subagent"
+      ]
+    }
+  ],
+  "total_agents": 6,
+  "last_updated": "2026-03-11T08:24:13.627036",
+  "types": {
+    "primary": 1,
+    "subagent": 5
+  }
+}

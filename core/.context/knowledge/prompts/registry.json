@@ -1,0 +1,163 @@
+{
+  "version": "1.0",
+  "description": "Registro de prompts exitosos reutilizables",
+  "last_updated": "2026-03-11T17:39:13.829308",
+  "total_prompts": 3,
+  "prompts": [
+    {
+      "id": "analyze-project-structure",
+      "category": "analysis",
+      "name": "Analizar Estructura de Proyecto",
+      "prompt_template": "Analiza la estructura del proyecto en {path}. Identifica:\n1. Arquitectura general\n2. Archivos principales\n3. Dependencias\n4. Patrones de código\n5. Áreas de mejora potenciales",
+      "context": "Útil para entender proyectos nuevos o desconocidos",
+      "success_rate": 0.95,
+      "usage_count": 5,
+      "last_used": "2026-03-10",
+      "tags": [
+        "analysis",
+        "architecture",
+        "discovery"
+      ]
+    },
+    {
+      "id": "fix-and-improve",
+      "category": "debugging",
+      "name": "Fix y Mejora",
+      "prompt_template": "El siguiente código tiene un problema:\n\n{code}\n\nError: {error}\n\nAnaliza la causa raíz, propón una solución, e implementa el fix. Además, si ves oportunidades de mejora, indícalas.",
+      "context": "Para cuando hay un error que bloquea el avance",
+      "success_rate": 0.9,
+      "usage_count": 8,
+      "last_used": "2026-03-11",
+      "tags": [
+        "debugging",
+        "fix",
+        "improvement"
+      ]
+    },
+    {
+      "id": "deploy-agents-parallel",
+      "category": "planning",
+      "name": "Desplegar Agentes Paralelos",
+      "prompt_template": "Ejecuta las siguientes tareas en paralelo usando agentes:\n\n{tasks}\n\nCada agente debe retornar un resumen de su trabajo. Coordina los resultados al final.",
+      "context": "Para tareas que pueden ejecutarse simultáneamente sin conflicto",
+      "success_rate": 0.85,
+      "usage_count": 3,
+      "last_used": "2026-03-11",
+      "tags": [
+        "parallel",
+        "agents",
+        "coordination"
+      ]
+    },
+    {
+      "id": "create-simplified-prp",
+      "category": "documentation",
+      "name": "Crear PRP Simplificado para PROD",
+      "prompt_template": "Crea un documento PRP simplificado para PROD basado en PRP original:\n\n**PRP Original**: {original_prp_path}\n**CORE #**: {core_number}\n**Nombre**: {core_name}\n\nEstructura requerida:\n1. Frontmatter YAML con title, version, type, scope, prp\n2. Principio Fundamental (1-2 líneas)\n3. Descripción detallada (3-5 párrafos)\n4. Cuándo Aplicar (situaciones)\n5. Flujo de Trabajo (pasos numerados)\n6. Herramientas y Recursos\n7. Ejemplos Prácticos (correcto vs incorrecto)\n8. Validación y Verificación (checklist)\n9. Referencias\n\nReglas:\n- Sanitizar: NO incluir datos dev interno, credenciales, o referencias a PRPs privados\n- Ejemplos prácticos: Usar casos reales del framework\n- MVI: Documentación concisa pero completa\n- Referencias: Apuntar a docs/core/ u otros docs públicos",
+      "context": "Para crear versión pública de PRPs en docs/core/",
+      "success_rate": 0.95,
+      "usage_count": 8,
+      "last_used": "2026-03-11",
+      "tags": [
+        "documentation",
+        "prp",
+        "public",
+        "sanitize"
+      ]
+    },
+    {
+      "id": "PROMPT-20260311173438-2861",
+      "category": "python",
+      "prompt_template": "import io\nsys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')",
+      "extracted_from": 16,
+      "status": "validated",
+      "auto_detected": true,
+      "timestamp": "2026-03-11T17:34:38.552447"
+    },
+    {
+      "id": "PROMPT-20260311173438-2520",
+      "category": "config",
+      "prompt_template": "Esto funciono correctamente. [OK]\n\n## Ideas\n\n- [x] Implementar nuevo modulo de extraction\n- [ ] Agregar soporte para YAML\n\n## Prompt Exitoso",
+      "extracted_from": 30,
+      "status": "validated",
+      "auto_detected": false,
+      "timestamp": "2026-03-11T17:34:38.552447"
+    },
+    {
+      "id": "PROMPT-20260311173438-5087",
+      "category": "python",
+      "prompt_template": "def extract_patterns(text):\n    return re.findall(r'pattern', text)",
+      "extracted_from": 32,
+      "status": "validated",
+      "auto_detected": true,
+      "timestamp": "2026-03-11T17:34:38.552447"
+    },
+    {
+      "id": "PROMPT-20260311173646-9875",
+      "category": "python",
+      "prompt_template": "import io\nsys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')",
+      "extracted_from": 16,
+      "status": "validated",
+      "auto_detected": true,
+      "timestamp": "2026-03-11T17:36:46.692346",
+      "session_file": "test_session.md"
+    },
+    {
+      "id": "PROMPT-20260311173646-6331",
+      "category": "config",
+      "prompt_template": "Esto funciono correctamente. [OK]\n\n## Ideas\n\n- [x] Implementar nuevo modulo de extraction\n- [ ] Agregar soporte para YAML\n\n## Prompt Exitoso",
+      "extracted_from": 30,
+      "status": "validated",
+      "auto_detected": false,
+      "timestamp": "2026-03-11T17:36:46.692346",
+      "session_file": "test_session.md"
+    },
+    {
+      "id": "PROMPT-20260311173646-4989",
+      "category": "python",
+      "prompt_template": "def extract_patterns(text):\n    return re.findall(r'pattern', text)",
+      "extracted_from": 32,
+      "status": "validated",
+      "auto_detected": true,
+      "timestamp": "2026-03-11T17:36:46.692346",
+      "session_file": "test_session.md"
+    },
+    {
+      "id": "PROMPT-20260311173913-6212",
+      "category": "python",
+      "prompt_template": "import io\nsys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')",
+      "extracted_from": 16,
+      "status": "validated",
+      "auto_detected": true,
+      "timestamp": "2026-03-11T17:39:13.829308",
+      "session_file": "test_session.md"
+    },
+    {
+      "id": "PROMPT-20260311173913-5629",
+      "category": "config",
+      "prompt_template": "Esto funciono correctamente. [OK]\n\n## Ideas\n\n- [x] Implementar nuevo modulo de extraction\n- [ ] Agregar soporte para YAML\n\n## Prompt Exitoso",
+      "extracted_from": 30,
+      "status": "validated",
+      "auto_detected": false,
+      "timestamp": "2026-03-11T17:39:13.829308",
+      "session_file": "test_session.md"
+    },
+    {
+      "id": "PROMPT-20260311173913-7313",
+      "category": "python",
+      "prompt_template": "def extract_patterns(text):\n    return re.findall(r'pattern', text)",
+      "extracted_from": 32,
+      "status": "validated",
+      "auto_detected": true,
+      "timestamp": "2026-03-11T17:39:13.829308",
+      "session_file": "test_session.md"
+    }
+  ],
+  "categories": {
+    "analysis": 1,
+    "debugging": 1,
+    "planning": 1,
+    "generation": 0,
+    "documentation": 0
+  }
+}

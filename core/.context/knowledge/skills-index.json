@@ -1,0 +1,323 @@
+{
+  "skills": [
+    {
+      "id": "Content Optimizer",
+      "name": "@Content Optimizer",
+      "description": "Optimiza borradores de texto para SEO, legibilidad y engagement. Ajusta el tono de voz y la estructura del contenido. Usalo en el workspace @content.",
+      "category": "core",
+      "location": "core/skills/core/content-optimizer/",
+      "has_scripts": true,
+      "dependencies": [],
+      "tools": [],
+      "scripts_count": 1,
+      "main_script": "seo-checker.py"
+    },
+    {
+      "id": "Context Evaluator",
+      "name": "@Context Evaluator",
+      "description": "Framework para evaluar la calidad de las respuestas de los agentes mediante el patron \"LLM-as-a-Judge\". Permite comparacion de respuestas y evaluacion contra rubricas.",
+      "category": "core",
+      "location": "core/skills/core/context-evaluator/",
+      "has_scripts": true,
+      "dependencies": [],
+      "tools": [
+        "evaluar"
+      ],
+      "scripts_count": 1,
+      "main_script": "evaluate.py"
+    },
+    {
+      "id": "Decision Engine",
+      "name": "@Decision Engine",
+      "description": "Evalua instrucciones con enfoque local-first y decide entre ejecucion local, delegacion a agentes o uso de LLM remoto. Usalo para optimizar contexto, cuota y resultados.",
+      "category": "core",
+      "location": "core/skills/core/decision-engine/",
+      "has_scripts": true,
+      "dependencies": [],
+      "tools": [],
+      "scripts_count": 1,
+      "main_script": "route.py"
+    },
+    {
+      "id": "MCP Builder",
+      "name": "@MCP Builder",
+      "description": "Guides creation of MCP servers with strong tool design, schemas, and evaluation practices.",
+      "category": "core",
+      "location": "core/skills/core/mcp-builder/",
+      "has_scripts": false,
+      "dependencies": [],
+      "tools": [
+        "PIL"
+      ]
+    },
+    {
+      "id": "Paper Summarizer",
+      "name": "@Paper Summarizer",
+      "description": "Analiza y resume documentos tecnicos, papers cientificos o articulos extensos. Extrae metodologia, hallazgos clave y conclusiones. Usalo en el workspace @research.",
+      "category": "core",
+      "location": "core/skills/core/paper-summarizer/",
+      "has_scripts": true,
+      "dependencies": [],
+      "tools": [],
+      "scripts_count": 1,
+      "main_script": "summarize.py"
+    },
+    {
+      "id": "Skill Discovery Helper",
+      "name": "@Skill Discovery Helper",
+      "description": "Helper para identificar skills apropiadas para tareas comunes y evitar crear scripts innecesarios",
+      "category": "core",
+      "location": "core/skills/core/skill-discovery/",
+      "has_scripts": false,
+      "dependencies": [],
+      "tools": [
+        "matplotlib",
+        "openpyxl",
+        "ments",
+        "pypdf",
+        "seaborn",
+        "pandas"
+      ]
+    },
+    {
+      "id": "csv-processor",
+      "name": "@csv-processor",
+      "description": "Procesa archivos CSV para limpieza, transformación y análisis de datos tabulares. Esta skill debe usarse cuando el usuario necesite manipular datos CSV, incluyendo limpieza de datos, transformaciones (filtros, agregaciones, joins), conversión a otros formatos, o análisis exploratorio de datasets en formato CSV.",
+      "category": "core",
+      "location": "core/skills/core/csv-processor/",
+      "has_scripts": true,
+      "dependencies": [],
+      "tools": [
+        "Python",
+        "matplotlib",
+        "seaborn",
+        "pandas"
+      ],
+      "scripts_count": 1,
+      "main_script": "csv_processor.py"
+    },
+    {
+      "id": "dashboard-pro",
+      "name": "@dashboard-pro",
+      "description": "Sin descripción disponible",
+      "category": "core",
+      "location": "core/skills/core/dashboard-pro/",
+      "has_scripts": true,
+      "dependencies": [],
+      "tools": [],
+      "scripts_count": 1,
+      "main_script": "optimize-templates.py"
+    },
+    {
+      "id": "data-viz",
+      "name": "@data-viz",
+      "description": "Genera visualizaciones de datos (gráficos de barras, líneas, etc.) usando Matplotlib y Seaborn.",
+      "category": "core",
+      "location": "core/skills/core/data-viz/",
+      "has_scripts": false,
+      "dependencies": [],
+      "tools": [
+        "matplotlib",
+        "seaborn"
+      ]
+    },
+    {
+      "id": "docx",
+      "name": "@docx",
+      "description": "Comprehensive document creation, editing, and analysis with support for tracked changes, formatting preservation, and text extraction. Use when working with Word documents (.docx).",
+      "category": "core",
+      "location": "core/skills/core/docx/",
+      "has_scripts": true,
+      "dependencies": [],
+      "tools": [
+        "python-docx",
+        "pandoc"
+      ],
+      "scripts_count": 2,
+      "main_script": "pack.py"
+    },
+    {
+      "id": "error-recovery",
+      "name": "@error-recovery",
+      "description": "Self-healing error handling with recovery playbooks. Log errors, analyze patterns, and generate actionable recovery strategies following the Antifragile principle.",
+      "category": "core",
+      "location": "core/skills/core/error-recovery/",
+      "has_scripts": false,
+      "dependencies": [],
+      "tools": [
+        "error_logger",
+        "documentar"
+      ]
+    },
+    {
+      "id": "etl",
+      "name": "@etl",
+      "description": "**Description:** Core Skill para manipulación y transformación de datos (Extract, Transform, Load). Especializado en operaciones locales rápidas sobre CSV, JSON y Excel (si librerías están disponib...",
+      "category": "core",
+      "location": "core/skills/core/etl/",
+      "has_scripts": false,
+      "dependencies": [],
+      "tools": [
+        "openpyxl",
+        "pandas"
+      ]
+    },
+    {
+      "id": "json-prompt-generator",
+      "name": "@json-prompt-generator",
+      "description": "Genera prompts JSON estructurados a partir de una idea inicial para IA, con objetivos y entregables claros.",
+      "category": "core",
+      "location": "core/skills/core/json-prompt-generator/",
+      "has_scripts": false,
+      "dependencies": [],
+      "tools": []
+    },
+    {
+      "id": "markdown-writer",
+      "name": "@markdown-writer",
+      "description": "Guía para escribir documentación Markdown de alta calidad siguiendo el principio MVI del framework FreakingJSON. Esta skill debe usarse cuando el usuario necesite crear o editar archivos .md en el framework, asegurando consistencia, claridad y adherencia al principio de Minimal Viable Information.",
+      "category": "core",
+      "location": "core/skills/core/markdown-writer/",
+      "has_scripts": true,
+      "dependencies": [],
+      "tools": [],
+      "scripts_count": 2,
+      "main_script": "md-lint.py"
+    },
+    {
+      "id": "pdf",
+      "name": "@pdf",
+      "description": "Comprehensive PDF manipulation toolkit for extracting text and tables, creating new PDFs, merging/splitting documents, and handling forms. Use when the user needs to process or generate PDF files.",
+      "category": "core",
+      "location": "core/skills/core/pdf/",
+      "has_scripts": false,
+      "dependencies": [],
+      "tools": [
+        "pypdf",
+        "pytesseract",
+        "pdfplumber",
+        "reportlab"
+      ]
+    },
+    {
+      "id": "pptx",
+      "name": "@pptx",
+      "description": "Presentation creation, editing, and analysis with support for layouts, notes, and design. Use when working with PowerPoint files (.pptx).",
+      "category": "core",
+      "location": "core/skills/core/pptx/",
+      "has_scripts": true,
+      "dependencies": [],
+      "tools": [
+        "python-pptx"
+      ],
+      "scripts_count": 3,
+      "main_script": "pack.py"
+    },
+    {
+      "id": "prd-generator",
+      "name": "@prd-generator",
+      "description": "Generates structured Product Requirements Documents with user stories, acceptance criteria, and stakeholder alignment.",
+      "category": "core",
+      "location": "core/skills/core/prd-generator/",
+      "has_scripts": false,
+      "dependencies": [],
+      "tools": [
+        "ment",
+        "ments",
+        "MENTS"
+      ]
+    },
+    {
+      "id": "prompt-improvement",
+      "name": "@prompt-improvement",
+      "description": "Mejora prompts con estandares modernos (RAG, few-shot, JSON prompts) y criterios de calidad. Usalo en el workspace @development.",
+      "category": "core",
+      "location": "core/skills/core/prompt-improvement/",
+      "has_scripts": true,
+      "dependencies": [],
+      "tools": [],
+      "scripts_count": 1,
+      "main_script": "update-references.py"
+    },
+    {
+      "id": "python-standards",
+      "name": "@python-standards",
+      "description": "Estándares y validación para scripts Python cross-platform (Windows/Linux/macOS). Esta skill debe usarse cuando se escriban scripts Python en el framework para garantizar compatibilidad multi-SO, evitar problemas de encoding (emojis en Windows), y asegurar calidad consistente en todo el código.",
+      "category": "core",
+      "location": "core/skills/core/python-standards/",
+      "has_scripts": true,
+      "dependencies": [],
+      "tools": [
+        "Python",
+        "detect_env",
+        "Windows",
+        "pathlib",
+        "core"
+      ],
+      "scripts_count": 3,
+      "main_script": "check_script.py"
+    },
+    {
+      "id": "skill-creator",
+      "name": "@skill-creator",
+      "description": "Guia completa para crear y evaluar skills en el framework FreakingJSON. Use cuando el usuario quiera crear, evaluar, comparar o empaquetar una skill. Incluye sistema de evaluacion con @skill-evaluator para medir calidad MVI, claridad, completitud y accionabilidad.",
+      "category": "core",
+      "location": "core/skills/core/skill-creator/",
+      "has_scripts": true,
+      "dependencies": [],
+      "tools": [
+        "Python"
+      ],
+      "scripts_count": 3,
+      "main_script": "aggregate_benchmark.py"
+    },
+    {
+      "id": "task-management",
+      "name": "@task-management",
+      "description": "Sistema avanzado de gestión de tareas multidisciplinarias. Permite crear, categorizar por workspace y mover tareas entre archivos de contexto y la sesión actual.",
+      "category": "core",
+      "location": "core/skills/core/task-management/",
+      "has_scripts": true,
+      "dependencies": [],
+      "tools": [],
+      "scripts_count": 1,
+      "main_script": "manage-tasks.py"
+    },
+    {
+      "id": "ui-ux-pro-max",
+      "name": "@ui-ux-pro-max",
+      "description": "UI/UX design intelligence with searchable database",
+      "category": "core",
+      "location": "core/skills/core/ui-ux-pro-max/",
+      "has_scripts": true,
+      "dependencies": [],
+      "tools": [
+        "requests",
+        "ments",
+        "D"
+      ],
+      "scripts_count": 3,
+      "main_script": "core.py"
+    },
+    {
+      "id": "xlsx",
+      "name": "@xlsx",
+      "description": "Comprehensive spreadsheet creation, editing, and analysis with support for formulas, formatting, data analysis, and visualization. Use when working with .xlsx, .csv, .tsv files.",
+      "category": "core",
+      "location": "core/skills/core/xlsx/",
+      "has_scripts": true,
+      "dependencies": [],
+      "tools": [
+        "openpyxl",
+        "pandas"
+      ],
+      "scripts_count": 1,
+      "main_script": "recalc.py"
+    }
+  ],
+  "total_skills": 23,
+  "last_updated": "2026-03-11T16:00:01.424739",
+  "categories": {
+    "core": 23
+  }
+}

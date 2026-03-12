@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "description": "Indice central de sesiones para consulta historica y Dashboard SPA",
+  "last_updated": "2026-03-11T10:42:54.400153",
+  "total_sessions": 1,
+  "schema": {
+    "session": {
+      "id": "YYYY-MM-DD",
+      "date": "YYYY-MM-DD",
+      "time_start": "HH:MM",
+      "time_end": "HH:MM o null",
+      "title": "Titulo auto-generado o editable",
+      "summary": "Resumen de 1-2 lineas",
+      "topics": [
+        "array",
+        "de",
+        "tags"
+      ],
+      "type": "features|bugfix|research|planning|other",
+      "stats": {
+        "interactions": 0,
+        "files_modified": 0,
+        "decisions": 0,
+        "lsp_errors": 0,
+        "word_count": 0
+      },
+      "highlights": [],
+      "file_path": "sessions/YYYY-MM-DD.md",
+      "status": "active|completed"
+    }
+  },
+  "sessions": [
+    {
+      "id": "2026-03-11",
+      "date": "2026-03-11",
+      "time_start": "--:--",
+      "time_end": "10:16",
+      "title": "Session Log - 2026-03-11",
+      "summary": "",
+      "topics": [],
+      "type": "other",
+      "stats": {
+        "interactions": 0,
+        "files_modified": 0,
+        "decisions": 0,
+        "lsp_errors": 0,
+        "word_count": 42
+      },
+      "highlights": [],
+      "file_path": "sessions/2026-03-11.md",
+      "status": "completed"
+    }
+  ],
+  "filters": {
+    "by_topic": {},
+    "by_type": {
+      "other": 1
+    }
+  },
+  "topics_registry": []
+}

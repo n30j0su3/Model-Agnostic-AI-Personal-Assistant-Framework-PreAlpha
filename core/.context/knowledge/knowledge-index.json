@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "last_updated": "",
+  "stats": {
+    "total_discoveries": 0,
+    "total_prompts": 0,
+    "total_ideas": 0,
+    "total_best_practices": 0,
+    "total_anti_patterns": 0,
+    "pending_validation": 0
+  },
+  "recent": {
+    "discoveries": [],
+    "prompts": [],
+    "ideas": []
+  },
+  "sessions_processed": [],
+  "discoveries": 8,
+  "prompts": 6,
+  "ideas": 2,
+  "best_practices": 4,
+  "last_extraction": "2026-03-11T23:30:00.000000",
+  "history": [
+    {
+      "timestamp": "2026-03-11T17:36:46.702471",
+      "session": "test_session.md",
+      "discoveries": 4,
+      "prompts": 3,
+      "ideas": 1,
+      "best_practices": 2
+    },
+    {
+      "timestamp": "2026-03-11T17:39:13.831317",
+      "session": "test_session.md",
+      "discoveries": 4,
+      "prompts": 3,
+      "ideas": 1,
+      "best_practices": 2
+    },
+    {
+      "timestamp": "2026-03-11T23:30:00.000000",
+      "session": "2026-03-11.md",
+      "discoveries": 12,
+      "prompts": 1,
+      "ideas": 0,
+      "best_practices": 4
+    }
+  ]
+}

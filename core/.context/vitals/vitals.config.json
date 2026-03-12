@@ -1,0 +1,14 @@
+{
+  "vitals": [
+    "opencode.jsonc",
+    "core/agents/",
+    "core/skills/custom/",
+    "config/",
+    "workspaces/"
+  ],
+  "backup_retention_days": 30,
+  "max_backups": 50,
+  "auto_backup_on_destructive": true,
+  "check_integrity_on_startup": true,
+  "sync_to_remote": false
+}

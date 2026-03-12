@@ -1,0 +1,155 @@
+{
+  "created_at": "2026-03-11T10:15:53.294111",
+  "version": "1.0",
+  "total_files": 21,
+  "total_dirs": 4,
+  "files": {
+    "opencode.jsonc": {
+      "path": "opencode.jsonc",
+      "hash": "768212ce6312f090c581c58deaec0c4c89568b39e324bae9cc5fe785a9a3d7f5",
+      "size": 506,
+      "mtime": 1773105183.3017063,
+      "is_dir": false
+    },
+    "core\\agents\\AGENTS.md": {
+      "path": "core\\agents\\AGENTS.md",
+      "hash": "d2014092fba67e96b1012046d7636a625a06614a687f7002de074fd6737862a5",
+      "size": 4055,
+      "mtime": 1772727418.8933103,
+      "is_dir": false
+    },
+    "core\\agents\\pa-assistant.md": {
+      "path": "core\\agents\\pa-assistant.md",
+      "hash": "c187c8f59da4e5a7cbabf670eb00b489edf51b16ee9251fb8e49c33c9ed13dae",
+      "size": 11941,
+      "mtime": 1773235377.2751198,
+      "is_dir": false
+    },
+    "core\\agents\\subagents\\context-scout-v2.md": {
+      "path": "core\\agents\\subagents\\context-scout-v2.md",
+      "hash": "8e00d68e0c29ba50e91fe16d49e6600f22df2d872642838bc81c352e7868e8ab",
+      "size": 7221,
+      "mtime": 1772150741.0,
+      "is_dir": false
+    },
+    "core\\agents\\subagents\\context-scout.md": {
+      "path": "core\\agents\\subagents\\context-scout.md",
+      "hash": "4c046eb2fdbd866ba8d48fcc8764074421f6e98410b3b1dc9d8e729ab25520a4",
+      "size": 1819,
+      "mtime": 1771518926.0,
+      "is_dir": false
+    },
+    "core\\agents\\subagents\\doc-writer.md": {
+      "path": "core\\agents\\subagents\\doc-writer.md",
+      "hash": "c0eb1f69164c51d53f9e821fb37fad151f198cce50bf5032748522adcd81aab7",
+      "size": 1651,
+      "mtime": 1771518926.0,
+      "is_dir": false
+    },
+    "core\\agents\\subagents\\feature-architect.md": {
+      "path": "core\\agents\\subagents\\feature-architect.md",
+      "hash": "67866fe47a0eb8bcdc259f3141c83cad31f9bb8c5f30b8e8c449642437266ca8",
+      "size": 9716,
+      "mtime": 1771518927.0,
+      "is_dir": false
+    },
+    "core\\agents\\subagents\\session-manager.md": {
+      "path": "core\\agents\\subagents\\session-manager.md",
+      "hash": "3edcd11f57497fc726830fd62418add45ef8dbff2b9dad479822dfc04b45caa3",
+      "size": 4844,
+      "mtime": 1773227136.6997225,
+      "is_dir": false
+    },
+    "core\\.context\\codebase\\ideas.md": {
+      "path": "core\\.context\\codebase\\ideas.md",
+      "hash": "72b1a7dec0007ae47661ac300574727e90d3367d31a4eb3b823bb6c85c73579f",
+      "size": 71,
+      "mtime": 1773099067.255175,
+      "is_dir": false
+    },
+    "core\\.context\\sessions\\.gitkeep": {
+      "path": "core\\.context\\sessions\\.gitkeep",
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "mtime": 1773242139.8867655,
+      "is_dir": false
+    },
+    "core\\.context\\sessions\\.events\\2026-03-11.jsonl": {
+      "path": "core\\.context\\sessions\\.events\\2026-03-11.jsonl",
+      "hash": "b2983185462d1cee55daf40a5bb18659c343db72abd295d788c54ad10c8408fb",
+      "size": 437,
+      "mtime": 1773242152.9697762,
+      "is_dir": false
+    },
+    "core\\.context\\sessions\\.instances\\cli-c6237767.json": {
+      "path": "core\\.context\\sessions\\.instances\\cli-c6237767.json",
+      "hash": "c2e6f9f937beb6e1d131579755ebf4cd74ae85c5491971c3a2204cab1dbb389c",
+      "size": 219,
+      "mtime": 1773242152.9697762,
+      "is_dir": false
+    },
+    "core\\.context\\codebase\\recordatorios.md": {
+      "path": "core\\.context\\codebase\\recordatorios.md",
+      "hash": "c12b7206fb181e581ffb2daca45f9637b39cc8818a8e534240d8228747a29061",
+      "size": 102,
+      "mtime": 1773099067.255175,
+      "is_dir": false
+    },
+    "config\\.gitkeep": {
+      "path": "config\\.gitkeep",
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0,
+      "mtime": 1769986800.0,
+      "is_dir": false
+    },
+    "config\\branding.txt": {
+      "path": "config\\branding.txt",
+      "hash": "50517c3646d64a0278d8beab3352deb03188b269e92582b424581df343f41287",
+      "size": 514,
+      "mtime": 1771519124.0,
+      "is_dir": false
+    },
+    "config\\i18n.json": {
+      "path": "config\\i18n.json",
+      "hash": "09e74d84969dda68081e464c05d95f4e548fdc961c9f92763572aeaa94b9f99c",
+      "size": 15797,
+      "mtime": 1771518926.0,
+      "is_dir": false
+    },
+    "config\\knowledge_base.json": {
+      "path": "config\\knowledge_base.json",
+      "hash": "b01b7734ad8b9b5e392c9b779561f6e0ff7b8e5204dbd967e22de3f0c17cf9ef",
+      "size": 1569,
+      "mtime": 1769986800.0,
+      "is_dir": false
+    },
+    "config\\mcp.json": {
+      "path": "config\\mcp.json",
+      "hash": "49a7e29e2f59a6f368558239069b2aaeeeb18e5b00e9d39d891933004b1d24fd",
+      "size": 197,
+      "mtime": 1769986800.0,
+      "is_dir": false
+    },
+    "config\\quotas.json": {
+      "path": "config\\quotas.json",
+      "hash": "336e059f1028cf8b78be78f1b8235ef5e5c3e1528a12af23a4dbfa1f3ef06a16",
+      "size": 442,
+      "mtime": 1769986800.0,
+      "is_dir": false
+    },
+    "config\\workflow-config.yaml": {
+      "path": "config\\workflow-config.yaml",
+      "hash": "10b9b002bdcdccb7a839099637494c8fa0b9922882a848dbc4cc5dc134b3d5e4",
+      "size": 6033,
+      "mtime": 1772727492.0523984,
+      "is_dir": false
+    },
+    "core\\.context\\navigation.md": {
+      "path": "core\\.context\\navigation.md",
+      "hash": "2f6e1f57c5a184a0d563ac602847d2fd990f01d889da5dde724eaf9798f1db41",
+      "size": 1766,
+      "mtime": 1772217956.0138574,
+      "is_dir": false
+    }
+  }
+}

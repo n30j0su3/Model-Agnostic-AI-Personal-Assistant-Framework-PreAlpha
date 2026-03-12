@@ -1,0 +1,58 @@
+[
+  {
+    "skill": "@csv-processor",
+    "evaluated_at": "2026-03-11T10:30:00Z",
+    "mode": "full",
+    "scores": {
+      "mvi_compliance": 95,
+      "clarity": 92,
+      "completeness": 88,
+      "actionability": 94,
+      "cross_platform": 90
+    },
+    "overall": 92,
+    "grade": "A",
+    "feedback": "Excellent MVI adherence. Trigger patterns are clear and unambiguous. Examples cover common use cases. Platform-agnostic instructions work across CLI tools.",
+    "suggestions": [
+      "Add edge case handling for malformed CSV headers",
+      "Consider adding streaming mode for large files"
+    ]
+  },
+  {
+    "skill": "@xlsx",
+    "evaluated_at": "2026-03-11T11:00:00Z",
+    "mode": "full",
+    "scores": {
+      "mvi_compliance": 78,
+      "clarity": 85,
+      "completeness": 70,
+      "actionability": 82,
+      "cross_platform": 75
+    },
+    "overall": 78,
+    "grade": "B",
+    "feedback": "Good structure overall. Missing some edge case documentation. Examples are practical but could include more complex scenarios.",
+    "suggestions": [
+      "Add section for multi-sheet workbooks",
+      "Include error handling for corrupted files",
+      "Add openpyxl fallback for environments without pandas"
+    ]
+  },
+  {
+    "skill": "@template-skill",
+    "evaluated_at": "2026-03-11T14:15:00Z",
+    "mode": "simplified",
+    "scores": {
+      "mvi_compliance": 65,
+      "clarity": 70,
+      "actionability": 55
+    },
+    "overall": 63,
+    "grade": "C",
+    "feedback": "Requires revision. Missing essential sections and examples are incomplete.",
+    "suggestions": [
+      "Add working code examples",
+      "Complete the trigger patterns section"
+    ]
+  }
+]

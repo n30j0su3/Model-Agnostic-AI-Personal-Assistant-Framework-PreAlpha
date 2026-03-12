@@ -1,0 +1,75 @@
+"""
+Module: {module_name}
+Description: {description}
+
+This module provides {functionality_description}.
+It is designed for import and programmatic use, with no direct console output.
+All functions return values or raise exceptions for error handling.
+
+Classes:
+    LibraryError: Base exception for all library errors.
+    ValidationError: Raised when configuration validation fails.
+    ProcessingError: Raised when data processing fails.
+    ConfigItem: Represents a configuration item with validation.
+
+Functions:
+    validate_config(config): Validate a configuration dictionary.
+    process_items(items, options): Process a list of items.
+    transform_data(data, transformation): Transform data.
+    get_module_info(): Return information about this module.
+
+Attributes:
+    __version__: Module version string.
+    DEFAULT_TIMEOUT: Default timeout in seconds for operations.
+
+Example Usage:
+    >>> from {module_name} import validate_config, process_items
+    >>> 
+    >>> # Validate configuration
+    >>> config = validate_config({{
+    ...     "timeout": 60,
+    ...     "retries": 3
+    ... }})
+    >>> 
+    >>> # Process items
+    >>> items = ["item1", "item2", "item3"]
+    >>> result = process_items(items, config)
+    >>> 
+    >>> if result["success"]:
+    ...     print(f"Processed {{result['processed_count']}} items")
+    ... else:
+    ...     print(f"Errors: {{result['errors']}}")
+
+Exceptions:
+    All exceptions inherit from LibraryError for easy catching:
+    
+    >>> from {module_name} import LibraryError
+    >>> 
+    >>> try:
+    ...     result = process_items(data)
+    ... except LibraryError as e:
+    ...     print(f"Library error: {{e.message}}")
+    ...     if e.details:
+    ...         print(f"Details: {{e.details}}")
+
+Type Hints:
+    All public functions include type hints for better IDE support:
+    
+    >>> from typing import Dict, Any
+    >>> def my_function(config: Dict[str, Any]) -> Dict[str, Any]:
+    ...     pass
+
+Dependencies:
+    - Python 3.8+
+    - typing (standard library)
+
+Notes:
+    - No print statements in library functions
+    - All errors raised as exceptions with ASCII messages
+    - Return values are always structured dictionaries
+    - Functions are pure when possible (no side effects)
+
+Author: {author}
+Version: {version}
+Date: {date}
+"""

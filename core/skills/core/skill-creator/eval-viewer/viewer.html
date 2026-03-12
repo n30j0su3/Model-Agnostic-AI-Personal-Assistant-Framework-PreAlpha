@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skill Eval Viewer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+                    colors: {
+                        slate: { 850: '#1e293b', 900: '#0f172a', 950: '#020617' },
+                        brand: { 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+        .animate-slide-in { animation: slideInLeft 0.3s ease-out; }
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .score-ring { transition: stroke-dashoffset 0.5s ease; }
+        .kpi-card {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        }
+        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); }
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .feedback-item { transition: all 0.2s ease; }
+        .feedback-item:hover { background: rgba(59, 130, 246, 0.1); }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-50 min-h-screen">
+    <div id="app" class="max-w-6xl mx-auto p-4 lg:p-8">
+        <!-- Header -->
+        <header class="flex items-center justify-between mb-8 animate-fade-in">
+            <div>
+                <h1 class="text-3xl font-bold"><span class="gradient-text">Skill Eval</span> Viewer</h1>
+                <p class="text-slate-400 mt-1">Visualize skill evaluation results</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <label class="cursor-pointer px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                    </svg>
+                    Load Eval
+                    <input type="file" id="file-input" accept=".json" class="hidden" onchange="loadEvalFile(event)">
+                </label>
+            </div>
+        </header>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="flex flex-col items-center justify-center py-20 animate-fade-in">
+            <div class="w-24 h-24 rounded-2xl bg-slate-800 flex items-center justify-center mb-6">
+                <svg class="w-12 h-12 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+            </div>
+            <h2 class="text-xl font-semibold mb-2">No Evaluation Loaded</h2>
+            <p class="text-slate-400 text-center max-w-md mb-6">
+                Load an eval JSON file to visualize the skill evaluation results.<br>
+                Files are typically in <code class="text-blue-400">../evals/*.json</code>
+            </p>
+            <label class="cursor-pointer px-6 py-3 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors border border-slate-700">
+                Browse Files
+                <input type="file" accept=".json" class="hidden" onchange="loadEvalFile(event)">
+            </label>
+        </div>
+
+        <!-- Eval Content (hidden by default) -->
+        <div id="eval-content" class="hidden space-y-6">
+            <!-- Overview Section -->
+            <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 animate-fade-in">
+                <div class="flex flex-col lg:flex-row lg:items-center gap-6">
+                    <!-- Score Ring -->
+                    <div class="flex items-center gap-4">
+                        <div class="relative w-32 h-32">
+                            <svg class="w-32 h-32 transform -rotate-90">
+                                <circle cx="64" cy="64" r="56" stroke="#1e293b" stroke-width="12" fill="none"/>
+                                <circle id="score-ring" cx="64" cy="64" r="56" stroke="url(#scoreGradient)" stroke-width="12" fill="none" stroke-linecap="round" class="score-ring" stroke-dasharray="352" stroke-dashoffset="352"/>
+                                <defs>
+                                    <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#3b82f6"/>
+                                        <stop offset="100%" stop-color="#8b5cf6"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <span id="score-value" class="text-3xl font-bold">--</span>
+                                <span class="text-sm text-slate-400">/ 100</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h2 id="skill-name" class="text-2xl font-bold">Skill Name</h2>
+                            <p id="eval-date" class="text-sm text-slate-400">Evaluated: --</p>
+                            <div id="score-badge" class="mt-2 inline-flex px-3 py-1 rounded-full text-sm font-medium"></div>
+                        </div>
+                    </div>
+                    <!-- Quick Stats -->
+                    <div class="flex-1 grid grid-cols-3 gap-4">
+                        <div class="kpi-card bg-slate-800 rounded-xl p-4">
+                            <div id="passed-count" class="text-2xl font-bold text-green-400">--</div>
+                            <div class="text-sm text-slate-400">Passed</div>
+                        </div>
+                        <div class="kpi-card bg-slate-800 rounded-xl p-4">
+                            <div id="warning-count" class="text-2xl font-bold text-amber-400">--</div>
+                            <div class="text-sm text-slate-400">Warnings</div>
+                        </div>
+                        <div class="kpi-card bg-slate-800 rounded-xl p-4">
+                            <div id="failed-count" class="text-2xl font-bold text-red-400">--</div>
+                            <div class="text-sm text-slate-400">Failed</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Categories Section -->
+            <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 animate-fade-in">
+                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                    Category Scores
+                </h3>
+                <div id="categories-container" class="space-y-4"></div>
+            </section>
+
+            <!-- Feedback Section -->
+            <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 animate-fade-in">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold flex items-center gap-2">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+                        </svg>
+                        Feedback
+                    </h3>
+                    <div class="flex gap-2">
+                        <button onclick="filterFeedback('all')" class="filter-btn px-3 py-1 text-sm rounded-lg bg-blue-600 text-white" data-filter="all">All</button>
+                        <button onclick="filterFeedback('info')" class="filter-btn px-3 py-1 text-sm rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600" data-filter="info">Info</button>
+                        <button onclick="filterFeedback('warning')" class="filter-btn px-3 py-1 text-sm rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600" data-filter="warning">Warnings</button>
+                        <button onclick="filterFeedback('error')" class="filter-btn px-3 py-1 text-sm rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600" data-filter="error">Errors</button>
+                    </div>
+                </div>
+                <div id="feedback-container" class="space-y-2 max-h-64 overflow-y-auto"></div>
+            </section>
+
+            <!-- Suggestions Section -->
+            <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 animate-fade-in">
+                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531a3.374 3.374 0 00-.988-2.386l-.548-.547z"/>
+                    </svg>
+                    Suggestions
+                </h3>
+                <div id="suggestions-container" class="space-y-3"></div>
+            </section>
+
+            <!-- Actions -->
+            <div class="flex justify-end gap-3">
+                <button onclick="exportReport()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors border border-slate-700 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    Export Report
+                </button>
+                <button onclick="clearEval()" class="px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg transition-colors border border-red-600/30">
+                    Clear
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentEval = null;
+
+        function loadEvalFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    currentEval = JSON.parse(e.target.result);
+                    renderEval(currentEval);
+                } catch (err) {
+                    alert('Invalid JSON file: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function renderEval(data) {
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('eval-content').classList.remove('hidden');
+
+            // Overview
+            document.getElementById('skill-name').textContent = data.skill_name || 'Unknown Skill';
+            document.getElementById('eval-date').textContent = 'Evaluated: ' + (data.evaluated_at ? new Date(data.evaluated_at).toLocaleString() : 'Unknown');
+
+            const score = data.overall_score || 0;
+            document.getElementById('score-value').textContent = score;
+            const circumference = 2 * Math.PI * 56;
+            const offset = circumference - (score / 100) * circumference;
+            document.getElementById('score-ring').style.strokeDashoffset = offset;
+
+            const badge = document.getElementById('score-badge');
+            if (score >= 80) { badge.textContent = 'Excellent'; badge.className = 'mt-2 inline-flex px-3 py-1 rounded-full text-sm font-medium bg-green-500/20 text-green-400'; }
+            else if (score >= 60) { badge.textContent = 'Good'; badge.className = 'mt-2 inline-flex px-3 py-1 rounded-full text-sm font-medium bg-blue-500/20 text-blue-400'; }
+            else if (score >= 40) { badge.textContent = 'Needs Work'; badge.className = 'mt-2 inline-flex px-3 py-1 rounded-full text-sm font-medium bg-amber-500/20 text-amber-400'; }
+            else { badge.textContent = 'Poor'; badge.className = 'mt-2 inline-flex px-3 py-1 rounded-full text-sm font-medium bg-red-500/20 text-red-400'; }
+
+            // Count feedback types
+            let passed = 0, warnings = 0, failed = 0;
+            (data.categories || []).forEach(cat => {
+                (cat.items || []).forEach(item => {
+                    if (item.passed === true) passed++;
+                    else if (item.passed === false) failed++;
+                    else warnings++;
+                });
+            });
+            document.getElementById('passed-count').textContent = passed;
+            document.getElementById('warning-count').textContent = warnings;
+            document.getElementById('failed-count').textContent = failed;
+
+            // Categories
+            const catContainer = document.getElementById('categories-container');
+            catContainer.innerHTML = (data.categories || []).map(cat => {
+                const catScore = cat.score || 0;
+                const catMax = cat.max_score || 100;
+                const pct = (catScore / catMax) * 100;
+                return `
+                    <div class="bg-slate-800 rounded-lg p-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-medium">${cat.name}</span>
+                            <span class="text-sm ${pct >= 70 ? 'text-green-400' : pct >= 50 ? 'text-amber-400' : 'text-red-400'}">${catScore}/${catMax}</span>
+                        </div>
+                        <div class="h-2 bg-slate-700 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-500 ${pct >= 70 ? 'bg-green-500' : pct >= 50 ? 'bg-amber-500' : 'bg-red-500'}" style="width: ${pct}%"></div>
+                        </div>
+                        <div class="mt-3 space-y-1">
+                            ${(cat.items || []).map(item => `
+                                <div class="flex items-center gap-2 text-sm">
+                                    ${item.passed === true ? '<svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>' : item.passed === false ? '<svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>' : '<svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>'}
+                                    <span class="${item.passed === false ? 'text-red-300' : 'text-slate-300'}">${item.check}</span>
+                                    ${item.weight ? `<span class="text-slate-500 text-xs ml-auto">(${item.weight}pts)</span>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Feedback
+            renderFeedback(data.feedback || []);
+
+            // Suggestions
+            const sugContainer = document.getElementById('suggestions-container');
+            sugContainer.innerHTML = (data.suggestions || []).map(s => {
+                const priorityColors = { high: 'border-red-500/50 bg-red-500/10', medium: 'border-amber-500/50 bg-amber-500/10', low: 'border-blue-500/50 bg-blue-500/10' };
+                const priorityLabels = { high: 'High', medium: 'Medium', low: 'Low' };
+                const color = priorityColors[s.priority] || priorityColors.low;
+                return `
+                    <div class="p-4 rounded-lg border ${color}">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-xs font-semibold uppercase ${s.priority === 'high' ? 'text-red-400' : s.priority === 'medium' ? 'text-amber-400' : 'text-blue-400'}">${priorityLabels[s.priority] || 'Low'}</span>
+                        </div>
+                        <p class="text-slate-200">${s.suggestion}</p>
+                    </div>
+                `;
+            }).join('') || '<p class="text-slate-500 text-center py-4">No suggestions available</p>';
+        }
+
+        function renderFeedback(feedback, filter = 'all') {
+            const container = document.getElementById('feedback-container');
+            const filtered = filter === 'all' ? feedback : feedback.filter(f => f.type === filter);
+            container.innerHTML = filtered.map(f => {
+                const icons = {
+                    info: '<svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+                    warning: '<svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
+                    error: '<svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+                };
+                const bgColors = { info: 'bg-blue-500/10', warning: 'bg-amber-500/10', error: 'bg-red-500/10' };
+                return `
+                    <div class="feedback-item flex items-start gap-3 p-3 rounded-lg ${bgColors[f.type] || 'bg-slate-800'}" data-type="${f.type}">
+                        ${icons[f.type] || icons.info}
+                        <span class="text-slate-200">${f.message}</span>
+                    </div>
+                `;
+            }).join('') || '<p class="text-slate-500 text-center py-4">No feedback available</p>';
+        }
+
+        function filterFeedback(type) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-slate-700', 'text-slate-300');
+            });
+            document.querySelector(`.filter-btn[data-filter="${type}"]`).classList.remove('bg-slate-700', 'text-slate-300');
+            document.querySelector(`.filter-btn[data-filter="${type}"]`).classList.add('bg-blue-600', 'text-white');
+            if (currentEval) renderFeedback(currentEval.feedback || [], type);
+        }
+
+        function clearEval() {
+            currentEval = null;
+            document.getElementById('empty-state').classList.remove('hidden');
+            document.getElementById('eval-content').classList.add('hidden');
+            document.getElementById('file-input').value = '';
+        }
+
+        function exportReport() {
+            if (!currentEval) return;
+            const blob = new Blob([JSON.stringify(currentEval, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentEval.skill_name || 'skill'}-eval-report.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

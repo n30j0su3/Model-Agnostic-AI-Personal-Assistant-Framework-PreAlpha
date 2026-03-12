@@ -1,0 +1,55 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-03-11",
+  "playbooks": [
+    {
+      "id": "PB-001",
+      "name": "encoding-errors",
+      "title": "Errores de Codificación Windows",
+      "category": "encoding",
+      "severity": "high",
+      "frequency": "frequent",
+      "file": "PB-001-encoding-errors.md",
+      "keywords": ["UnicodeEncodeError", "charmap", "codec", "utf-8", "encoding"],
+      "success_rate": 100,
+      "last_used": "2026-03-11"
+    },
+    {
+      "id": "PB-002",
+      "name": "file-not-found",
+      "title": "Archivo No Encontrado y Permisos",
+      "category": "file_operations",
+      "severity": "high",
+      "frequency": "frequent",
+      "file": "PB-002-file-not-found.md",
+      "keywords": ["FileNotFoundError", "PermissionError", "IsADirectoryError", "path", "file"],
+      "success_rate": null,
+      "last_used": null
+    },
+    {
+      "id": "PB-003",
+      "name": "json-parsing",
+      "title": "Errores de Parsing JSON",
+      "category": "encoding",
+      "severity": "medium",
+      "frequency": "frequent",
+      "file": "PB-003-json-parsing.md",
+      "keywords": ["JSONDecodeError", "json", "parsing", "BOM", "malformed"],
+      "success_rate": null,
+      "last_used": null
+    }
+  ],
+  "categories": {
+    "encoding": 2,
+    "file_operations": 1,
+    "network": 0,
+    "configuration": 0,
+    "other": 0
+  },
+  "stats": {
+    "total": 3,
+    "auto_generated": 0,
+    "manual": 3,
+    "avg_success_rate": 100
+  }
+}

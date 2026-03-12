@@ -1,0 +1,119 @@
+# Framework Configuration
+# Version: 0.2.1-prealpha
+
+evaluation:
+  # Mode: full (all criteria) or simplified (core criteria only)
+  mode: full
+  
+  # Criteria weights (should sum to 100)
+  weights:
+    mvi_compliance: 25
+    clarity: 25
+    completeness: 20
+    actionability: 20
+    cross_platform: 10
+  
+  # Grading thresholds
+  grades:
+    A: 90
+    B: 80
+    C: 70
+    D: 50
+    F: 0
+  
+  # Auto-evaluate on skill creation
+  auto_evaluate: false
+  
+  # Baseline comparison
+  baseline:
+    enabled: true
+    reference_skill: csv-processor
+
+skills:
+  # Default location for new skills
+  default_location: core/skills/core
+  
+  # Auto-index on creation
+  auto_index: true
+
+agents:
+  # Default location for new agents
+  default_location: core/agents/subagents
+  
+  # Auto-register in AGENTS.md
+  auto_register: true
+
+sessions:
+  # Session end behavior
+  error_recovery: true
+  auto_summary: true
+  index_on_close: true
+
+logging:
+  level: INFO
+  errors:
+    enabled: true
+    location: core/.context/knowledge/errors
+  playbooks:
+    enabled: true
+    location: core/.context/knowledge/playbooks
+
+knowledge_extraction:
+  enabled: true
+  mark_for_review: true
+  auto_detect:
+    discoveries: true
+    prompts: true
+    ideas: true
+    best_practices: true
+  tags:
+    discovery: "#discovery"
+    prompt_success: "#prompt-success"
+    idea: "#idea"
+    best_practice: "#best-practice"
+    anti_pattern: "#anti-pattern"
+  output:
+    discoveries: "core/.context/knowledge/learning/discoveries.md"
+    prompts: "core/.context/knowledge/prompts/registry.json"
+    ideas: "core/.context/codebase/ideas.md"
+    best_practices: "core/.context/knowledge/learning/best-practices.md"
+    index: "core/.context/knowledge/knowledge-index.json"
+
+enforcement:
+  # Modo de enforcement: warn (advertir) | block (bloquear) | log (solo registrar)
+  level: warn
+  
+  # Momentos de validación
+  timing:
+    pre-commit:
+      enabled: false
+      checks: [006, 007]
+      max_duration_seconds: 5
+    pre-push:
+      enabled: false
+      checks: [006, 007]
+      branches: [main, master]
+    pre-release:
+      enabled: true
+      checks: [001, 006, 007]
+      max_duration_seconds: 30
+    session-end:
+      enabled: true
+      checks: [003, 005]
+  
+  # Notificaciones
+  notifications:
+    console: true
+    file: "core/.context/logs/enforcement.log"
+  
+  # Checks críticos (NO pueden desactivarse)
+  critical_checks:
+    - session_end_required
+    - version_consistency
+    - no_credentials_prod
+    - no_prps_prod
+  
+  # Performance
+  performance:
+    cache_results: true
+    cache_ttl_seconds: 300
