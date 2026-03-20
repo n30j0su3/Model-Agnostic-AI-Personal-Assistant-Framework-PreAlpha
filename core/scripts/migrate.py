@@ -76,6 +76,17 @@ MIGRATIONS: Dict[str, Dict] = {
         ],
         "scripts": ["skills-indexer.py", "agents-indexer.py"],
     },
+    "v0.2.1": {
+        "name": "propagation_and_public_runtime",
+        "description": "Compatibilidad de propagación, backlog y runtime público limpio",
+        "creates": [
+            "core/.context/codebase/backlog.md",
+            "core/.context/workspaces/",
+            "config/update-protected-paths.txt",
+            "config/propagation-policy.json",
+        ],
+        "scripts": ["kb-init.py", "skills-indexer.py", "agents-indexer.py"],
+    },
 }
 
 
@@ -211,7 +222,7 @@ def create_directory(path: Path) -> bool:
         return False
 
 
-def create_json_file(path: Path, initial_content: Dict = None) -> bool:
+def create_json_file(path: Path, initial_content: Optional[Dict] = None) -> bool:
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
         if initial_content is None:

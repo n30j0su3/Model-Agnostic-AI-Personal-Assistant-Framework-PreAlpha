@@ -4,7 +4,7 @@ name: SessionManager
 description: "Gestiona sesiones diarias: crea, actualiza y cierra sesiones en core/.context/sessions/."
 category: subagents
 type: subagent
-version: 0.1.0
+version: 0.2.1
 
 mode: subagent
 temperature: 0.1
@@ -14,6 +14,7 @@ tools:
   edit: true
   grep: true
   glob: true
+  bash: true
 permissions:
   write:
     "core/.context/sessions/**": "allow"
@@ -24,7 +25,11 @@ permissions:
     "core/.context/codebase/**": "allow"
     "**/*": "deny"
   bash:
-    "*": "deny"
+    "python core/scripts/session-start.py": "allow"
+    "python core/scripts/session-end.py": "allow"
+    "python core/scripts/session-indexer.py *": "allow"
+    "python core/scripts/knowledge-extractor.py *": "allow"
+    "python *": "deny"
 
 tags:
   - sessions

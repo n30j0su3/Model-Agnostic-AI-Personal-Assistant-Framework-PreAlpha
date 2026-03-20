@@ -1,8 +1,8 @@
-# Model-Agnostic AI Personal Assistant Framework v0.1.7-prealpha
+# Model-Agnostic AI Personal Assistant Framework v0.2.2-prealpha
 
 > "Your Personal AI Assistant. Your Knowledge. Your Control."
 
-[![Release](https://img.shields.io/badge/release-v0.1.7--prealpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.1.7-prealpha)
+[![Release](https://img.shields.io/badge/release-v0.2.2--prealpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.2.2-prealpha)
 [![Instagram](https://img.shields.io/badge/Instagram-%40freakingjson-E4405F?logo=instagram&logoColor=white)](https://instagram.com/freakingjson)
 [![Linktree](https://img.shields.io/badge/Linktree-@freakingjson-43E55C?logo=linktree&logoColor=white)](https://linktr.ee/freakingjson)
 [![Blog](https://img.shields.io/badge/Blog-freakingjson.com-FFA500?logo=firefoxbrowser&logoColor=white)](https://freakingjson.com)
@@ -18,16 +18,17 @@
 
 ## 📢 Latest Release
 
-**v0.1.7-prealpha** - KB Initialization Fix
+**v0.2.2-prealpha** - Update reliability and public release refresh
 - Fixed context initialization error
 - `kb-init.py` script to initialize Knowledge Base
 - `codebase/` and `knowledge/` structures created automatically
 - Compatible with upgrades from previous versions
-- Workflow Standard v1.0 with automatic complexity detection
-- Express Mode for urgent tasks with full transparency
-- Customizable framework configuration
-- Visual integration in Dashboard SPA
-- Case study: Dashboard SPA v2.0 as workflow example
+- Automated propagation across `BASE`, `DEV`, and `PROD`
+- Stronger public release staging sanitization
+- Public default OpenCode agent runtime under `.opencode/`
+- Stronger reference and public release validation
+- Safe update flow with context, KB, and workspace preservation
+- Session close fix for clean public runtime
 
 📄 [View Changelog](./CHANGELOG.md) | 🏷️ [View Releases](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases)
 > 
@@ -62,7 +63,7 @@ An artificial intelligence assistant that lives on **your computer**, not on thi
 | 📅 **Daily sessions** | The assistant remembers context between conversations |
 | ⚡ **Easy to use** | 3-step installation, no complex configurations |
 | 🎛️ **Dashboard SPA** | Visualize framework status in your browser |
-| 📊 **Workflow Standard** | Structured 7-step process for complex tasks with full transparency |
+| 📊 **Structured Task Flow** | Guided execution for complex tasks with traceability |
 
 ---
 
@@ -97,6 +98,32 @@ Your assistant is configured. Now you can:
 - Type `pa.bat` to start a session
 - Ask for help with documents, data, or daily tasks
 - Use the Dashboard SPA to visualize framework status
+
+---
+
+## 🔄 How to Update Without Losing Your Data
+
+Use the official updater:
+
+```bash
+python core/scripts/update.py --check
+python core/scripts/update.py
+```
+
+The official process:
+- creates a preservation backup before updating
+- applies framework improvements
+- restores protected user-owned files
+- runs migrations for compatibility
+
+Automatically preserved:
+- `workspaces/`
+- `core/.context/sessions/`
+- `core/.context/codebase/`
+- mutable knowledge under `core/.context/knowledge/`
+- `config/mcp.json`, `config/quotas.json`, `opencode.jsonc`
+
+Full guide: `docs/UPDATE-GUIDE.md`
 
 ---
 
@@ -138,7 +165,17 @@ To use advanced models (GPT-4, Claude, etc.) you'll need:
 → **Partially.** The framework works offline, but you'll need internet to query cloud AI models. You can also install local models (like Ollama) for 100% offline work.
 
 **How do I update the framework?**
-→ If you used Git: `git pull`. If you downloaded ZIP: download the new version and copy your personal files to the new folder.
+→ Use the official updater:
+
+```bash
+python core/scripts/update.py --check
+python core/scripts/update.py
+```
+
+This preserves your sessions, context, KB, and workspaces automatically.
+
+**Can updates overwrite my personal data?**
+→ **No, if you use the official framework update flow.** The updater creates a backup, restores protected user state, and runs migrations to add new features without losing personal information.
 
 **What if something doesn't work?**
 → Check our full documentation or open an issue on GitHub. The community will help you.
@@ -166,6 +203,7 @@ His focus on data sovereignty and accessible learning was fundamental to the des
 👉 [View complete technical documentation in the development repository](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework/tree/main/docs/technical)
 
 Includes:
+- Safe update guide and user data preservation
 - Advanced installation by operating system
 - Configuration of multiple AI models
 - Guide for developing custom skills

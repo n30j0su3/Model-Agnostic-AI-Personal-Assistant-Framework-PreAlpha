@@ -17,8 +17,10 @@ Version: 1.0.0
 
 import argparse
 import hashlib
+import json
 import os
 import re
+import subprocess
 import sys
 import time
 from dataclasses import dataclass, field
@@ -30,9 +32,22 @@ try:
 
     YAML_AVAILABLE = True
 except ImportError:
+    yaml = None
     YAML_AVAILABLE = False
 
+
+def yaml_safe_load(text: str):
+    if yaml is None:
+        raise RuntimeError("PyYAML not available")
+    return yaml.safe_load(text)
+
+
 TIMING_PRESETS = {
+    "pre-execution": {
+        "checks": ["001", "005"],
+        "max_duration_seconds": 10,
+        "level": "block",
+    },
     "pre-commit": {
         "checks": ["006", "007"],
         "max_duration_seconds": 5,
@@ -60,6 +75,7 @@ DEFAULT_ENFORCEMENT_CONFIG = {
     "level": "warn",
     "checks": {
         "001": {"enabled": True, "severity": "warn"},
+        "005": {"enabled": True, "severity": "block"},
         "006": {"enabled": True, "severity": "block"},
         "007": {"enabled": True, "severity": "block"},
     },
@@ -188,7 +204,7 @@ class FrameworkGuardian:
 
         try:
             with open(full_path, "r", encoding="utf-8") as f:
-                yaml_config = yaml.safe_load(f) or {}
+                yaml_config = yaml_safe_load(f.read()) or {}
 
             if "enforcement" in yaml_config:
                 self._deep_merge(config, yaml_config["enforcement"])
@@ -212,6 +228,51 @@ class FrameworkGuardian:
 
     def _check_warn(self, message: str) -> str:
         return f"{Colors.YELLOW}[!]{Colors.RESET} {message}"
+
+    def _run_assembly_line_enforcer(
+        self, context: Optional[Dict[str, Any]] = None
+    ) -> Optional[Dict[str, Any]]:
+        context = context or {}
+        task = context.get("task") or context.get("action")
+        if not task:
+            return None
+
+        script_path = self.root / "core" / "scripts" / "assembly-line-enforcer.py"
+        if not script_path.exists():
+            return None
+
+        command = [
+            sys.executable,
+            str(script_path),
+            str(task),
+            "--json",
+            "--root",
+            str(self.root),
+        ]
+
+        if context.get("task_type"):
+            command.extend(["--task-type", str(context["task_type"])])
+
+        flag_map = {
+            "context_scout_used": "--context-scout-used",
+            "skills_validated": "--skills-validated",
+            "prd_generator_used": "--prd-generator-used",
+            "plan_documented": "--plan-documented",
+            "magic_prompt_applied": "--magic-prompt-applied",
+        }
+        for key, flag in flag_map.items():
+            if context.get(key):
+                command.append(flag)
+
+        result = subprocess.run(
+            command, cwd=str(self.root), capture_output=True, text=True
+        )
+        if not result.stdout.strip():
+            return None
+        try:
+            return json.loads(result.stdout)
+        except json.JSONDecodeError:
+            return None
 
     def check_core_001_framework_first(
         self, context: Optional[Dict] = None
@@ -242,6 +303,17 @@ class FrameworkGuardian:
             details.append(CheckDetail(True, f"AGENTS.md: {agent_count} agents found"))
         else:
             details.append(CheckDetail(False, "AGENTS.md not found"))
+
+        task_type = str(context.get("task_type", "")).lower()
+        if task_type in {"prd", "roadmap", "feature"}:
+            prd_skill = (
+                self.root / "core" / "skills" / "core" / "prd-generator" / "SKILL.md"
+            )
+            details.append(
+                CheckDetail(
+                    prd_skill.exists(), "PRD workflow: @prd-generator available"
+                )
+            )
 
         if "action" in context:
             action = context["action"].lower()
@@ -534,9 +606,12 @@ class FrameworkGuardian:
             details=messages,
         )
 
-    def check_core_005_assembly_line(self) -> EnforcementResult:
+    def check_core_005_assembly_line(
+        self, context: Optional[Dict[str, Any]] = None
+    ) -> EnforcementResult:
         check_id = "005"
         details: List[CheckDetail] = []
+        context = context or {}
 
         session_end = self.root / "core" / "scripts" / "session-end.py"
         if session_end.exists():
@@ -557,6 +632,39 @@ class FrameworkGuardian:
         else:
             details.append(CheckDetail(True, "Sessions directory ready"))
 
+        workflow_standard = self.root / "docs" / "WORKFLOW-STANDARD.md"
+        details.append(
+            CheckDetail(workflow_standard.exists(), "WORKFLOW-STANDARD.md available")
+        )
+
+        assembly_line = self.root / "docs" / "ASSEMBLY-LINE.md"
+        details.append(
+            CheckDetail(assembly_line.exists(), "ASSEMBLY-LINE.md available")
+        )
+
+        task_report = self._run_assembly_line_enforcer(context)
+        if task_report:
+            details.append(
+                CheckDetail(
+                    True, f"Task evaluated: {task_report.get('task_type', 'generic')}"
+                )
+            )
+            for key in (
+                "plan_documented",
+                "context_scout_used",
+                "skills_validated",
+                "prd_generator_used",
+            ):
+                if key in task_report.get("checks", {}):
+                    details.append(
+                        CheckDetail(
+                            bool(task_report["checks"][key]),
+                            f"Workflow gate: {key}={task_report['checks'][key]}",
+                        )
+                    )
+            for error in task_report.get("errors", []):
+                details.append(CheckDetail(False, error))
+
         all_passed = all(d.status for d in details)
         messages = [d.message for d in details]
 
@@ -575,6 +683,7 @@ class FrameworkGuardian:
         timing: str,
         checks: Optional[List[str]] = None,
         level: Optional[str] = None,
+        context: Optional[Dict[str, Any]] = None,
     ) -> List[EnforcementResult]:
         if timing in TIMING_PRESETS:
             preset = TIMING_PRESETS[timing]
@@ -598,13 +707,22 @@ class FrameworkGuardian:
         }
 
         results: List[EnforcementResult] = []
+        context_payload = context or {}
         for check_id in checks:
             if check_id in check_map:
-                cache_key = f"{check_id}_{timing}"
+                context_key = hashlib.md5(
+                    json.dumps(context_payload, sort_keys=True, default=str).encode(
+                        "utf-8"
+                    )
+                ).hexdigest()[:8]
+                cache_key = f"{check_id}_{timing}_{context_key}"
                 if cache_key in self._results_cache:
                     results.append(self._results_cache[cache_key])
                 else:
-                    result = check_map[check_id]()
+                    if check_id in {"001", "005"}:
+                        result = check_map[check_id](context_payload)
+                    else:
+                        result = check_map[check_id]()
                     self._results_cache[cache_key] = result
                     results.append(result)
 
@@ -677,6 +795,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+    python framework-guardian.py --timing pre-execution --task "Create PRD for checkout"
     python framework-guardian.py --timing pre-commit
     python framework-guardian.py --timing pre-push --branch main
     python framework-guardian.py --checks 006,007 --level block
@@ -726,6 +845,30 @@ Examples:
         default="prod",
         help="Target environment for sanitization check",
     )
+    parser.add_argument(
+        "--task",
+        type=str,
+        help="Task description for pre-execution workflow enforcement",
+    )
+    parser.add_argument(
+        "--task-type",
+        choices=[
+            "generic",
+            "simple",
+            "prd",
+            "roadmap",
+            "architecture",
+            "audit",
+            "feature",
+            "multi-module",
+        ],
+        help="Task type for workflow enforcement",
+    )
+    parser.add_argument("--context-scout-used", action="store_true")
+    parser.add_argument("--skills-validated", action="store_true")
+    parser.add_argument("--prd-generator-used", action="store_true")
+    parser.add_argument("--plan-documented", action="store_true")
+    parser.add_argument("--magic-prompt-applied", action="store_true")
 
     args = parser.parse_args()
 
@@ -740,9 +883,18 @@ Examples:
 
     timing = args.timing or "pre-commit"
     level = args.level
+    context = {
+        "task": args.task,
+        "task_type": args.task_type,
+        "context_scout_used": args.context_scout_used,
+        "skills_validated": args.skills_validated,
+        "prd_generator_used": args.prd_generator_used,
+        "plan_documented": args.plan_documented,
+        "magic_prompt_applied": args.magic_prompt_applied,
+    }
 
     start_time = time.time()
-    results = guardian.run_validation(timing, checks, level)
+    results = guardian.run_validation(timing, checks, level, context=context)
     elapsed = time.time() - start_time
 
     effective_level = level or TIMING_PRESETS.get(timing, {}).get("level", "warn")

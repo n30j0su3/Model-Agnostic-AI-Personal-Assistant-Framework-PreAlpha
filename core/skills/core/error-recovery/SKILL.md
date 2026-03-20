@@ -10,8 +10,6 @@ metadata:
   created: 2026-03-11
   dependencies:
     - error_logger.py
-  prp: PRP-007
-  core_process: PRP-003
 ---
 
 # @error-recovery
@@ -219,8 +217,6 @@ core/.context/knowledge/
 
 ## References
 
-- **PRP-003**: [CORE-003 Antifragile Error Recovery](../../../PRPs/PRP-003-CORE-Antifragile-Errors.md)
-- **PRP-007**: Error Recovery Skill Specification
 - **error_logger.py**: `core/scripts/error_logger.py`
 - **knowledge/errors/**: Error storage directory
 - **knowledge/playbooks/**: Recovery playbooks directory

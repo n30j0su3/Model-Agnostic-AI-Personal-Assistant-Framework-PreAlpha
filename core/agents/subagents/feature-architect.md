@@ -4,7 +4,7 @@ name: FeatureArchitect
 description: "Arquitecto de producto y guardián de la filosofía. Evalúa, planea y ejecuta features del backlog con enfoque user-friendly y sin solapamientos."
 category: subagents
 type: subagent
-version: 0.1.0
+version: 0.2.1
 mode: subagent
 temperature: 0.2
 
@@ -318,4 +318,4 @@ Continuar    [Ejecución]  Reformulo
 
 > *"Protejo la filosofía del framework. Cada feature debe merecer su existencia."*
 > 
-> **Version**: 0.1.0 | **Scope**: Architecture & Product | **Mode**: Subagent
+> **Version**: 0.2.1 | **Scope**: Architecture & Product | **Mode**: Subagent

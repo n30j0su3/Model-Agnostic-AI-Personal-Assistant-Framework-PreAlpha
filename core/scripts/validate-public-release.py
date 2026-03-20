@@ -16,8 +16,41 @@ import re
 import sys
 from pathlib import Path
 
+FORBIDDEN_DOC_GLOBS = [
+    "docs/WORKFLOW-STANDARD.md",
+    "docs/ASSEMBLY-LINE.md",
+    "docs/PHILOSOPHY.md",
+    "docs/core/PRP-*.md",
+    "config/protected-dev-paths.txt",
+    "README-technical.md",
+    "GEMINI.md",
+    "core/.context/navigation.md",
+    "core/.context/knowledge/learning/*",
+    "core/.context/knowledge/insights/*",
+    "core/.context/knowledge/playbooks/*",
+    "core/.context/knowledge/agents/*",
+    "core/.context/backups/*",
+    "core/.context/dev-todo/*",
+    "core/.context/codebase/*",
+    "core/.context/knowledge_base.json",
+    "core/.context/projects/*",
+    "core/.context/vitals/*",
+    "core/.context/knowledge/self-healing/*",
+    "core/.context/knowledge/prompts/*",
+    "docs/propagation/*",
+    ".opencode/commands/*",
+    ".opencode/agent/pa-assistant.md",
+    ".opencode/bun.lock",
+    ".opencode/node_modules/*",
+    "core/agents/subagents/sync-propagator.md",
+]
+
 FORBIDDEN_SCRIPTS = [
     "core/scripts/sync-prealpha.py",
+    "core/scripts/assembly-line-enforcer.py",
+    "core/scripts/propagate-framework-updates.py",
+    "core/scripts/reference-integrity-check.py",
+    "core/scripts/sync-auditor.py",
     "core/scripts/sync-prealpha-optimized.py",
     "core/scripts/sync-base-to-dev.sh",
     "core/scripts/sync-base-to-prod.sh",
@@ -40,12 +73,25 @@ FORBIDDEN_DOCS = [
     "docs/backlog.view.md",
     "docs/AGENT-CONFIGURATION.md",
     "docs/SYNC-PROTOCOL.md",
+    "docs/FRAMEWORK-PROPAGATION-PROTOCOL.md",
     "docs/workflow-test-example.md",
 ]
 
 FORBIDDEN_README_PATTERNS = [
     "repositorio de desarrollo",
     "github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework/tree/main",
+]
+
+FORBIDDEN_CONTENT_PATTERNS = [
+    r"\bMaaji\b",
+    r"WORKFLOW-STANDARD",
+    r"Workflow Standard",
+    r"ASSEMBLY-LINE",
+    r"Assembly Line",
+    r"SYNC-PROTOCOL",
+    r"\bPRP-\d{3}\b",
+    r"protected-dev-paths",
+    r"Model-Agnostic-AI-Personal-Assistant-Framework-dev",
 ]
 
 VERSION_PATTERN = re.compile(r"^\d+\.\d+\.\d+(-[a-zA-Z0-9.]+)?$")
@@ -68,15 +114,15 @@ class Colors:
 
 
 def print_ok(msg: str):
-    print(f"{Colors.GREEN}✓{Colors.RESET} {msg}")
+    print(f"{Colors.GREEN}[OK]{Colors.RESET} {msg}")
 
 
 def print_err(msg: str):
-    print(f"{Colors.RED}✗{Colors.RESET} {msg}")
+    print(f"{Colors.RED}[X]{Colors.RESET} {msg}")
 
 
 def print_warn(msg: str):
-    print(f"{Colors.YELLOW}!{Colors.RESET} {msg}")
+    print(f"{Colors.YELLOW}[!]{Colors.RESET} {msg}")
 
 
 def print_header(msg: str):
@@ -94,6 +140,19 @@ def check_forbidden_files(root: Path, files: list[str], label: str) -> int:
             errors += 1
         else:
             print_ok(f"{label} OK: {f}")
+    return errors
+
+
+def check_forbidden_globs(root: Path, globs: list[str], label: str) -> int:
+    errors = 0
+    for pattern in globs:
+        matches = list(root.glob(pattern))
+        if matches:
+            for match in matches[:10]:
+                print_err(f"{label} prohibido existe: {match.relative_to(root)}")
+            errors += len(matches)
+        else:
+            print_ok(f"{label} OK: {pattern}")
     return errors
 
 
@@ -146,6 +205,38 @@ def check_changelog(root: Path, version: str) -> int:
         return 1
 
 
+def check_forbidden_content(root: Path) -> int:
+    errors = 0
+    scan_suffixes = {".md", ".txt", ".json", ".yaml", ".yml"}
+    excluded_parts = {".git", "Obsoleto", "__pycache__"}
+
+    for file_path in root.rglob("*"):
+        if not file_path.is_file():
+            continue
+        if file_path.suffix.lower() not in scan_suffixes:
+            continue
+        relative_parts = file_path.relative_to(root).parts
+        if any(part in excluded_parts for part in relative_parts):
+            continue
+
+        try:
+            content = file_path.read_text(encoding="utf-8", errors="ignore")
+        except Exception:
+            continue
+
+        for pattern in FORBIDDEN_CONTENT_PATTERNS:
+            if re.search(pattern, content, re.IGNORECASE):
+                print_err(
+                    f"Contenido prohibido '{pattern}' en {file_path.relative_to(root)}"
+                )
+                errors += 1
+                break
+
+    if errors == 0:
+        print_ok("Sin referencias internas prohibidas en contenido textual")
+    return errors
+
+
 def suggest_fixes(issues: list[str]):
     print_header("SUGERENCIAS DE CORRECCIÓN")
     for issue in issues:
@@ -162,12 +253,19 @@ def main():
     parser.add_argument(
         "--no-color", action="store_true", help="Desactiva colores en output"
     )
+    parser.add_argument(
+        "--root", type=str, help="Ruta explícita a validar en lugar del repo del script"
+    )
     args = parser.parse_args()
 
     if args.no_color or not sys.stdout.isatty():
         Colors.disable()
 
-    root = Path(__file__).resolve().parent.parent.parent
+    root = (
+        Path(args.root).resolve()
+        if args.root
+        else Path(__file__).resolve().parent.parent.parent
+    )
     total_errors = 0
     issues = []
 
@@ -184,6 +282,14 @@ def main():
     total_errors += errors
     if errors:
         issues.append("Eliminar documentos internos prohibidos")
+
+    print("\n[2.5/5] Patrones glob de documentos internos")
+    errors = check_forbidden_globs(root, FORBIDDEN_DOC_GLOBS, "Glob")
+    total_errors += errors
+    if errors:
+        issues.append(
+            "Eliminar workflow docs, PRP docs y KB interna del release público"
+        )
 
     print("\n[3/5] Patrones en README.md")
     errors = check_readme_patterns(root)
@@ -203,6 +309,14 @@ def main():
         total_errors += errors
         if errors:
             issues.append(f"Añadir entrada en CHANGELOG.md para v{version}")
+
+    print("\n[5.5/5] Contenido textual prohibido")
+    errors = check_forbidden_content(root)
+    total_errors += errors
+    if errors:
+        issues.append(
+            "Eliminar menciones internas (workflow, PRP, Maaji, rutas/proyectos internos)"
+        )
 
     print_header("RESULTADO")
 

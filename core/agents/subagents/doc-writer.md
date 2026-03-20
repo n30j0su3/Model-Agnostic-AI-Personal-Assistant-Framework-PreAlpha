@@ -4,7 +4,7 @@ name: DocWriter
 description: "Genera documentación de sesiones, hallazgos y conocimiento siguiendo el principio MVI."
 category: subagents
 type: subagent
-version: 0.1.0
+version: 0.2.1
 
 mode: subagent
 temperature: 0.2

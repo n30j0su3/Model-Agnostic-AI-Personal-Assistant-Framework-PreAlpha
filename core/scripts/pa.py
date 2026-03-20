@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-PA Framework — Control Panel (Pre-Alpha 0.2.1-prealpha)
+PA Framework — Control Panel (Pre-Alpha 0.2.2-prealpha)
 Menú simplificado de 4 opciones + submenu de configuración.
 """
 
@@ -98,7 +98,7 @@ def print_banner():
     )
     print(
         c(
-            "║   Personal Assistant Framework — Pre-Alpha 0.2.1-prealpha     ║",
+            "║   Personal Assistant Framework — Pre-Alpha 0.2.2-prealpha     ║",
             f"{Colors.HEADER}{Colors.BOLD}",
         )
     )
@@ -504,7 +504,7 @@ def _save_profile(lang: str = "es", default_cli: str = "opencode"):
     """Save profile.md with current settings."""
     import platform as plat
 
-    version = "0.2.1-prealpha"
+    version = "0.2.2-prealpha"
     vf = REPO_ROOT / "VERSION"
     if vf.exists():
         version = vf.read_text(encoding="utf-8").strip()

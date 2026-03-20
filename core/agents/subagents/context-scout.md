@@ -4,7 +4,7 @@ name: ContextScout
 description: "Descubre y recomienda archivos de contexto desde core/.context/ ordenados por prioridad. Agente read-only."
 category: subagents
 type: subagent
-version: 0.1.0
+version: 0.2.1
 
 mode: subagent
 temperature: 0.1

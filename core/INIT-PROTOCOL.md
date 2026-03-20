@@ -74,6 +74,23 @@ Cargar automáticamente:
    - Comando: `/mode DEV` (o BASE, PROD)
    - Contexto específico del modo (automatizaciones, configs)
 
+### Paso 4: Workflow Gate (Tareas Complejas)
+
+Antes de PRDs, roadmap, arquitectura, auditorías amplias o cambios multi-módulo:
+
+```bash
+python core/scripts/framework-guardian.py \
+  --timing pre-execution \
+  --task "Descripcion de la tarea" \
+  --task-type prd|roadmap|architecture|audit|feature
+```
+
+**Obligatorio además**:
+- usar `@context-scout` antes de exploración amplia
+- validar skills en `core/skills/SKILLS.md`
+- usar `@prd-generator` para PRDs / feature-definition
+- si falla el guardrail, volver a DELIMITAR/MAPEAR
+
 ---
 
 ## Configuración de Verbosidad

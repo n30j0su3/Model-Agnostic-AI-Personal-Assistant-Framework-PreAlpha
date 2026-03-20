@@ -9,32 +9,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## [Unreleased]
+---
+
+## [0.2.2-prealpha] - 2026-03-20
+
+### Added / Agregado
+- documentación pública de actualización segura para usuarios comunes
+- `config/update-protected-paths.txt` expuesto en la release pública para claridad de preservación
+
+### Changed / Cambiado
+- bump de versión a `0.2.2-prealpha` para distribuir la actualización a todos los usuarios
+- `update.py` ahora garantiza backup + restore + migraciones como flujo oficial de actualización
+
+### Fixed / Corregido
+- retrocompatibilidad del updater con preservación de contexto, KB, workspaces y configuración sensible del usuario
+- refresh de `RELEASE-STAGING` y release público para asegurar que el updater detecte la nueva versión
+
 
 ---
 
-## [0.2.1-prealpha] - 2026-03-12
+## [0.2.1-prealpha] - 2026-03-19
 
 ### Added / Agregado
-
-#### Sistema de Sanitización PROD
-- **Sanitización de codebase/**: Templates en `.sanitized/` para limpiar información interna
-- **sync-auditor.py**: Script de auditoría para verificar exclusiones en local/remote
-- **Validación POST-SYNC**: Verifica que archivos excluidos no existan en destino
-- **SESSION_TEMPLATE.md**: Template de sesión para usuarios nuevos
+- `propagate-framework-updates.py` para documentar y propagar mejoras entre `BASE`, `DEV` y `PROD`
+- `reference-integrity-check.py` para validar referencias internas entre docs, agentes, skills y scripts
+- subagentes `@sync-propagator` y `@skill-finder`
+- `FRAMEWORK-PROPAGATION-PROTOCOL.md` y `UPDATE-GUIDE.md`
+- agente público por defecto para OpenCode en `.opencode/agent/FreakingJSON.CLEAN-PROD.md`
+- `config/update-protected-paths.txt` para preservar datos del usuario durante actualizaciones
 
 ### Changed / Cambiado
-- **PROD_ONLY_IGNORE_PATTERNS**: Exclusiones expandidas para knowledge/users, interactions, errors
-- **Cleanup POST-SYNC**: Eliminación automática de directorios con datos de usuario
-- **docs/core/PRP-009**: Documentación actualizada con proceso de saneado
+- `framework-guardian.py` ahora soporta `pre-execution`
+- `sync-prealpha.py` endurece la sanitización de `PROD` y `RELEASE-STAGING`
+- `update.py` ahora crea backup, restaura estado del usuario y ejecuta migraciones post-update
+- versionado sincronizado a `v0.2.1-prealpha`
+- documentación pública actualizada con instrucciones de actualización segura
 
 ### Fixed / Corregido
-- **CORE-007**: Archivos excluidos eliminados del repositorio remoto público
-- **Staging = Remote**: Garantizado que el staging publicado es idéntico al remoto
-- **Validación framework-guardian**: Pasa en pre-release y pre-push
+- cierre de sesión en runtime público limpio (`RELEASE-STAGING`) ahora funciona aunque falten archivos mínimos
+- referencias rotas o desactualizadas entre docs, agentes, skills y catálogos
+- protección de `DEV` para preservar estado sensible sin bloquear mejoras legítimas del framework
+- saneamiento de staging para excluir vitals, logs, manifests internos, PRPs y documentación interna
 
-### Security / Seguridad
-- Limpieza de información interna en PROD (sesiones, usuarios, interacciones)
-- Config obsoleta eliminada (knowledge_base.json, mcp.json, quotas.json)
+
 
 ---
 
@@ -73,7 +90,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added / Agregado
 
 #### Procesos CORE
-- **CORE-005 Assembly Line**: Bucle agéntico estándar para tareas complejas (Delimitar → Mapear → Ejecutar → Validar → Preservar)
+- **CORE-005 Structured Execution Loop**: Bucle estándar para tareas complejas con validación por etapas
 - **CORE-006 Version Governance**: Gestión automática de versión del framework
 - **CORE-007 Release Sanitization**: Protección de datos del usuario durante actualizaciones
 
@@ -167,7 +184,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.3-prealpha] - 2026-03-04
 
 ### Added / Agregado
-- **Workflow Standard v1.0**: Proceso estructurado de 7 pasos
+- **Structured Task Flow v1.0**: Proceso guiado de 7 pasos para tareas complejas
 - **Detección automática de complejidad**: Simple vs Complex vs Critical
 - **Modo Express**: Opción para saltir aprobación con transparencia
 - **Integración Dashboard SPA**: Tab "Workflow" interactivo

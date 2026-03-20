@@ -7,7 +7,7 @@
       "name": "Task Management",
       "category": "Productivity",
       "description": "Gestión de tareas y seguimiento",
-      "path": "core/task-management/",
+      "path": "core/skills/core/task-management",
       "status": "active"
     },
     "pdf": {
@@ -15,7 +15,7 @@
       "name": "PDF Processing",
       "category": "Content",
       "description": "Procesamiento de archivos PDF",
-      "path": "core/pdf/",
+      "path": "core/skills/core/pdf",
       "status": "active"
     },
     "xlsx": {
@@ -23,7 +23,7 @@
       "name": "Excel Processing",
       "category": "Content",
       "description": "Procesamiento de hojas de cálculo",
-      "path": "core/xlsx/",
+      "path": "core/skills/core/xlsx",
       "status": "active"
     },
     "prompt-improvement": {
@@ -31,7 +31,7 @@
       "name": "Prompt Improvement",
       "category": "AI",
       "description": "Optimización y refinamiento de prompts",
-      "path": "core/prompt-improvement/",
+      "path": "core/skills/core/prompt-improvement",
       "status": "active"
     },
     "ui-ux-pro-max": {
@@ -39,7 +39,7 @@
       "name": "UI/UX Pro Max",
       "category": "Development",
       "description": "Diseño inteligente UI/UX con base de datos buscable",
-      "path": "core/ui-ux-pro-max/",
+      "path": "core/skills/core/ui-ux-pro-max",
       "status": "active"
     },
     "docx": {
@@ -47,7 +47,7 @@
       "name": "Word Processing",
       "category": "Content",
       "description": "Toolkit for creating, editing, and analyzing Word documents",
-      "path": "core/docx/",
+      "path": "core/skills/core/docx",
       "status": "active"
     },
     "etl": {
@@ -55,7 +55,7 @@
       "name": "ETL Processor",
       "category": "Development",
       "description": "Procesamiento ETL de datos",
-      "path": "core/etl/",
+      "path": "core/skills/core/etl",
       "status": "active"
     },
     "json-prompt-generator": {
@@ -63,7 +63,7 @@
       "name": "JSON Prompt Generator",
       "category": "AI",
       "description": "Generación de prompts estructurados en JSON",
-      "path": "core/json-prompt-generator/",
+      "path": "core/skills/core/json-prompt-generator",
       "status": "active"
     },
     "pptx": {
@@ -71,7 +71,7 @@
       "name": "PowerPoint Processing",
       "category": "Content",
       "description": "Procesamiento de presentaciones PowerPoint",
-      "path": "core/pptx/",
+      "path": "core/skills/core/pptx",
       "status": "active"
     },
     "data-viz": {
@@ -79,7 +79,7 @@
       "name": "Data Visualization",
       "category": "Development",
       "description": "Visualización de datos con Seaborn/Matplotlib",
-      "path": "core/data-viz/",
+      "path": "core/skills/core/data-viz",
       "status": "active"
     },
     "prd-generator": {
@@ -87,7 +87,7 @@
       "name": "PRD Generator",
       "category": "Development",
       "description": "Generación de Product Requirements Documents",
-      "path": "core/prd-generator/",
+      "path": "core/skills/core/prd-generator",
       "status": "active",
       "dev_only": true
     },
@@ -96,7 +96,7 @@
       "name": "Skill Creator",
       "category": "Framework",
       "description": "Guía completa para crear nuevas skills en el framework",
-      "path": "core/skill-creator/",
+      "path": "core/skills/core/skill-creator",
       "status": "active"
     },
     "markdown-writer": {
@@ -104,7 +104,7 @@
       "name": "Markdown Writer",
       "category": "Framework",
       "description": "Toolkit para escribir Markdown consistente siguiendo MVI",
-      "path": "core/markdown-writer/",
+      "path": "core/skills/core/markdown-writer",
       "status": "active"
     },
     "csv-processor": {
@@ -112,7 +112,7 @@
       "name": "CSV Processor",
       "category": "Data",
       "description": "Procesamiento de CSV para limpieza, transformación y análisis",
-      "path": "core/csv-processor/",
+      "path": "core/skills/core/csv-processor",
       "status": "active"
     },
     "python-standards": {
@@ -120,7 +120,7 @@
       "name": "Python Standards",
       "category": "Framework",
       "description": "Estándares cross-platform para scripts Python",
-      "path": "core/python-standards/",
+      "path": "core/skills/core/python-standards",
       "status": "active",
       "core": true
     }

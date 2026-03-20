@@ -1,8 +1,8 @@
-# Model-Agnostic AI Personal Assistant Framework v0.2.1-prealpha
+# Model-Agnostic AI Personal Assistant Framework v0.2.2-prealpha
 
 > "Tu Asistente AI Personal. Tu Conocimiento. Tu Control."
 
-[![Release](https://img.shields.io/badge/release-v0.2.1-prealpha)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.2.1-prealpha)
+[![Release](https://img.shields.io/badge/release-v0.2.2--prealpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.2.2-prealpha)
 [![Instagram](https://img.shields.io/badge/Instagram-%40freakingjson-E4405F?logo=instagram&logoColor=white)](https://instagram.com/freakingjson)
 [![Linktree](https://img.shields.io/badge/Linktree-@freakingjson-43E55C?logo=linktree&logoColor=white)](https://linktr.ee/freakingjson)
 [![Blog](https://img.shields.io/badge/Blog-freakingjson.com-FFA500?logo=firefoxbrowser&logoColor=white)](https://freakingjson.com)
@@ -18,13 +18,15 @@
 
 ## 📢 Última Versión
 
-**v0.2.1-prealpha** - Framework Enforcement System
+**v0.2.2-prealpha** - Update reliability and public release refresh
 - Sistema de validación obligatoria de procesos CORE
 - `framework-guardian.py` para validación automática
 - Knowledge extraction automático desde sesiones
 - Configuración en `config/framework.yaml`
+- Actualización segura con preservación de contexto, KB y workspaces
+- Fix del cierre de sesión en runtime público limpio
 
-**v0.2.1-prealpha** - Knowledge Extraction
+**v0.1.9-prealpha** - Knowledge Extraction
 - Extracción automática de descubrimientos, prompts, ideas
 - Tags de detección: `#discovery`, `#prompt-success`, `#best-practice`
 - Integración con session-end.py para preservación automática
@@ -62,7 +64,7 @@ Un asistente de inteligencia artificial que vive en **tu computadora**, no en se
 | 📅 **Sesiones diarias** | El asistente recuerda contexto entre conversaciones |
 | ⚡ **Fácil de usar** | Instalación en 3 pasos, sin configuraciones complejas |
 | 🎛️ **Dashboard SPA** | Visualiza el estado del framework en tu navegador |
-| 📊 **Workflow Standard** | Proceso estructurado para tareas complejas con transparencia total |
+| 📊 **Structured Task Flow** | Ejecución guiada para tareas complejas con trazabilidad |
 
 ---
 
@@ -97,6 +99,25 @@ Tu asistente está configurado. Ahora puedes:
 - Escribir `pa.bat` para iniciar una sesión
 - Pedirle ayuda con documentos, datos, o tareas diarias
 - Usar el Dashboard SPA para visualizar el estado del framework
+
+---
+
+## 🔄 Cómo Actualizar sin Perder tu Información
+
+Usa el actualizador oficial:
+
+```powershell
+python core/scripts/update.py --check
+python core/scripts/update.py
+```
+
+Este proceso:
+- crea un backup de preservación antes de actualizar
+- integra mejoras y nuevos features del framework
+- restaura tu contexto, KB, workspaces y configuraciones sensibles
+- ejecuta migraciones para mantener compatibilidad
+
+Guía completa: `docs/UPDATE-GUIDE.md`
 
 ---
 
@@ -138,7 +159,17 @@ Para usar modelos avanzados (GPT-4, Claude, etc.) necesitarás:
 → **Parcialmente.** El framework funciona offline, pero necesitarás internet para consultar modelos de IA en la nube. También puedes instalar modelos locales (como Ollama) para trabajo 100% offline.
 
 **¿Cómo actualizo el framework?**
-→ Si usaste Git: `git pull`. Si descargaste ZIP: descarga la nueva versión y copia tus archivos personales a la nueva carpeta.
+→ Usa el actualizador oficial:
+
+```bash
+python core/scripts/update.py --check
+python core/scripts/update.py
+```
+
+Así se preservan automáticamente tus sesiones, contexto, KB y workspaces.
+
+**¿Las actualizaciones borran mis datos?**
+→ **No, si usas el flujo oficial del framework.** El updater crea backup, restaura los paths protegidos y aplica migraciones para integrar mejoras sin perder tu información.
 
 **¿Qué pasa si algo no funciona?**
 → Revisa nuestra documentación completa o abre un issue en GitHub. La comunidad te ayuda.
@@ -152,6 +183,7 @@ Para usar modelos avanzados (GPT-4, Claude, etc.) necesitarás:
 👉 [Ver documentación técnica](./README-technical.md)
 
 Incluye:
+- Guía de actualización segura y preservación de datos
 - Instalación avanzada por sistema operativo
 - Configuración de múltiples modelos de IA
 - Guía de desarrollo de skills personalizadas

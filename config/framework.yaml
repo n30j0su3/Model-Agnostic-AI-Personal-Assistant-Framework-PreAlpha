@@ -1,5 +1,5 @@
 # Framework Configuration
-# Version: 0.2.1-prealpha
+# Version: 0.2.2-prealpha
 
 evaluation:
   # Mode: full (all criteria) or simplified (core criteria only)
@@ -85,6 +85,10 @@ enforcement:
   
   # Momentos de validación
   timing:
+    pre-execution:
+      enabled: true
+      checks: [001, 005]
+      max_duration_seconds: 10
     pre-commit:
       enabled: false
       checks: [006, 007]

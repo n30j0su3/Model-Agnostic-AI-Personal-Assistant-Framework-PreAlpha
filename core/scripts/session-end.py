@@ -75,6 +75,7 @@ except ImportError:
     pass
 
 _knowledge_extraction_available = False
+_extract_all_knowledge = None
 try:
     from knowledge_extractor import extract_all_knowledge as _extract_all_knowledge
 
@@ -174,6 +175,71 @@ def backup_critical_files() -> bool:
         pass
 
     return backed_up > 0
+
+
+def ensure_public_session_runtime_files() -> None:
+    """Create minimal runtime files/directories required for session close."""
+    SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
+    CODEBASE_DIR.mkdir(parents=True, exist_ok=True)
+    KNOWLEDGE_DIR.mkdir(parents=True, exist_ok=True)
+
+    recordatorios_file = CODEBASE_DIR / "recordatorios.md"
+    if not recordatorios_file.exists():
+        recordatorios_file.write_text(
+            "# Recordatorios\n\n## Pendientes\n\n## Completados\n",
+            encoding="utf-8",
+        )
+
+    ideas_file = CODEBASE_DIR / "ideas.md"
+    if not ideas_file.exists():
+        ideas_file.write_text(
+            "# Ideas y Notas\n\n## Ideas\n\n## Enlaces Útiles\n\n## Notas\n",
+            encoding="utf-8",
+        )
+
+    sessions_index = KNOWLEDGE_DIR / "sessions-index.json"
+    if not sessions_index.exists():
+        sessions_index.write_text(
+            json.dumps(
+                {
+                    "sessions": [],
+                    "total_sessions": 0,
+                    "last_updated": datetime.now().isoformat(),
+                },
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+
+
+def bootstrap_today_session_file() -> Path:
+    """Create a minimal session file if today's file is missing."""
+    today = datetime.now().strftime("%Y-%m-%d")
+    session_file = SESSIONS_DIR / f"{today}.md"
+    if not session_file.exists():
+        session_content = f"""---
+# Session Log - {today}
+id: session-{today}
+date: {today}
+agent: FreakingJSON
+status: active
+---
+
+# Sesión {today}
+
+## Inicio
+- **Hora**: {datetime.now().strftime("%H:%M")}
+- **Agente**: @FreakingJSON
+
+## Log de Actividades
+
+## Pendientes
+
+## Resumen
+
+"""
+        session_file.write_text(session_content, encoding="utf-8")
+    return session_file
 
 
 def get_today_session_file() -> Optional[Path]:
@@ -423,7 +489,7 @@ def run_knowledge_extraction(session_file: Path) -> Dict:
     Run knowledge extraction from session file.
     Returns stats about extracted items.
     """
-    if not _knowledge_extraction_available:
+    if not _knowledge_extraction_available or _extract_all_knowledge is None:
         return {"available": False}
 
     try:
@@ -553,12 +619,19 @@ def close(
 ) -> int:
     global _silent_mode
 
+    ensure_public_session_runtime_files()
+
     session_file = get_today_session_file()
 
     if not session_file:
         if not _silent_mode:
-            safe_print(c("[WARN] No hay sesion activa para cerrar", Colors.YELLOW))
-        return 0
+            safe_print(
+                c(
+                    "[WARN] No habia sesion activa; se creo una sesion minima para cierre ordenado",
+                    Colors.YELLOW,
+                )
+            )
+        session_file = bootstrap_today_session_file()
 
     if summary_only:
         summary = generate_summary(session_file)

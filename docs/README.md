@@ -1,4 +1,4 @@
-# Personal Assistant Framework — Pre-Alpha 0.1.0
+# Personal Assistant Framework — Pre-Alpha 0.2.2-prealpha
 
 > Framework model-agnostic para gestionar asistentes AI personales con contexto local.
 
@@ -41,6 +41,18 @@ Menú principal:
 - **3. Configuración** — Estado del sistema, perfil, workspaces
 - **4. Buscar Actualizaciones** — Verifica versión del framework
 
+### Actualización Segura
+
+```bash
+python core/scripts/update.py --check
+python core/scripts/update.py
+```
+
+La actualización oficial preserva contexto, KB, workspaces y configuración sensible del usuario.
+
+- Guía completa: [UPDATE-GUIDE.md](./UPDATE-GUIDE.md)
+- Changelog: [CHANGELOG.md](../CHANGELOG.md)
+
 ### Iniciar desde cualquier CLI
 
 Si ya tienes una CLI de IA abierta, lee el archivo `Agents.md`:
@@ -70,6 +82,7 @@ Esto funciona con **cualquier CLI**: Gemini, Claude, OpenCode, Codex.
 ## 📖 Más Información
 
 - [Plan Pre-Alpha](PRE-ALPHA-PLAN.md) — Plan de implementación
+- [Guía de actualización](./UPDATE-GUIDE.md) — Cómo actualizar sin perder información
 - `core/agents/AGENTS.md` — Índice de agentes
 - `core/skills/SKILLS.md` — Catálogo de skills
 - `core/.context/navigation.md` — Mapa de navegación del contexto

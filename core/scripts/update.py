@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
+"""Framework updater with user-state preservation and post-update migrations."""
+
 import argparse
+import json
 import os
 import re
 import shutil
@@ -8,6 +11,7 @@ import sys
 import tempfile
 import urllib.request
 import zipfile
+from datetime import datetime
 from pathlib import Path
 
 
@@ -15,11 +19,12 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 CORE_DIR = REPO_ROOT / "core"
 DEFAULT_REPO = "https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha"
 VERSION_PATH = REPO_ROOT / "VERSION"
-EXCLUDE_ROOTS = {".context", "sessions", "workspaces", "config", "logs"}
+UPDATE_PROTECTED_PATHS_FILE = REPO_ROOT / "config" / "update-protected-paths.txt"
+BACKUP_BASE_DIR = REPO_ROOT / ".update-preservation"
+EXCLUDE_ROOTS = {".context", "sessions", "workspaces", "logs"}
 EXCLUDE_SUBPATHS = {
     ("agents", "custom"),
     ("skills", "custom"),
-    ("core", ".context"),
     ("core", "agents", "custom"),
     ("core", "skills", "custom"),
 }
@@ -182,10 +187,147 @@ def create_snapshot():
         return False
 
 
-def should_skip(rel_path):
+def load_update_protected_paths() -> list[str]:
+    defaults = [
+        "workspaces",
+        "core/.context/MASTER.md",
+        "core/.context/profile.md",
+        "core/.context/opencode.md",
+        "core/.context/claude.md",
+        "core/.context/gemini.md",
+        "core/.context/sessions",
+        "core/.context/codebase",
+        "core/.context/backups",
+        "core/.context/projects",
+        "core/.context/vitals",
+        "core/.context/knowledge/insights",
+        "core/.context/knowledge/learning",
+        "core/.context/knowledge/self-healing",
+        "core/.context/knowledge/prompts",
+        "config/mcp.json",
+        "config/quotas.json",
+        "opencode.jsonc",
+        ".opencode/config.json",
+    ]
+    if not UPDATE_PROTECTED_PATHS_FILE.exists():
+        return defaults
+    lines = [
+        line.strip().rstrip("/")
+        for line in UPDATE_PROTECTED_PATHS_FILE.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    ]
+    return lines or defaults
+
+
+def is_protected_update_path(rel_path: Path, protected_paths: list[str]) -> bool:
+    normalized = rel_path.as_posix().rstrip("/")
+    for protected in protected_paths:
+        protected_norm = protected.replace("\\", "/").rstrip("/")
+        if normalized == protected_norm or normalized.startswith(protected_norm + "/"):
+            return True
+    return False
+
+
+def backup_protected_update_paths(protected_paths: list[str]) -> Path:
+    backup_dir = BACKUP_BASE_DIR / datetime.now().strftime("%Y%m%d-%H%M%S")
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    manifest = {"created_at": datetime.now().isoformat(), "paths": []}
+
+    for rel in protected_paths:
+        src = REPO_ROOT / rel
+        if not src.exists():
+            continue
+        dst = backup_dir / rel
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        if src.is_dir():
+            shutil.copytree(src, dst, dirs_exist_ok=True)
+        else:
+            shutil.copy2(src, dst)
+        manifest["paths"].append(rel)
+
+    (backup_dir / "manifest.json").write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    return backup_dir
+
+
+def restore_protected_update_paths(backup_dir: Path) -> bool:
+    if not backup_dir.exists():
+        return True
+    manifest_path = backup_dir / "manifest.json"
+    if not manifest_path.exists():
+        return False
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    for rel in manifest.get("paths", []):
+        src = backup_dir / rel
+        dst = REPO_ROOT / rel
+        if not src.exists():
+            continue
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        if src.is_dir():
+            shutil.copytree(src, dst, dirs_exist_ok=True)
+        else:
+            shutil.copy2(src, dst)
+    return True
+
+
+def reset_tracked_protected_paths_for_git(protected_paths: list[str]) -> bool:
+    if not shutil.which("git"):
+        return True
+
+    ok = True
+    for rel in protected_paths:
+        tracked = subprocess.run(
+            ["git", "ls-files", "--error-unmatch", rel],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if tracked.returncode != 0:
+            continue
+
+        checkout = subprocess.run(
+            ["git", "checkout", "--", rel],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if checkout.returncode != 0:
+            print(
+                f"[WARN] No se pudo limpiar temporalmente el path protegido para git pull: {rel}"
+            )
+            ok = False
+    return ok
+
+
+def run_migrations() -> bool:
+    script_path = CORE_DIR / "scripts" / "migrate.py"
+    if not script_path.exists():
+        return True
+    result = subprocess.run(
+        [sys.executable, str(script_path), "--apply"], cwd=REPO_ROOT
+    )
+    return result.returncode == 0
+
+
+def run_kb_init() -> bool:
+    script_path = CORE_DIR / "scripts" / "kb-init.py"
+    if not script_path.exists():
+        return True
+    result = subprocess.run(
+        [sys.executable, str(script_path), "--force"], cwd=REPO_ROOT
+    )
+    return result.returncode == 0
+
+
+def should_skip(rel_path, protected_paths=None):
     if not rel_path.parts:
         return False
     if rel_path.parts[0] in EXCLUDE_ROOTS:
+        return True
+    if protected_paths and is_protected_update_path(rel_path, protected_paths):
         return True
     for excluded in EXCLUDE_SUBPATHS:
         length = len(excluded)
@@ -194,18 +336,18 @@ def should_skip(rel_path):
     return False
 
 
-def copy_tree(source_root, target_root):
+def copy_tree(source_root, target_root, protected_paths=None):
     for root, dirs, files in os.walk(source_root):
         rel_root = Path(root).relative_to(source_root)
-        if should_skip(rel_root):
+        if should_skip(rel_root, protected_paths):
             dirs[:] = []
             continue
         for dirname in list(dirs):
-            if should_skip(rel_root / dirname):
+            if should_skip(rel_root / dirname, protected_paths):
                 dirs.remove(dirname)
         for filename in files:
             rel_file = rel_root / filename
-            if should_skip(rel_file):
+            if should_skip(rel_file, protected_paths):
                 continue
             source_file = Path(root) / filename
             target_file = target_root / rel_file
@@ -213,7 +355,8 @@ def copy_tree(source_root, target_root):
             shutil.copy2(source_file, target_file)
 
 
-def update_with_git():
+def update_with_git(protected_paths):
+    reset_tracked_protected_paths_for_git(protected_paths)
     result = subprocess.run(["git", "pull", "--ff-only"], cwd=REPO_ROOT)
     if result.returncode != 0:
         print("[ERROR] Git pull fallo. Revisa tu repositorio.")
@@ -290,7 +433,7 @@ def install_certifi():
         return False
 
 
-def update_with_zip(zip_url):
+def update_with_zip(zip_url, protected_paths):
     """Descarga y aplica actualizacion desde ZIP con opciones de usuario."""
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir)
@@ -341,7 +484,7 @@ def update_with_zip(zip_url):
                 if install_certifi():
                     print("[OK] Certificados instalados. Reintentando...")
                     # Recursivo - vuelve a intentar todo
-                    return update_with_zip(zip_url)
+                    return update_with_zip(zip_url, protected_paths)
                 else:
                     print("[ERROR] No se pudieron instalar certificados.")
                     retry = input("¿Intentar sin verificacion SSL? [s/N]: ")
@@ -374,7 +517,7 @@ def update_with_zip(zip_url):
             print("[ERROR] Zip sin contenido valido.")
             return False
         source_root = extracted_dirs[0]
-        copy_tree(source_root, REPO_ROOT)
+        copy_tree(source_root, REPO_ROOT, protected_paths)
     return True
 
 
@@ -457,28 +600,49 @@ def run_update(force=False, check_only=False):
             print("[INFO] Actualizacion cancelada.")
             return STATUS_OK
 
+    protected_paths = load_update_protected_paths()
+    backup_dir = backup_protected_update_paths(protected_paths)
+    print(f"[INFO] Backup de preservacion creado en: {backup_dir}")
+
     if (REPO_ROOT / ".git").exists() and shutil.which("git"):
         print("[INFO] Metodo de actualizacion: Git")
-        success = update_with_git()
+        success = update_with_git(protected_paths)
         if success:
+            if not restore_protected_update_paths(backup_dir):
+                print("[ERROR] No se pudo restaurar el estado protegido del usuario.")
+                return STATUS_ERROR
+            if not run_migrations():
+                print("[ERROR] Las migraciones post-update fallaron.")
+                return STATUS_ERROR
+            if not run_kb_init():
+                print(
+                    "[ERROR] La inicializacion de Knowledge Base fallo tras la actualizacion."
+                )
+                return STATUS_ERROR
             run_vendor_assets()
             run_docs_manifest()
             return STATUS_OK
+        restore_protected_update_paths(backup_dir)
         return STATUS_ERROR
 
     print("[INFO] Metodo de actualizacion: Descarga directa")
-    success = update_with_zip(zip_url)
+    success = update_with_zip(zip_url, protected_paths)
     if success:
+        if not restore_protected_update_paths(backup_dir):
+            print("[ERROR] No se pudo restaurar el estado protegido del usuario.")
+            return STATUS_ERROR
+        if not run_migrations():
+            print("[ERROR] Las migraciones post-update fallaron.")
+            return STATUS_ERROR
         run_vendor_assets()
         run_docs_manifest()
-        # Initialize Knowledge Base after update (sesion 2026-03-09)
-        kb_init = CORE_DIR / "scripts" / "kb-init.py"
-        if kb_init.exists():
-            print("[INFO] Inicializando Knowledge Base...")
-            subprocess.run(
-                [sys.executable, str(kb_init), "--force"], cwd=REPO_ROOT, check=False
+        if not run_kb_init():
+            print(
+                "[ERROR] La inicializacion de Knowledge Base fallo tras la actualizacion."
             )
+            return STATUS_ERROR
         return STATUS_OK
+    restore_protected_update_paths(backup_dir)
     return STATUS_ERROR
 
 

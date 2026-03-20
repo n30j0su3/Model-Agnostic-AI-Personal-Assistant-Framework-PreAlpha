@@ -1,0 +1,25 @@
+# Paths that must be preserved across framework updates.
+# These paths contain user-owned context, knowledge, credentials, or workspace data.
+
+workspaces
+core/.context/MASTER.md
+core/.context/profile.md
+core/.context/opencode.md
+core/.context/claude.md
+core/.context/gemini.md
+core/.context/sessions
+core/.context/codebase
+core/.context/backups
+core/.context/projects
+core/.context/vitals
+core/.context/knowledge_base.json
+core/.context/knowledge/insights
+core/.context/knowledge/learning
+core/.context/knowledge/self-healing
+core/.context/knowledge/prompts
+core/.context/knowledge/sessions-index.json
+core/.context/knowledge/knowledge-index.json
+config/mcp.json
+config/quotas.json
+opencode.jsonc
+.opencode/config.json

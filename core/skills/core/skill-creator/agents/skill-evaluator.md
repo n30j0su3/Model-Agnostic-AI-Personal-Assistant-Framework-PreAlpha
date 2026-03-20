@@ -246,6 +246,4 @@ Este subagente se invoca automaticamente en:
 
 ## Referencias
 
-- PRP-006: Skill-Creator v2
-- PRP-001: Framework-First Validation
 - context-evaluator/SKILL.md: Patron LLM-as-a-Judge base
