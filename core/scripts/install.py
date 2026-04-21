@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
 """
-Instalador Pre-Alpha simplificado.
+FreakingJSON Personal Assistant Framework — Instalador v0.3.0-alpha
+
 Crea estructura, configura perfil y sincroniza contexto.
+Framework multi-IA standalone — OpenCode, Claude, Gemini, Codex, Ollama.
+
+Creator: FreakingJSON (instagram.com/freakingjson, freakingjson.com)
 """
 
+import argparse
 import os
 import platform
 import shutil
 import subprocess
 import sys
+import webbrowser
 from datetime import datetime
 from pathlib import Path
 
@@ -66,6 +72,50 @@ def prompt_yes_no(msg, default=False):
     return choice in {"s", "si", "y", "yes"}
 
 
+def check_optional_dependencies():
+    """Check for optional dependencies and offer to install them."""
+    print_info("Verificando dependencias opcionales...")
+    
+    # Check for pyyaml (optional - JSON is the primary config format)
+    try:
+        import yaml
+        print_ok("pyyaml disponible (soporte YAML para configuración).")
+        return True
+    except ImportError:
+        print_warn("pyyaml no está instalado (opcional - JSON es el formato primario).")
+        print_info("El soporte YAML es opcional. El framework funciona con JSON (stdlib).")
+        
+        if prompt_yes_no("¿Instalar pyyaml via pip?", default=True):
+            print_info("Instalando pyyaml...")
+            try:
+                result = subprocess.run(
+                    [sys.executable, "-m", "pip", "install", "pyyaml"],
+                    capture_output=True,
+                    text=True,
+                    timeout=120
+                )
+                if result.returncode == 0:
+                    print_ok("pyyaml instalado correctamente.")
+                    return True
+                else:
+                    print_error(f"Error al instalar pyyaml: {result.stderr.strip()}")
+                    print_info(f"Instalación manual: https://pyyaml.org/wiki/PyYAMLDocumentation")
+                    return False
+            except subprocess.TimeoutExpired:
+                print_error("Timeout durante la instalación de pyyaml.")
+                print_info(f"Instalación manual: https://pyyaml.org/wiki/PyYAMLDocumentation")
+                return False
+            except Exception as e:
+                print_error(f"Error inesperado: {e}")
+                print_info(f"Instalación manual: https://pyyaml.org/wiki/PyYAMLDocumentation")
+                return False
+        else:
+            print_info("Continuando sin pyyaml. Solo configuración JSON disponible.")
+            print_info(f"Para instalar manualmente: pip install pyyaml")
+            print_info(f"Documentación: https://pyyaml.org/wiki/PyYAMLDocumentation")
+            return False
+
+
 def configure_preferences(repo_root):
     """Configure user preferences interactively."""
     master = CONTEXT_DIR / "MASTER.md"
@@ -82,8 +132,20 @@ def configure_preferences(repo_root):
 
 
 def main():
+    # Parse arguments
+    parser = argparse.ArgumentParser(description="FreakingJSON PA Framework Installer")
+    parser.add_argument(
+        "--no-browser",
+        action="store_true",
+        help="Skip auto-opening dashboard in browser (for headless installs)",
+    )
+    args = parser.parse_args()
+
     print(
-        f"\n{Colors.HEADER}{Colors.BOLD}  Personal Assistant Framework — Instalador Pre-Alpha{Colors.END}\n"
+        f"\n{Colors.HEADER}{Colors.BOLD}  ╔══════════════════════════════════════════════════════════╗\n"
+        f"  ║   FreakingJSON Personal Assistant Framework v0.3.0-alpha    ║\n"
+        f"  ║   I own my context. I am FreakingJSON.                      ║\n"
+        f"  ╚══════════════════════════════════════════════════════════╝{Colors.END}\n"
     )
     print_info(f"Sistema: {platform.system()} {platform.release()}")
     print_info(f"Python: {platform.python_version()}")
@@ -93,6 +155,9 @@ def main():
     if sys.version_info < MIN_PYTHON:
         print_error(f"Python {'.'.join(str(v) for v in MIN_PYTHON)}+ requerido.")
         sys.exit(1)
+
+    # Check optional dependencies
+    check_optional_dependencies()
 
     # Ensure directories
     dirs = [
@@ -204,13 +269,13 @@ Bienvenida. Este framework actúa como asistente personal para tareas diarias, i
     print_ok("Perfil guardado.")
 
     # Sync context
-    sync_script = SCRIPT_DIR / "sync-context.py"
+    sync_script = SCRIPT_DIR / "sync_context.py"
     if sync_script.exists():
         print_info("Sincronizando contexto...")
         subprocess.run([sys.executable, str(sync_script)], cwd=REPO_ROOT, check=False)
 
     # Initialize Knowledge Base (sesion 2026-03-09)
-    kb_init_script = SCRIPT_DIR / "kb-init.py"
+    kb_init_script = SCRIPT_DIR / "kb_init.py"
     if kb_init_script.exists():
         print_info("Inicializando Knowledge Base...")
         subprocess.run(
@@ -224,12 +289,50 @@ Bienvenida. Este framework actúa como asistente personal para tareas diarias, i
     else:
         next_step = "./pa.sh"
 
-    print(f"\n{Colors.GREEN}{Colors.BOLD}  {'=' * 50}{Colors.END}")
-    print(f"{Colors.GREEN}{Colors.BOLD}  [OK] Instalación completada.{Colors.END}")
-    print(f"{Colors.GREEN}{Colors.BOLD}  {'=' * 50}{Colors.END}")
-    print(
-        f"\n{Colors.CYAN}  Siguiente paso: ejecuta {next_step} para iniciar el framework.{Colors.END}\n"
-    )
+    print(f"\n{Colors.GREEN}{Colors.BOLD}  {'=' * 60}{Colors.END}")
+    print(f"{Colors.GREEN}{Colors.BOLD}  ✓ INSTALACIÓN COMPLETADA EXITOSAMENTE{Colors.END}")
+    print(f"{Colors.GREEN}{Colors.BOLD}  {'=' * 60}{Colors.END}")
+    
+    # What's Next guidance
+    print(f"\n{Colors.BOLD}{Colors.CYAN}  📋 ¿QUÉ SIGUE? — WHAT'S NEXT{Colors.END}")
+    print(f"  {Colors.CYAN}{'─' * 50}{Colors.END}")
+    print(f"\n  {Colors.YELLOW}1.{Colors.END} Inicia el framework:")
+    print(f"     {Colors.BOLD}{next_step}{Colors.END}")
+    print(f"\n  {Colors.YELLOW}2.{Colors.END} Configura tus API keys en:")
+    print(f"     core/.context/MASTER.md")
+    print(f"\n  {Colors.YELLOW}3.{Colors.END} Revisa la documentación:")
+    print(f"     docs/ y AGENTS.md")
+    print(f"\n  {Colors.YELLOW}4.{Colors.END} Explora los ejemplos en:")
+    print(f"     examples/")
+    print(f"\n  {Colors.CYAN}{'─' * 50}{Colors.END}")
+    
+    # Dashboard path
+    dashboard_path = REPO_ROOT / "dashboard.html"
+    
+    # Auto-open dashboard in browser (unless --no-browser flag)
+    if not args.no_browser and dashboard_path.exists():
+        print(f"\n{Colors.CYAN}  🌐 Abriendo dashboard en navegador...{Colors.END}")
+        try:
+            webbrowser.open(f"file://{dashboard_path}")
+            print_ok("Dashboard abierto en tu navegador.")
+        except Exception as e:
+            print_warn(f"No se pudo abrir el navegador: {e}")
+            print_info(f"Puedes abrir manualmente: {dashboard_path}")
+    elif args.no_browser:
+        print_info(f"Modo headless: dashboard no abierto (--no-browser)")
+        if dashboard_path.exists():
+            print_info(f"Dashboard disponible en: {dashboard_path}")
+    else:
+        print_warn(f"Dashboard no encontrado: {dashboard_path}")
+    
+    print(f"\n{Colors.GREEN}{Colors.BOLD}  ¡Gracias por instalar FreakingJSON PA Framework!{Colors.END}")
+    print(f"{Colors.CYAN}  ─────────────────────────────────────────────────{Colors.END}")
+    print(f"{Colors.CYAN}  📸 Instagram: @freakingjson{Colors.END}")
+    print(f"{Colors.CYAN}  🌐 Linktree:  linktr.ee/freakingjson{Colors.END}")
+    print(f"{Colors.CYAN}  📝 Blog:      freakingjson.com{Colors.END}")
+    print(f"{Colors.CYAN}  ☕ Support:   buymeacoffee.com/freakingjson{Colors.END}")
+    print(f"{Colors.CYAN}  ─────────────────────────────────────────────────{Colors.END}")
+    print(f"{Colors.BOLD}{Colors.HEADER}  \"I own my context. I am FreakingJSON.\"{Colors.END}\n")
 
 
 if __name__ == "__main__":

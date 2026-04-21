@@ -64,6 +64,28 @@ Sistema de conocimiento que aprende contigo:
 
 ---
 
+## 🖥️ Target Platforms
+
+> **Priority**: Windows > macOS > Linux (usuarios finales primero)
+
+| **Platform** | Priority | Status | Notes |
+|--------------|----------|--------|-------|
+| Windows | 1️⃣ FIRST | Alpha-ready | PATH handling fixed, SQLite universal |
+| macOS | 2️⃣ | Alpha-ready | Homebrew paths, standard SQLite |
+| Linux | 3️⃣ | Stable | Primary dev platform |
+
+## 🔌 Supported CLIs (ACP-capable)
+
+| **CLI** | Provider | Integration | Status |
+|---------|----------|-------------|--------|
+| OpenCode | NanoGPT | `quick_capture()` | Ready |
+| Claude Code | Anthropic | ACP transport | Ready |
+| Gemini CLI | Google | `quick_capture()` | Ready |
+| Qwen Code | Alibaba | `quick_capture()` | Ready |
+| Codex | OpenAI | `quick_capture()` | Ready |
+
+---
+
 ## 🔮 Exploración Futura
 
 *Áreas de interés sin compromiso de implementación:*
@@ -107,9 +129,9 @@ Se revisa según:
 
 ---
 
-**Versión actual**: v0.2.2-prealpha  
+**Versión actual**: v0.3.3-alpha  
 **Filosofía**: *"El conocimiento verdadero trasciende a lo público."*  
-**Última actualización**: 2026-03-05
+**Última actualización**: 2026-04-19
 
 ---
 

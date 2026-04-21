@@ -1,5 +1,5 @@
 # Framework Configuration
-# Version: 0.2.2-prealpha
+# Version: 0.3.7-alpha
 
 evaluation:
   # Mode: full (all criteria) or simplified (core criteria only)
@@ -48,6 +48,47 @@ sessions:
   error_recovery: true
   auto_summary: true
   index_on_close: true
+
+memory_pipeline:
+  enabled: true
+  mode: integral_4layer
+  interval_minutes: 15
+  guarantees:
+    lossless_capture: true
+    persistent_all_layers: true
+    relational_context: true
+  layers:
+    sessions_md:
+      role: "Memoria simple/rápida (log universal cronológico)"
+      persistence: always
+      source_of_truth: true
+    memory_md:
+      role: "Memoria intermedia (síntesis operativa y patrones)"
+      persistence: always
+      derives_from: sessions_md
+    sqlite:
+      role: "Memoria permanente estructurada (TODOs, sesiones completas, detalle ilimitado)"
+      persistence: always
+      schema: "sessions + messages + metadata"
+    wiki:
+      role: "Segundo cerebro relacional (contexto + relaciones/grafos)"
+      persistence: always
+      derives_from:
+        - sessions_md
+        - memory_md
+        - sqlite
+  synchronization:
+    interval_cycle_enabled: true
+    interval_minutes: 15
+    run_on_session_end: true
+    include_wiki_sync_in_interval: true
+  triggers:
+    on_interaction: true
+    on_decision: true
+    on_pattern_detected: true
+    on_todo_update: true
+    on_session_end: true
+    on_recovery: true
 
 logging:
   level: INFO

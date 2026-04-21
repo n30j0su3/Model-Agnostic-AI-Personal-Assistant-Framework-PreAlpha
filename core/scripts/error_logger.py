@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """
-PA Framework - Error Logger Module
+PA Framework - Error Logger Module v2.0.0
 Dual logging system (JSON + MD) for error tracking and recovery.
 
 Part of PRP-007: Error Recovery Skill
+Enhanced for Phase 3 Item 4: Error classification, recovery suggestion,
+playbook triggering, and pattern detection (ADR-004 taxonomy).
 
 Usage:
     from error_logger import ErrorLogger
@@ -17,7 +19,10 @@ Usage:
     })
 """
 
+__version__ = "2.0.0"
+
 import json
+import re
 import sys
 import traceback
 from datetime import datetime
@@ -65,6 +70,133 @@ PLAYBOOK_MAPPING = {
     "IndexError": "PB-013",
     "ZeroDivisionError": "PB-014",
     "RuntimeError": "PB-015",
+}
+
+# ─── ADR-004 Error Classification Taxonomy (v2.0.0) ───────────────────────
+# Maps keyword patterns to error category per ADR-004 taxonomy.
+# Categories: network, api, file_system, authentication, configuration,
+#             data_integrity, resource
+
+ERROR_CATEGORIES = {
+    "network": {
+        "keywords": [
+            "connection", "timeout", "network", "socket", "dns", "host",
+            "refused", "reset", "unreachable", "packet", "ttl", "latency",
+            "bandwidth", "proxy", "ssl", "tls", "certificate",
+            "ConnectionError", "TimeoutError", "ConnectionRefusedError",
+            "ConnectionResetError", "ConnectionAbortedError",
+            "BrokenPipeError", "URLError",
+        ],
+        "description": "Network connectivity and communication errors",
+    },
+    "api": {
+        "keywords": [
+            "api", "endpoint", "request", "response", "http", "https",
+            "status", "rate limit", "throttl", "oauth", "token expired",
+            "bad request", "unauthorized", "forbidden", "not found",
+            "server error", "gateway", "webhook", "rest", "graphql",
+            "HTTPErrors", "requests.exceptions",
+        ],
+        "description": "API interaction and HTTP protocol errors",
+    },
+    "file_system": {
+        "keywords": [
+            "file", "directory", "path", "not found", "permission",
+            "read-only", "disk", "space", "inode", "mount", "symlink",
+            "encoding", "decode", "encode", "utf", "ascii", "codec",
+            "FileNotFoundError", "PermissionError", "IsADirectoryError",
+            "NotADirectoryError", "FileExistsError", "UnicodeEncodeError",
+            "UnicodeDecodeError", "OSError", "IOError", "JSONDecodeError",
+        ],
+        "description": "File system access, I/O, and encoding errors",
+    },
+    "authentication": {
+        "keywords": [
+            "auth", "login", "credential", "password", "token", "session",
+            "expired", "invalid key", "api key", "secret", "jwt", "saml",
+            "oauth", "mfa", "2fa", "totp", "forbidden", "unauthorized",
+            "PermissionError", "PermissionDenied",
+        ],
+        "description": "Authentication and authorization errors",
+    },
+    "configuration": {
+        "keywords": [
+            "config", "setting", "environment", "env", "variable",
+            "missing", "invalid", "schema", "yaml", "toml", "ini",
+            "parse", "syntax", "indent", "key error", "keyerror",
+            "import", "module", "no module", "KeyError", "ImportError",
+            "ModuleNotFoundError", "ConfigParser", "AttributeError",
+        ],
+        "description": "Configuration, settings, and import errors",
+    },
+    "data_integrity": {
+        "keywords": [
+            "data", "corrupt", "checksum", "hash", "mismatch", "valid",
+            "invalid", "schema", "constraint", "unique", "foreign key",
+            "primary key", "null", "required", "type error", "value error",
+            "index", "range", "overflow", "underflow",
+            "ValueError", "TypeError", "IndexError", "KeyError",
+            "struct.error", "AssertionError",
+        ],
+        "description": "Data validation and integrity errors",
+    },
+    "resource": {
+        "keywords": [
+            "memory", "cpu", "disk", "resource", "limit", "quota",
+            "exceeded", "oom", "out of memory", "allocation", "heap",
+            "stack", "thread", "process", "fork", "zombie", "deadlock",
+            "file descriptor", "too many open", "MemoryError",
+            "RuntimeError", "RecursionError", "SystemError",
+            "ZeroDivisionError",
+        ],
+        "description": "System resource exhaustion and runtime errors",
+    },
+}
+
+# Mapping from error category to suggested recovery strategy/playbook
+CATEGORY_RECOVERY_MAP = {
+    "network": {
+        "playbook_id": "PB-NET-RETRY",
+        "strategy": "Retry with exponential backoff; check connectivity; verify DNS",
+        "severity": "medium",
+    },
+    "api": {
+        "playbook_id": "PB-API-FALLBACK",
+        "strategy": "Check API status; validate request; use cached response",
+        "severity": "medium",
+    },
+    "file_system": {
+        "playbook_id": "PB-FS-RECOVER",
+        "strategy": "Verify path; check encoding; ensure disk space; fix permissions",
+        "severity": "high",
+    },
+    "authentication": {
+        "playbook_id": "PB-AUTH-REFRESH",
+        "strategy": "Refresh token; re-authenticate; check credentials rotation",
+        "severity": "critical",
+    },
+    "configuration": {
+        "playbook_id": "PB-CFG-VALIDATE",
+        "strategy": "Validate config schema; check env vars; restore defaults",
+        "severity": "high",
+    },
+    "data_integrity": {
+        "playbook_id": "PB-DATA-VALIDATE",
+        "strategy": "Validate input; check schema; sanitize data; restore backup",
+        "severity": "high",
+    },
+    "resource": {
+        "playbook_id": "PB-RES-OPTIMIZE",
+        "strategy": "Free resources; reduce load; scale up; restart service",
+        "severity": "critical",
+    },
+}
+
+# Pattern detection thresholds
+PATTERN_THRESHOLDS = {
+    "recurrence_min": 3,       # Minimum occurrences to flag a pattern
+    "time_window_minutes": 30, # Time window for burst detection
+    "burst_threshold": 5,      # Errors within time_window to count as burst
 }
 
 
@@ -481,6 +613,362 @@ class ErrorLogger:
             "most_common": most_common,
         }
 
+    # ─── v2.0.0 Methods: ADR-004 Classification & Recovery ─────────────
+
+    def classify_error(self, error: Any) -> str:
+        """
+        Classify an error into an ADR-004 taxonomy category using keyword
+        matching on the error message and type string.
+
+        Args:
+            error: An error dict (with 'type' and/or 'message' keys),
+                   an Exception instance, or a string describing the error.
+
+        Returns:
+            One of the ADR-004 category strings:
+            'network', 'api', 'file_system', 'authentication',
+            'configuration', 'data_integrity', 'resource', or 'unknown'.
+
+        Example:
+            >>> logger = ErrorLogger()
+            >>> logger.classify_error({"type": "ConnectionError",
+            ...                        "message": "Connection refused"})
+            'network'
+            >>> logger.classify_error(FileNotFoundError("config.yaml"))
+            'file_system'
+        """
+        # Normalize the input into a searchable text blob
+        text_parts: List[str] = []
+
+        if isinstance(error, dict):
+            text_parts.append(str(error.get("type", "")))
+            text_parts.append(str(error.get("message", "")))
+            text_parts.append(str(error.get("context", "")))
+        elif isinstance(error, BaseException):
+            text_parts.append(type(error).__name__)
+            text_parts.append(str(error))
+        elif isinstance(error, str):
+            text_parts.append(error)
+        else:
+            text_parts.append(str(error))
+
+        combined = " ".join(text_parts).lower()
+
+        if not combined.strip():
+            return "unknown"
+
+        # Score each category by counting keyword matches
+        best_category = "unknown"
+        best_score = 0
+
+        for category, cat_data in ERROR_CATEGORIES.items():
+            score = 0
+            for keyword in cat_data["keywords"]:
+                # Use word-level matching for short keywords, substring for longer
+                kw_lower = keyword.lower()
+                if len(kw_lower) <= 4:
+                    # Short keywords: word boundary match
+                    pattern = r'\b' + re.escape(kw_lower) + r'\b'
+                    matches = re.findall(pattern, combined)
+                    score += len(matches)
+                else:
+                    # Longer keywords: substring match
+                    count = combined.count(kw_lower)
+                    score += count
+
+            if score > best_score:
+                best_score = score
+                best_category = category
+
+        return best_category
+
+    def suggest_recovery(self, error_class: str) -> Dict[str, Any]:
+        """
+        Suggest a recovery strategy for a given error classification category.
+
+        Args:
+            error_class: One of the ADR-004 taxonomy categories
+                        (e.g., 'network', 'api', 'file_system', etc.)
+
+        Returns:
+            Dictionary with recovery information:
+            - playbook_id: Suggested playbook identifier
+            - strategy: Human-readable recovery strategy
+            - severity: Severity level (low, medium, high, critical)
+            - category: The error category that was matched
+
+        Example:
+            >>> logger = ErrorLogger()
+            >>> result = logger.suggest_recovery("network")
+            >>> print(result["playbook_id"])
+            'PB-NET-RETRY'
+        """
+        if error_class in CATEGORY_RECOVERY_MAP:
+            result = dict(CATEGORY_RECOVERY_MAP[error_class])
+            result["category"] = error_class
+            return result
+
+        return {
+            "playbook_id": None,
+            "strategy": "No automated recovery available. Manual investigation required.",
+            "severity": "unknown",
+            "category": error_class,
+        }
+
+    def trigger_playbook(self, playbook_id: str) -> Dict[str, Any]:
+        """
+        Trigger a recovery playbook via the recovery orchestrator.
+
+        Attempts to integrate with the recovery orchestrator if available.
+        Falls back gracefully with a logged suggestion if the orchestrator
+        is not yet implemented.
+
+        Args:
+            playbook_id: The playbook identifier to trigger
+                        (e.g., 'PB-NET-RETRY', 'PB-001', etc.)
+
+        Returns:
+            Dictionary with trigger result:
+            - triggered: Whether the playbook was actually executed
+            - playbook_id: The playbook that was requested
+            - status: 'executed', 'pending', or 'unavailable'
+            - message: Human-readable status message
+
+        Example:
+            >>> logger = ErrorLogger()
+            >>> result = logger.trigger_playbook("PB-NET-RETRY")
+            >>> print(result["status"])
+            'pending'
+        """
+        result: Dict[str, Any] = {
+            "triggered": False,
+            "playbook_id": playbook_id,
+            "status": "unavailable",
+            "message": "",
+        }
+
+        # Attempt to import and use recovery orchestrator
+        try:
+            # Try core recovery orchestrator
+            from recovery_orchestrator import RecoveryOrchestrator
+            orchestrator = RecoveryOrchestrator()
+            exec_result = orchestrator.execute_playbook(playbook_id)
+            result["triggered"] = True
+            result["status"] = "executed"
+            result["message"] = f"Playbook {playbook_id} executed successfully"
+            result["details"] = exec_result
+            safe_print(c(
+                f"[PLAYBOOK] Triggered {playbook_id} via recovery orchestrator",
+                Colors.GREEN
+            ))
+            return result
+        except ImportError:
+            pass
+        except Exception as e:
+            result["message"] = f"Orchestrator error: {e}"
+            result["status"] = "error"
+
+        # Fallback: Try script-based playbook execution
+        try:
+            playbook_path = (
+                SCRIPT_DIR / "recovery" / f"{playbook_id.lower()}.py"
+            )
+            if playbook_path.exists():
+                result["triggered"] = True
+                result["status"] = "pending"
+                result["message"] = (
+                    f"Playbook script found at {playbook_path}. "
+                    f"Manual execution required."
+                )
+                result["script_path"] = str(playbook_path)
+                safe_print(c(
+                    f"[PLAYBOOK] Script available: {playbook_path}",
+                    Colors.YELLOW
+                ))
+                return result
+        except Exception:
+            pass
+
+        # Graceful fallback — log the suggestion
+        result["status"] = "pending"
+        result["triggered"] = False
+        result["message"] = (
+            f"Recovery orchestrator not available. "
+            f"Playbook {playbook_id} queued for manual execution."
+        )
+        safe_print(c(
+            f"[PLAYBOOK] {playbook_id} — orchestrator not available, "
+            f"queued for manual execution",
+            Colors.YELLOW
+        ))
+        return result
+
+    def detect_pattern(self, error_history: Optional[List[Dict]] = None) -> Dict[str, Any]:
+        """
+        Detect recurring patterns in error history.
+
+        Analyzes a list of recent errors to identify:
+        - Frequently recurring error types
+        - Error bursts (many errors in a short time window)
+        - Dominant error categories (by ADR-004 taxonomy)
+        - Correlated error sequences (same file, same type chain)
+
+        Args:
+            error_history: List of error dicts to analyze. If None, reads
+                          from the JSON index. Defaults to last 20 errors.
+
+        Returns:
+            Dictionary with pattern analysis:
+            - recurring_types: Error types appearing >= recurrence_min times
+            - bursts: Time windows with >= burst_threshold errors
+            - dominant_category: Most common ADR-004 category
+            - category_distribution: Count of errors per category
+            - patterns_found: List of detected pattern descriptions
+            - risk_level: 'low', 'medium', 'high', or 'critical'
+
+        Example:
+            >>> logger = ErrorLogger()
+            >>> analysis = logger.detect_pattern()
+            >>> print(analysis["dominant_category"])
+            'file_system'
+        """
+        # Load errors from index if not provided
+        if error_history is None:
+            index_data = self._read_index()
+            error_history = index_data.get("errors", [])[-20:]
+
+        if not error_history:
+            return {
+                "recurring_types": [],
+                "bursts": [],
+                "dominant_category": "none",
+                "category_distribution": {},
+                "patterns_found": ["No errors to analyze"],
+                "risk_level": "low",
+                "total_analyzed": 0,
+            }
+
+        # --- 1. Recurring type analysis ---
+        type_counts: Dict[str, int] = {}
+        for err in error_history:
+            err_type = err.get("type", "Unknown")
+            type_counts[err_type] = type_counts.get(err_type, 0) + 1
+
+        recurrence_min = PATTERN_THRESHOLDS["recurrence_min"]
+        recurring_types = [
+            {"type": t, "count": c}
+            for t, c in type_counts.items()
+            if c >= recurrence_min
+        ]
+
+        # --- 2. Burst detection ---
+        bursts: List[Dict[str, Any]] = []
+        timestamps: List[tuple] = []
+
+        for err in error_history:
+            ts_str = err.get("timestamp", "")
+            if ts_str:
+                try:
+                    ts = datetime.fromisoformat(ts_str)
+                    timestamps.append((ts, err))
+                except (ValueError, TypeError):
+                    pass
+
+        if len(timestamps) >= 2:
+            timestamps.sort(key=lambda x: x[0])
+            window_minutes = PATTERN_THRESHOLDS["time_window_minutes"]
+            burst_threshold = PATTERN_THRESHOLDS["burst_threshold"]
+
+            for i in range(len(timestamps)):
+                window_start = timestamps[i][0]
+                window_errors = []
+                for j in range(i, len(timestamps)):
+                    diff = (timestamps[j][0] - window_start).total_seconds() / 60.0
+                    if diff <= window_minutes:
+                        window_errors.append(timestamps[j][1])
+                    else:
+                        break
+                if len(window_errors) >= burst_threshold:
+                    bursts.append({
+                        "start": window_start.isoformat(),
+                        "count": len(window_errors),
+                        "types": list(set(
+                            e.get("type", "Unknown") for e in window_errors
+                        )),
+                    })
+
+        # --- 3. Category distribution ---
+        category_counts: Dict[str, int] = {}
+        for err in error_history:
+            cat = self.classify_error(err)
+            category_counts[cat] = category_counts.get(cat, 0) + 1
+
+        dominant_category = (
+            max(category_counts, key=category_counts.get)
+            if category_counts else "none"
+        )
+
+        # --- 4. Pattern descriptions ---
+        patterns_found: List[str] = []
+
+        for rt in recurring_types:
+            patterns_found.append(
+                f"Recurring error: {rt['type']} occurred {rt['count']} times"
+            )
+
+        for burst in bursts[:5]:  # Limit to 5 burst reports
+            patterns_found.append(
+                f"Error burst at {burst['start']}: "
+                f"{burst['count']} errors in 30min window "
+                f"(types: {', '.join(burst['types'])})"
+            )
+
+        if dominant_category != "none" and category_counts.get(dominant_category, 0) >= 3:
+            patterns_found.append(
+                f"Dominant category: {dominant_category} "
+                f"({category_counts[dominant_category]} of {len(error_history)} errors)"
+            )
+
+        # File-level correlation
+        file_counts: Dict[str, int] = {}
+        for err in error_history:
+            f = err.get("file", "")
+            if f:
+                file_counts[f] = file_counts.get(f, 0) + 1
+
+        hot_files = [
+            {"file": f, "count": c}
+            for f, c in file_counts.items()
+            if c >= 2
+        ]
+        for hf in hot_files[:3]:
+            patterns_found.append(
+                f"Hot file: {hf['file']} has {hf['count']} errors"
+            )
+
+        if not patterns_found:
+            patterns_found.append("No significant patterns detected")
+
+        # --- 5. Risk level ---
+        risk_level = "low"
+        if recurring_types:
+            risk_level = "medium"
+        if bursts:
+            risk_level = "high"
+        if bursts and recurring_types:
+            risk_level = "critical"
+
+        return {
+            "recurring_types": recurring_types,
+            "bursts": bursts[:5],
+            "dominant_category": dominant_category,
+            "category_distribution": category_counts,
+            "patterns_found": patterns_found,
+            "risk_level": risk_level,
+            "total_analyzed": len(error_history),
+            "hot_files": hot_files[:5],
+        }
+
     def clear_resolved(self, days_old: int = 30) -> int:
         """
         Remove resolved errors older than specified days from index.
@@ -578,9 +1066,67 @@ def generate_playbook_hint(error_data: Dict) -> str:
     return logger.generate_playbook_hint(error_data)
 
 
+# ─── v2.0.0 Convenience Functions ───────────────────────────────────
+
+def classify_error(error: Any) -> str:
+    """
+    Convenience function to classify an error into ADR-004 taxonomy.
+
+    Args:
+        error: Error dict, Exception, or string.
+
+    Returns:
+        Category string (e.g., 'network', 'file_system', etc.)
+    """
+    logger = ErrorLogger()
+    return logger.classify_error(error)
+
+
+def suggest_recovery(error_class: str) -> Dict[str, Any]:
+    """
+    Convenience function to get recovery suggestion for a category.
+
+    Args:
+        error_class: ADR-004 category string.
+
+    Returns:
+        Recovery strategy dictionary.
+    """
+    logger = ErrorLogger()
+    return logger.suggest_recovery(error_class)
+
+
+def trigger_playbook(playbook_id: str) -> Dict[str, Any]:
+    """
+    Convenience function to trigger a recovery playbook.
+
+    Args:
+        playbook_id: Playbook identifier.
+
+    Returns:
+        Trigger result dictionary.
+    """
+    logger = ErrorLogger()
+    return logger.trigger_playbook(playbook_id)
+
+
+def detect_pattern(error_history: Optional[List[Dict]] = None) -> Dict[str, Any]:
+    """
+    Convenience function to detect patterns in error history.
+
+    Args:
+        error_history: Optional list of error dicts.
+
+    Returns:
+        Pattern analysis dictionary.
+    """
+    logger = ErrorLogger()
+    return logger.detect_pattern(error_history)
+
+
 if __name__ == "__main__":
     print(c("\n" + "=" * 50, Colors.HEADER))
-    print(c("Error Logger Module Test", Colors.BOLD + Colors.CYAN))
+    print(c("Error Logger Module v2.0.0 Test", Colors.BOLD + Colors.CYAN))
     print(c("=" * 50, Colors.HEADER))
 
     logger = ErrorLogger()
@@ -619,6 +1165,35 @@ if __name__ == "__main__":
     unresolved_after = logger.get_unresolved_errors()
     print(f"  Unresolved count: {len(unresolved_after)}")
 
+    # ─── v2.0.0 Tests: Classification, Recovery, Pattern Detection ───
+
+    print(c("\n[TEST 7] Classifying errors (ADR-004)...", Colors.CYAN))
+    cat1 = logger.classify_error({"type": "ConnectionError", "message": "Connection refused"})
+    print(f"  ConnectionError -> {cat1}")
+    cat2 = logger.classify_error(FileNotFoundError("config.yaml"))
+    print(f"  FileNotFoundError -> {cat2}")
+    cat3 = logger.classify_error({"type": "ValueError", "message": "invalid data"})
+    print(f"  ValueError (data) -> {cat3}")
+    cat4 = logger.classify_error("out of memory during processing")
+    print(f"  'out of memory' -> {cat4}")
+
+    print(c("\n[TEST 8] Suggesting recovery...", Colors.CYAN))
+    rec = logger.suggest_recovery("network")
+    print(f"  network -> {rec['playbook_id']}: {rec['strategy']}")
+    rec_unknown = logger.suggest_recovery("unknown_cat")
+    print(f"  unknown -> {rec_unknown['playbook_id']}")
+
+    print(c("\n[TEST 9] Triggering playbook...", Colors.CYAN))
+    trig = logger.trigger_playbook("PB-NET-RETRY")
+    print(f"  PB-NET-RETRY -> status={trig['status']}, triggered={trig['triggered']}")
+
+    print(c("\n[TEST 10] Detecting patterns...", Colors.CYAN))
+    analysis = logger.detect_pattern()
+    print(f"  Total analyzed: {analysis['total_analyzed']}")
+    print(f"  Dominant category: {analysis['dominant_category']}")
+    print(f"  Risk level: {analysis['risk_level']}")
+    print(f"  Patterns: {analysis['patterns_found']}")
+
     print(c("\n" + "=" * 50, Colors.HEADER))
-    print(c("Tests completed successfully!", Colors.GREEN))
+    print(c("All tests completed successfully!", Colors.GREEN))
     print(c("=" * 50, Colors.HEADER))

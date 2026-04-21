@@ -61,7 +61,7 @@ MIGRATIONS: Dict[str, Dict] = {
             "core/.context/knowledge/sessions-index.json",
             "core/.context/codebase/",
         ],
-        "scripts": ["kb-init.py"],
+        "scripts": ["kb_init.py"],
     },
     "v0.2.0": {
         "name": "indexes_and_learning",
@@ -74,7 +74,7 @@ MIGRATIONS: Dict[str, Dict] = {
             "core/.context/knowledge/prompts/",
             "core/.context/projects/",
         ],
-        "scripts": ["skills-indexer.py", "agents-indexer.py"],
+        "scripts": ["skills_indexer.py", "agents_indexer.py"],
     },
     "v0.2.1": {
         "name": "propagation_and_public_runtime",
@@ -85,7 +85,7 @@ MIGRATIONS: Dict[str, Dict] = {
             "config/update-protected-paths.txt",
             "config/propagation-policy.json",
         ],
-        "scripts": ["kb-init.py", "skills-indexer.py", "agents-indexer.py"],
+        "scripts": ["kb_init.py", "skills_indexer.py", "agents_indexer.py"],
     },
 }
 

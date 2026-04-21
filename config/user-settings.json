@@ -1,0 +1,14 @@
+{
+  "$schema": "https://pa-framework.dev/user-settings.schema.json",
+  "version": "1.0.0",
+  "preferences": {
+    "language": "en",
+    "timezone": "UTC",
+    "theme": "default"
+  },
+  "notifications": {
+    "enabled": true,
+    "level": "info"
+  },
+  "custom": {}
+}

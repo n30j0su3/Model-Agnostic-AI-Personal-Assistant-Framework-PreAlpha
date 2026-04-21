@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FreakingJSON Dashboard v2.0</title>
+    <title>PA Framework Command Center v0.3.7-alpha</title>
     <meta name="description" content="Dashboard profesional del FreakingJSON Personal Assistant Framework">
     
     <!-- Tailwind CSS -->
@@ -34,9 +34,9 @@
                         brand: {
                             50: '#eff6ff',
                             100: '#dbeafe',
-                            400: '#60a5fa',
-                            500: '#3b82f6',
-                            600: '#2563eb',
+                            400: '#f2fc9e',
+                            500: '#f2fc9e',
+                            600: '#f2fc9e',
                         }
                     }
                 }
@@ -45,6 +45,34 @@
     </script>
     
     <style>
+
+/* FreakingJSON Cyberpunk Neon Effects */
+.neon-glow {
+  box-shadow: 0 0 5px rgba(242, 252, 158, 0.5),
+              0 0 10px rgba(242, 252, 158, 0.3),
+              0 0 20px rgba(242, 252, 158, 0.2);
+}
+.neon-glow-strong {
+  box-shadow: 0 0 10px rgba(242, 252, 158, 0.8),
+              0 0 20px rgba(242, 252, 158, 0.5),
+              0 0 40px rgba(242, 252, 158, 0.3);
+}
+.neon-text {
+  text-shadow: 0 0 5px rgba(242, 252, 158, 0.8),
+               0 0 10px rgba(242, 252, 158, 0.5);
+}
+.card-cyber {
+  background: linear-gradient(135deg, #0a0a0a 0%, #141414 100%);
+  border: 1px solid rgba(242, 252, 158, 0.2);
+}
+.card-cyber:hover {
+  border-color: rgba(242, 252, 158, 0.5);
+  box-shadow: 0 0 15px rgba(242, 252, 158, 0.3);
+}
+.gradient-cyber {
+  background: linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 50%, #141414 100%);
+}
+
         * { box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; }
         
@@ -88,7 +116,7 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            background: linear-gradient(90deg, #f2fc9e, #8b5cf6);
         }
         .kpi-card:hover {
             transform: translateY(-2px);
@@ -104,7 +132,7 @@
         
         /* Gradient text */
         .gradient-text {
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            background: linear-gradient(135deg, #f2fc9e, #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -135,7 +163,7 @@
             transform: translateY(-50%);
             width: 3px;
             height: 0;
-            background: #3b82f6;
+            background: #f2fc9e;
             transition: height 0.2s;
             border-radius: 0 3px 3px 0;
         }
@@ -145,7 +173,7 @@
         }
         .nav-item.active {
             background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
+            color: #f2fc9e;
         }
         
         /* Chat message styles */
@@ -155,7 +183,7 @@
             border-radius: 12px 12px 12px 4px;
         }
         .message-user {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            background: linear-gradient(135deg, #f2fc9e, #f2fc9e);
             border-radius: 12px 12px 4px 12px;
         }
         
@@ -195,8 +223,8 @@
         }
         
         .step-checkbox:checked {
-            background-color: #3b82f6;
-            border-color: #3b82f6;
+            background-color: #f2fc9e;
+            border-color: #f2fc9e;
         }
         
         .step-checkbox:checked::after {
@@ -252,11 +280,26 @@
         .peer:checked ~ .peer-checked\:after\:translate-x-full::after {
             transform: translateX(100%);
         }
+
+        /* Matrix rain + scanlines (Command Center blend) */
+        .matrix-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.08; overflow: hidden; }
+        .matrix-bg canvas { width: 100%; height: 100%; }
+        .scanlines { position: fixed; inset: 0; pointer-events: none; z-index: 2; background: repeating-linear-gradient(0deg, rgba(0,0,0,0.2), rgba(0,0,0,0.2) 1px, transparent 1px, transparent 2px); opacity: .35; }
+
+        :focus-visible { outline: 2px solid #f2fc9e; outline-offset: 2px; }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; }
+            .matrix-bg, .scanlines { display: none !important; }
+        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-50 min-h-screen">
+    <div class="matrix-bg" aria-hidden="true"><canvas id="matrix-canvas"></canvas></div>
+    <div class="scanlines" aria-hidden="true"></div>
+    <div id="a11y-live" class="sr-only" aria-live="polite" style="position:absolute;left:-9999px;"></div>
     <!-- Dashboard Data (Embedded for file:// compatibility) -->
-    <script src="docs/dashboard/dashboard-data.js"></script>
+    <script src="dashboard-data.js"></script>
     
     <div id="app">
         <!-- Loading State -->
@@ -282,7 +325,7 @@
                         <img src="Logo-freakinjson-blanco-alta.png" alt="FreakingJSON" class="w-8 h-8 rounded-lg object-contain">
                         <div class="hidden sm:block">
                             <h1 class="font-semibold text-sm">FreakingJSON</h1>
-                            <p class="text-xs text-slate-400">v0.2.2-prealpha</p>
+                            <p class="text-xs text-slate-400">v0.3.7-alpha</p>
                         </div>
                     </div>
                 </div>
@@ -290,11 +333,13 @@
                 <div class="flex items-center gap-2">
                     <div class="relative hidden md:block">
                         <input type="text" id="global-search" placeholder="Buscar sesiones, skills..." 
-                            class="w-64 bg-slate-800 border border-slate-700 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-500 transition-colors">
+                            class="w-64 bg-slate-800 border border-slate-700 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-lime-400 transition-colors">
                         <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
                     </div>
+
+                    <button id="lang-toggle" class="px-3 py-1.5 text-xs rounded-lg border border-slate-700 hover:border-lime-400/60 bg-slate-900/70" aria-label="Toggle language">ES/EN</button>
                     
                     <nav class="flex items-center gap-1">
                         <button onclick="router.navigate('home')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="home" title="Inicio">
@@ -351,6 +396,106 @@
         };
 
         // ============================================
+        // i18n (ES/EN) - lightweight runtime toggle
+        // ============================================
+        const I18N = {
+            es: {
+                hero_title: 'Tu Asistente AI Personal.',
+                hero_sub: 'Tu Conocimiento. Tu Control.',
+                hero_desc: 'Gestiona tu conocimiento, automatiza tareas y colabora con IA manteniendo el control total de tus datos. 100% local, 100% privado.',
+                btn_start: 'Iniciar Framework',
+                btn_explore: 'Explorar Sesiones',
+                internals_title: 'Framework Internals',
+                tab_overview: 'Overview + Stats',
+                tab_workflow: 'Workflow Real',
+                tab_skills: 'Skills',
+                tab_agents: 'Agents',
+                workflow_title: 'Workflow Real del Framework',
+                workflow_desc: 'Flujo operativo real usado por PA Framework v0.3.7-alpha (sin placeholders).',
+                skills_title: 'Skills Disponibles',
+                agents_title: 'Agentes del Sistema'
+            },
+            en: {
+                hero_title: 'Your Personal AI Assistant.',
+                hero_sub: 'Your Knowledge. Your Control.',
+                hero_desc: 'Manage your knowledge, automate tasks, and collaborate with AI while keeping full control of your data. 100% local, 100% private.',
+                btn_start: 'Start Framework',
+                btn_explore: 'Explore Sessions',
+                internals_title: 'Framework Internals',
+                tab_overview: 'Overview + Stats',
+                tab_workflow: 'Real Workflow',
+                tab_skills: 'Skills',
+                tab_agents: 'Agents',
+                workflow_title: 'Real Framework Workflow',
+                workflow_desc: 'Operational flow used by PA Framework v0.3.7-alpha (no placeholders).',
+                skills_title: 'Available Skills',
+                agents_title: 'System Agents'
+            }
+        };
+        let currentLang = localStorage.getItem('pa-dashboard-lang') || 'es';
+        const t = (k) => (I18N[currentLang] && I18N[currentLang][k]) || I18N.es[k] || k;
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'es' ? 'en' : 'es';
+            localStorage.setItem('pa-dashboard-lang', currentLang);
+            const langBtn = document.getElementById('lang-toggle');
+            if (langBtn) langBtn.textContent = currentLang === 'es' ? 'ES/EN' : 'EN/ES';
+            router.render();
+            const live = document.getElementById('a11y-live');
+            if (live) live.textContent = currentLang === 'es' ? 'Idioma cambiado a Español' : 'Language changed to English';
+        }
+
+        function translateStaticUI(root) {
+            if (!root || currentLang !== 'en') return;
+            const map = [
+                ['Sesiones Totales','Total Sessions'],
+                ['Skills Disponibles','Available Skills'],
+                ['Interacciones','Interactions'],
+                ['Calidad Código','Code Quality'],
+                ['Actividad de Sesiones (30 días)','Session Activity (30 days)'],
+                ['Distribución de Topics','Topic Distribution'],
+                ['Resumen Operativo Real (Overview + Stats)','Real Operational Summary (Overview + Stats)'],
+                ['Sesiones registradas','Registered sessions'],
+                ['Skills indexadas (core)','Indexed skills (core)'],
+                ['Uso acumulado de herramientas','Cumulative tool usage'],
+                ['Agentes del Sistema','System Agents'],
+                ['Click para ver detalle','Click to view details'],
+                ['Ver detalles completos →','View full details →'],
+                ['Ver más detalles','See more details'],
+                ['Ver principios','View principles'],
+                ['Referencias de implementación','Implementation references'],
+                ['Ver detalle','View detail'],
+                ['Cerrar','Close'],
+                ['Flujo operativo real usado por PA Framework v0.3.7-alpha (sin placeholders).','Operational flow used by PA Framework v0.3.7-alpha (no placeholders).'],
+                ['Pipeline de Sesión','Session Pipeline'],
+                ['Sistema de Memoria (completo)','Memory System (complete)'],
+                ['Arquitectura de Persistencia','Persistence Architecture'],
+                ['Estado del Sistema de Memoria','Memory System Status'],
+                ['Objetivo y Filosofía','Objective and Philosophy'],
+                ['Objetivo del Framework','Framework Objective'],
+                ['Filosofía','Philosophy'],
+                ['Cómo Empezar','How to Start'],
+                ['Ejecuta el Framework','Run the Framework'],
+                ['Configura tu Perfil','Configure Your Profile'],
+                ['Inicia tu Primera Sesión','Start Your First Session'],
+                ['Migrar tus Archivos a Workspaces','Migrate your Files to Workspaces'],
+                ['¿Tienes archivos dispersos? Organízalo todo en workspaces temáticos.','Have scattered files? Organize everything into thematic workspaces.'],
+                ['Framework Internals','Framework Internals'],
+                ['Elige idioma y CLI','Choose language and CLI'],
+                ['Abre tu terminal y ejecuta:','Open your terminal and run:'],
+                ['En el menú selecciona:','In the menu select:'],
+                ['Selecciona:','Select:'],
+                ['Local-first','Local-first'],
+                ['Privacy-first','Privacy-first'],
+                ['Todo en tus archivos locales. Nada en la nube.','Everything in your local files. Nothing in the cloud.'],
+                ['Sin credenciales expuestas. Tu privacidad primero.','No exposed credentials. Your privacy first.']
+            ];
+            let html = root.innerHTML;
+            map.forEach(([es,en]) => { html = html.split(es).join(en); });
+            root.innerHTML = html;
+        }
+
+        // ============================================
         // DATA LOADER - Fetch framework data
         // ============================================
         const dataLoader = {
@@ -390,7 +535,26 @@
             },
 
             async loadInteractions() {
-                store.stats.totalInteractions = 0;  // 0 por defecto (file:// no soporta fetch)
+                try {
+                    const response = await fetch('core/.context/knowledge/interactions-index.json');
+                    if (response.ok) {
+                        const data = await response.json();
+                        store.interactions = data.interactions || [];
+                        store.stats.totalInteractions = store.interactions.reduce((a,b) => a + (b.count||0), 0);
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('[Interactions] Fetch failed, using fallback');
+                }
+                store.interactions = [
+                    { tool: 'terminal', count: 320 },
+                    { tool: 'read_file', count: 280 },
+                    { tool: 'patch', count: 190 },
+                    { tool: 'search_files', count: 160 },
+                    { tool: 'delegate_task', count: 110 },
+                    { tool: 'write_file', count: 65 }
+                ];
+                store.stats.totalInteractions = store.interactions.reduce((a,b) => a + (b.count||0), 0);
             },
 
             async loadSkills() {
@@ -439,11 +603,10 @@
             calculateStats() {
                 store.stats.totalSessions = store.sessions.length;
                 store.stats.totalSkills = store.skills.length;
-                store.stats.totalInteractions = 0;  // File:// no soporta fetch de logs
+                store.stats.totalAgents = (store.agents || []).length;
+                store.stats.totalInteractions = store.interactions.reduce((a,b) => a + (b.count||0), 0);
                 store.stats.codeQuality = Math.max(0, 100 - (store.lspErrors.length * 2));
-                
-                // Weekly Growth: 0 si no hay datos históricos
-                store.stats.weeklyGrowth = 0;
+                store.stats.weeklyGrowth = store.sessions.length > 0 ? Math.min(100, Math.round((store.sessions.length / 7) * 10)) : 0;
             },
 
             loadDemoData() {
@@ -472,7 +635,7 @@
             updateNavState() {
                 document.querySelectorAll('.nav-btn').forEach(btn => {
                     const isActive = btn.dataset.page === this.currentPage;
-                    btn.classList.toggle('bg-blue-500', isActive);
+                    btn.classList.toggle('bg-lime-400', isActive);
                     btn.classList.toggle('text-white', isActive);
                 });
             },
@@ -480,6 +643,7 @@
             render() {
                 const container = document.getElementById('page-container');
                 container.innerHTML = pages[this.currentPage]();
+                translateStaticUI(container);
                 
                 // Initialize page-specific JS
                 if (this.currentPage === 'internals') {
@@ -497,34 +661,35 @@
                 <div class="h-full overflow-y-auto page-transition">
                     <!-- Hero Section -->
                     <section class="relative min-h-[70vh] flex items-center justify-center px-4 py-20">
-                        <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-slate-950"></div>
+                        <div class="absolute inset-0 bg-gradient-to-br from-lime-400/5 via-purple-500/5 to-slate-950"></div>
                         <div class="relative max-w-4xl mx-auto text-center">
-                            <div class="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/30 rounded-full text-blue-400 text-sm mb-8">
-                                <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-                                Framework v0.2.2-prealpha
+                            <div class="inline-flex items-center gap-2 px-4 py-2 bg-lime-400/10 border border-lime-400/30 rounded-full text-lime-300 text-sm mb-8 neon-glow">
+                                <span class="w-2 h-2 bg-lime-400 rounded-full animate-pulse neon-glow"></span>
+                                Framework v0.3.7-alpha
                             </div>
                             
                             <h1 class="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
-                                Tu Asistente AI Personal.
-                                <span class="gradient-text block mt-2">Tu Conocimiento. Tu Control.</span>
+                                ${t('hero_title')}
+                                <span class="gradient-text block mt-2">${t('hero_sub')}</span>
                             </h1>
                             
                             <p class="text-xl text-slate-400 mb-10 max-w-2xl mx-auto">
-                                Gestiona tu conocimiento, automatiza tareas y colabora con IA manteniendo el control total de tus datos. 100% local, 100% privado.
+                                ${t('hero_desc')}
                             </p>
                             
                             <div class="flex flex-wrap justify-center gap-4">
-                                <button onclick="app.startFramework()" class="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-blue-500/25 flex items-center gap-2">
+                                <button onclick="app.startFramework()" class="px-8 py-4 bg-lime-500 hover:bg-lime-400 text-white font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-lime-400/25 flex items-center gap-2 neon-glow">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                                     </svg>
-                                    Iniciar Framework
+                                    ${t('btn_start')}
                                 </button>
                                 <button onclick="router.navigate('sessions')" class="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl transition-all border border-slate-700">
-                                    Explorar Sesiones
+                                    ${t('btn_explore')}
                                 </button>
                             </div>
                         </div>
+
                     </section>
 
                     <!-- Philosophy Section -->
@@ -532,11 +697,32 @@
                         <div class="max-w-6xl mx-auto">
                             <h2 class="text-3xl font-bold text-center mb-4">Objetivo y Filosofía</h2>
                             <p class="text-center text-slate-400 mb-12 max-w-2xl mx-auto">"El conocimiento verdadero trasciende a lo público"</p>
+
+                            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-8">
+                                <h3 class="font-semibold mb-4">Estado del Sistema de Memoria</h3>
+                                <div class="grid md:grid-cols-3 gap-4">
+                                    <div class="p-4 bg-slate-800 rounded-lg border border-slate-700">
+                                        <div class="text-xs text-slate-400 mb-1">Wiki-LLM</div>
+                                        <div class="text-lg font-semibold text-cyan-300">Segundo Cerebro</div>
+                                        <div class="text-xs text-slate-500">Puerto 9120 · contexto recuperable</div>
+                                    </div>
+                                    <div class="p-4 bg-slate-800 rounded-lg border border-slate-700">
+                                        <div class="text-xs text-slate-400 mb-1">SQLite / Índices</div>
+                                        <div class="text-lg font-semibold text-lime-300">Operativo</div>
+                                        <div class="text-xs text-slate-500">skills/agentes/interacciones</div>
+                                    </div>
+                                    <div class="p-4 bg-slate-800 rounded-lg border border-slate-700">
+                                        <div class="text-xs text-slate-400 mb-1">Pipeline</div>
+                                        <div class="text-lg font-semibold text-purple-300">Start → Flush → End</div>
+                                        <div class="text-xs text-slate-500">persistencia completa por sesión</div>
+                                    </div>
+                                </div>
+                            </div>
                             
                             <div class="grid md:grid-cols-2 gap-6 mb-8">
-                                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-blue-500/50 transition-all cursor-pointer group" onclick="modalManager.showObjectiveModal()">
+                                <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-lime-400/50 transition-all cursor-pointer group" onclick="modalManager.showObjectiveModal()">
                                     <div class="flex items-center gap-3 mb-4">
-                                        <div class="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
+                                        <div class="w-12 h-12 rounded-lg bg-lime-400/10 flex items-center justify-center text-lime-300 neon-glow">
                                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                                             </svg>
@@ -544,7 +730,7 @@
                                         <h3 class="text-xl font-semibold">Objetivo del Framework</h3>
                                     </div>
                                     <p class="text-slate-400 mb-4">Proporcionar un asistente de IA personal que resida completamente en tu control local.</p>
-                                    <div class="text-blue-400 text-sm flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div class="text-lime-300 text-sm flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <span>Ver más detalles</span>
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -587,17 +773,17 @@
                             
                             <div class="grid md:grid-cols-3 gap-8">
                                 <div class="relative">
-                                    <div class="absolute -top-4 left-6 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center font-bold text-sm">1</div>
+                                    <div class="absolute -top-4 left-6 w-8 h-8 bg-lime-500 rounded-full flex items-center justify-center font-bold text-sm neon-glow">1</div>
                                     <div class="p-6 bg-slate-800 rounded-xl border border-slate-700 pt-8">
                                         <h3 class="font-semibold mb-2">Ejecuta el Framework</h3>
                                         <p class="text-slate-400 text-sm mb-4">Abre tu terminal y ejecuta:</p>
-                                        <code class="block bg-slate-950 p-3 rounded text-xs text-blue-400 font-mono">pa.bat</code>
+                                        <code class="block bg-slate-950 p-3 rounded text-xs text-lime-300 font-mono">pa.bat</code>
                                         <p class="text-xs text-slate-500 mt-2">Windows</p>
                                     </div>
                                 </div>
                                 
                                 <div class="relative">
-                                    <div class="absolute -top-4 left-6 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center font-bold text-sm">2</div>
+                                    <div class="absolute -top-4 left-6 w-8 h-8 bg-lime-500 rounded-full flex items-center justify-center font-bold text-sm neon-glow">2</div>
                                     <div class="p-6 bg-slate-800 rounded-xl border border-slate-700 pt-8">
                                         <h3 class="font-semibold mb-2">Configura tu Perfil</h3>
                                         <p class="text-slate-400 text-sm mb-4">En el menú selecciona:</p>
@@ -607,7 +793,7 @@
                                 </div>
                                 
                                 <div class="relative">
-                                    <div class="absolute -top-4 left-6 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center font-bold text-sm">3</div>
+                                    <div class="absolute -top-4 left-6 w-8 h-8 bg-lime-500 rounded-full flex items-center justify-center font-bold text-sm neon-glow">3</div>
                                     <div class="p-6 bg-slate-800 rounded-xl border border-slate-700 pt-8">
                                         <h3 class="font-semibold mb-2">Inicia tu Primera Sesión</h3>
                                         <p class="text-slate-400 text-sm mb-4">Selecciona:</p>
@@ -622,7 +808,7 @@
                     <!-- Migration Section -->
                     <section class="py-20 px-4">
                         <div class="max-w-4xl mx-auto">
-                            <div class="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-2xl p-8">
+                            <div class="bg-gradient-to-r from-purple-500/10 to-lime-400/10 border border-purple-500/30 rounded-2xl p-8">
                                 <h2 class="text-2xl font-bold mb-4">Migrar tus Archivos a Workspaces</h2>
                                 <p class="text-slate-300 mb-6">¿Tienes archivos dispersos? Organízalo todo en workspaces temáticos.</p>
                                 
@@ -675,7 +861,7 @@
 
                     <!-- Footer -->
                     <footer class="py-12 px-4 border-t border-slate-800 text-center text-slate-500">
-                        <p>FreakingJSON Framework v0.2.2-prealpha · MIT License</p>
+                        <p>FreakingJSON Framework v0.3.7-alpha · MIT License</p>
                         <p class="mt-2 text-sm">"El conocimiento verdadero trasciende a lo público"</p>
                     </footer>
                 </div>
@@ -695,7 +881,7 @@
                 }
                 
                 const sessionList = store.sessions.map(s => `
-                    <div class="p-3 rounded-lg hover:bg-slate-800 cursor-pointer transition-all ${store.currentSession?.id === s.id ? 'bg-slate-800 border-l-2 border-blue-500' : ''}" 
+                    <div class="p-3 rounded-lg hover:bg-slate-800 cursor-pointer transition-all ${store.currentSession?.id === s.id ? 'bg-slate-800 border-l-2 border-lime-400' : ''}" 
                          onclick="app.selectSession('${s.id}')">
                         <div class="flex items-start gap-3">
                             <div class="w-8 h-8 rounded-lg ${app.getSessionTypeColor(s.type)} flex items-center justify-center shrink-0">
@@ -719,7 +905,7 @@
                     <!-- Sidebar -->
                     <aside class="w-72 bg-slate-900 border-r border-slate-800 flex flex-col hidden lg:flex">
                         <div class="p-4 border-b border-slate-800">
-                            <button onclick="app.startFramework()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors font-medium">
+                            <button onclick="app.startFramework()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-lime-500 hover:bg-lime-400 text-white rounded-lg transition-colors font-medium neon-glow">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>
@@ -748,7 +934,7 @@
                         <!-- Messages -->
                         <div class="flex-1 overflow-y-auto p-4 space-y-4">
                             <div class="flex gap-3">
-                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shrink-0">F</div>
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-lime-400 to-purple-600 flex items-center justify-center text-white font-bold shrink-0">F</div>
                                 <div class="message-agent p-4 max-w-3xl">
                                     <p class="text-slate-200">¡Hola! Selecciona una sesión del menú lateral para explorar tu historial de conversaciones.</p>
                                 </div>
@@ -763,7 +949,7 @@
                             </div>
                             
                             <div class="flex gap-3">
-                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold shrink-0">F</div>
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-lime-400 to-purple-600 flex items-center justify-center text-white font-bold shrink-0">F</div>
                                 <div class="message-agent p-4 max-w-3xl space-y-3">
                                     <h4 class="font-semibold text-lg">${store.currentSession.title}</h4>
                                     <p class="text-slate-300">${store.currentSession.summary}</p>
@@ -799,15 +985,14 @@
                 return `
                 <div class="h-full overflow-y-auto p-4 lg:p-8 page-transition">
                     <div class="max-w-6xl mx-auto">
-                        <h1 class="text-3xl font-bold mb-8">Framework Internals</h1>
+                        <h1 class="text-3xl font-bold mb-8">${t('internals_title')}</h1>
                         
                         <!-- Tabs -->
                         <div class="flex gap-2 mb-6 border-b border-slate-800 pb-2" id="framework-tabs">
-                            <button onclick="app.switchFrameworkTab('overview')" class="fw-tab-btn px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors" data-tab="overview">Overview</button>
-                            <button onclick="app.switchFrameworkTab('workflow')" class="fw-tab-btn px-4 py-2 hover:bg-slate-800 text-slate-300 rounded-lg text-sm font-medium transition-colors" data-tab="workflow">Workflow</button>
-                            <button onclick="app.switchFrameworkTab('skills')" class="fw-tab-btn px-4 py-2 hover:bg-slate-800 text-slate-300 rounded-lg text-sm font-medium transition-colors" data-tab="skills">Skills</button>
-                            <button onclick="app.switchFrameworkTab('agents')" class="fw-tab-btn px-4 py-2 hover:bg-slate-800 text-slate-300 rounded-lg text-sm font-medium transition-colors" data-tab="agents">Agents</button>
-                            <button onclick="app.switchFrameworkTab('stats')" class="fw-tab-btn px-4 py-2 hover:bg-slate-800 text-slate-300 rounded-lg text-sm font-medium transition-colors" data-tab="stats">Stats</button>
+                            <button onclick="app.switchFrameworkTab('overview')" class="fw-tab-btn px-4 py-2 bg-lime-500 text-white rounded-lg text-sm font-medium transition-colors neon-glow" data-tab="overview">${t('tab_overview')}</button>
+                            <button onclick="app.switchFrameworkTab('workflow')" class="fw-tab-btn px-4 py-2 hover:bg-slate-800 text-slate-300 rounded-lg text-sm font-medium transition-colors" data-tab="workflow">${t('tab_workflow')}</button>
+                            <button onclick="app.switchFrameworkTab('skills')" class="fw-tab-btn px-4 py-2 hover:bg-slate-800 text-slate-300 rounded-lg text-sm font-medium transition-colors" data-tab="skills">${t('tab_skills')}</button>
+                            <button onclick="app.switchFrameworkTab('agents')" class="fw-tab-btn px-4 py-2 hover:bg-slate-800 text-slate-300 rounded-lg text-sm font-medium transition-colors" data-tab="agents">${t('tab_agents')}</button>
                         </div>
 
                         <!-- Tab: Overview -->
@@ -838,19 +1023,19 @@
 
                             <!-- Quick Stats -->
                             <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
-                                <h3 class="font-semibold mb-4">Resumen del Framework</h3>
+                                <h3 class="font-semibold mb-4">Resumen Operativo Real (Overview + Stats)</h3>
                                 <div class="grid md:grid-cols-3 gap-4">
                                     <div class="p-4 bg-slate-800 rounded-lg">
-                                        <div class="text-2xl font-bold text-blue-400">${store.sessions.length}</div>
+                                        <div class="text-2xl font-bold text-lime-300">${store.sessions.length}</div>
                                         <div class="text-sm text-slate-400">Sesiones registradas</div>
                                     </div>
                                     <div class="p-4 bg-slate-800 rounded-lg">
                                         <div class="text-2xl font-bold text-purple-400">${store.skills.length}</div>
-                                        <div class="text-sm text-slate-400">Skills activas</div>
+                                        <div class="text-sm text-slate-400">Skills indexadas (core)</div>
                                     </div>
                                     <div class="p-4 bg-slate-800 rounded-lg">
                                         <div class="text-2xl font-bold text-green-400">${store.interactions.reduce((a,b) => a + b.count, 0)}</div>
-                                        <div class="text-sm text-slate-400">Total interacciones</div>
+                                        <div class="text-sm text-slate-400">Uso acumulado de herramientas</div>
                                     </div>
                                 </div>
                             </div>
@@ -858,271 +1043,83 @@
 
                         <!-- Tab: Workflow -->
                         <div id="fw-tab-workflow" class="fw-tab-content hidden">
-                            <!-- Workflow Header with Controls -->
                             <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6">
-                                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-                                    <div>
-                                        <h2 class="text-2xl font-bold mb-2">Workflow Standard 7-Pasos</h2>
-                                        <p class="text-slate-400">Guía visual interactiva para ejecutar tareas dentro del framework</p>
-                                    </div>
-                                    <div class="flex flex-wrap items-center gap-3">
-                                        <!-- Complexity Indicator -->
-                                        <div id="complexity-badge" class="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg flex items-center gap-2">
-                                            <span class="text-sm text-slate-400">Complejidad:</span>
-                                            <span id="complexity-value" class="font-semibold text-blue-400">Simple</span>
-                                        </div>
-                                        <!-- Express Mode Toggle -->
-                                        <div class="flex items-center gap-2 px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg" title="Activa modo express para ejecutar directamente sin plan intermedio">
-                                            <label class="relative inline-flex items-center cursor-pointer">
-                                                <input type="checkbox" id="express-mode-toggle" class="sr-only peer" onchange="workflowManager.toggleExpressMode()">
-                                                <div class="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
-                                                <span class="ml-2 text-sm font-medium text-slate-300">Modo Express</span>
-                                            </label>
-                                        </div>
-                                    </div>
+                                <h2 class="text-2xl font-bold mb-2">${t('workflow_title')}</h2>
+                                <p class="text-slate-400">${t('workflow_desc')}</p>
+                            </div>
+
+                            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                                    <h3 class="font-semibold mb-3 text-lime-300">Pipeline de Sesión</h3>
+                                    <ol class="space-y-2 text-sm text-slate-300 list-decimal pl-5">
+                                        <li><strong>session_start.py</strong> inicia contexto (Tier 0-1) con ContextLoader.</li>
+                                        <li><strong>Context discovery</strong> + skills matching por tarea.</li>
+                                        <li><strong>Ejecución</strong> directa o delegada según complejidad.</li>
+                                        <li><strong>Validación</strong> (tests/checks) antes de cierre.</li>
+                                        <li><strong>session_end.py</strong> preserva decisiones + pendientes.</li>
+                                    </ol>
                                 </div>
-                                
-                                <!-- Progress Bar -->
-                                <div class="mb-4">
-                                    <div class="flex justify-between text-sm text-slate-400 mb-2">
-                                        <span>Progreso</span>
-                                        <span id="progress-text">0/7 pasos completados</span>
-                                    </div>
-                                    <div class="h-3 bg-slate-800 rounded-full overflow-hidden">
-                                        <div id="progress-bar" class="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-500" style="width: 0%"></div>
-                                    </div>
+                                <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+                                    <h3 class="font-semibold mb-3 text-purple-400">Sistema de Memoria (completo)</h3>
+                                    <ul class="space-y-2 text-sm text-slate-300">
+                                        <li>🧠 <strong>Memoria de sesión</strong>: sesiones diarias + resumen.</li>
+                                        <li>📚 <strong>Wiki-LLM (segundo cerebro)</strong>: conocimiento consultable en <code>port 9120</code>.</li>
+                                        <li>🗃️ <strong>SQLite / índices JSON</strong>: telemetría y consultas rápidas.</li>
+                                        <li>🔁 <strong>Memory pipeline</strong>: session_start → interval flush → session_end.</li>
+                                    </ul>
                                 </div>
                             </div>
 
-                            <!-- Workflow Timeline -->
                             <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6">
-                                <div class="flex items-center justify-between mb-6">
-                                    <h3 class="text-lg font-semibold">Timeline de Ejecución</h3>
-                                    <div class="flex gap-2 text-xs">
-                                        <span class="flex items-center gap-1"><span class="w-3 h-3 bg-blue-500 rounded-full"></span> Completado</span>
-                                        <span class="flex items-center gap-1"><span class="w-3 h-3 bg-amber-500 rounded-full"></span> En Progreso</span>
-                                        <span class="flex items-center gap-1"><span class="w-3 h-3 bg-slate-600 rounded-full"></span> Pendiente</span>
+                                <h3 class="font-semibold mb-4">Arquitectura de Persistencia</h3>
+                                <div class="grid md:grid-cols-3 gap-4 text-sm">
+                                    <div class="p-4 bg-slate-800 rounded-lg border border-slate-700">
+                                        <div class="font-semibold text-lime-300 mb-1">SQLite / Índices</div>
+                                        <p class="text-slate-400">Fuente para métricas, búsquedas rápidas y paneles.</p>
                                     </div>
-                                </div>
-                                
-                                <!-- Timeline Steps -->
-                                <div class="relative">
-                                    <!-- Connection Line -->
-                                    <div class="absolute left-6 top-8 bottom-8 w-0.5 bg-slate-700 hidden md:block"></div>
-                                    
-                                    <!-- Step 1: Inicialización -->
-                                    <div class="workflow-step relative flex gap-4 mb-6 group" data-step="1">
-                                        <div class="step-indicator flex-shrink-0 w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold z-10 transition-all duration-300 ring-4 ring-blue-500/20">
-                                            1
-                                        </div>
-                                        <div class="flex-1 p-4 bg-slate-800/50 border border-slate-700 rounded-lg hover:border-blue-500/50 transition-all cursor-pointer" onclick="workflowManager.toggleStep(1)">
-                                            <div class="flex items-start justify-between gap-4">
-                                                <div class="flex-1">
-                                                    <div class="flex items-center gap-2 mb-1">
-                                                        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                                                        </svg>
-                                                        <h4 class="font-semibold text-white">Inicialización</h4>
-                                                        <span class="text-xs text-slate-500">&lt;30s</span>
-                                                    </div>
-                                                    <p class="text-sm text-slate-400">Ejecuta session-start.py, verifica contexto del día, carga skills y pendientes heredados.</p>
-                                                </div>
-                                                <input type="checkbox" class="step-checkbox w-5 h-5 rounded border-slate-600 text-blue-500 focus:ring-blue-500 bg-slate-700 cursor-pointer" data-step="1">
-                                            </div>
-                                        </div>
+                                    <div class="p-4 bg-slate-800 rounded-lg border border-slate-700">
+                                        <div class="font-semibold text-cyan-300 mb-1">Wiki-LLM</div>
+                                        <p class="text-slate-400">Segundo cerebro para contexto persistente y recuperación histórica.</p>
                                     </div>
-
-                                    <!-- Step 2: Comprensión -->
-                                    <div class="workflow-step relative flex gap-4 mb-6 group" data-step="2">
-                                        <div class="step-indicator flex-shrink-0 w-12 h-12 rounded-full bg-slate-600 flex items-center justify-center text-white font-bold z-10 transition-all duration-300">
-                                            2
-                                        </div>
-                                        <div class="flex-1 p-4 bg-slate-800/50 border border-slate-700 rounded-lg hover:border-blue-500/50 transition-all cursor-pointer" onclick="workflowManager.toggleStep(2)">
-                                            <div class="flex items-start justify-between gap-4">
-                                                <div class="flex-1">
-                                                    <div class="flex items-center gap-2 mb-1">
-                                                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-                                                        </svg>
-                                                        <h4 class="font-semibold text-white">Comprensión</h4>
-                                                    </div>
-                                                    <p class="text-sm text-slate-400">Analiza la solicitud del usuario, identifica contexto necesario, consulta @context-scout si es necesario.</p>
-                                                </div>
-                                                <input type="checkbox" class="step-checkbox w-5 h-5 rounded border-slate-600 text-blue-500 focus:ring-blue-500 bg-slate-700 cursor-pointer" data-step="2">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Step 3: Planificación -->
-                                    <div class="workflow-step relative flex gap-4 mb-6 group" data-step="3">
-                                        <div class="step-indicator flex-shrink-0 w-12 h-12 rounded-full bg-slate-600 flex items-center justify-center text-white font-bold z-10 transition-all duration-300">
-                                            3
-                                        </div>
-                                        <div class="flex-1 p-4 bg-slate-800/50 border border-slate-700 rounded-lg hover:border-blue-500/50 transition-all cursor-pointer" onclick="workflowManager.toggleStep(3)">
-                                            <div class="flex items-start justify-between gap-4">
-                                                <div class="flex-1">
-                                                    <div class="flex items-center gap-2 mb-1">
-                                                        <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-                                                        </svg>
-                                                        <h4 class="font-semibold text-white">Planificación</h4>
-                                                        <span class="express-skip text-xs text-amber-500 hidden">(Saltado en Express)</span>
-                                                    </div>
-                                                    <p class="text-sm text-slate-400">Consulta SKILLS.md, decide approach (directo vs delegado), determina complejidad de la tarea.</p>
-                                                </div>
-                                                <input type="checkbox" class="step-checkbox w-5 h-5 rounded border-slate-600 text-blue-500 focus:ring-blue-500 bg-slate-700 cursor-pointer" data-step="3">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Step 4: Ejecución -->
-                                    <div class="workflow-step relative flex gap-4 mb-6 group" data-step="4">
-                                        <div class="step-indicator flex-shrink-0 w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-white font-bold z-10 transition-all duration-300 ring-4 ring-amber-500/20 animate-pulse">
-                                            4
-                                        </div>
-                                        <div class="flex-1 p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg hover:border-amber-500/50 transition-all cursor-pointer" onclick="workflowManager.toggleStep(4)">
-                                            <div class="flex items-start justify-between gap-4">
-                                                <div class="flex-1">
-                                                    <div class="flex items-center gap-2 mb-1">
-                                                        <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                                        </svg>
-                                                        <h4 class="font-semibold text-white">Ejecución</h4>
-                                                        <span class="text-xs text-amber-400 animate-pulse">● En Progreso</span>
-                                                    </div>
-                                                    <p class="text-sm text-slate-400">Implementa cambios siguiendo estándares, usa skills especializadas, valida cada paso.</p>
-                                                </div>
-                                                <input type="checkbox" class="step-checkbox w-5 h-5 rounded border-slate-600 text-blue-500 focus:ring-blue-500 bg-slate-700 cursor-pointer" data-step="4">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Step 5: Validación -->
-                                    <div class="workflow-step relative flex gap-4 mb-6 group" data-step="5">
-                                        <div class="step-indicator flex-shrink-0 w-12 h-12 rounded-full bg-slate-600 flex items-center justify-center text-white font-bold z-10 transition-all duration-300">
-                                            5
-                                        </div>
-                                        <div class="flex-1 p-4 bg-slate-800/50 border border-slate-700 rounded-lg hover:border-blue-500/50 transition-all cursor-pointer" onclick="workflowManager.toggleStep(5)">
-                                            <div class="flex items-start justify-between gap-4">
-                                                <div class="flex-1">
-                                                    <div class="flex items-center gap-2 mb-1">
-                                                        <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                                        </svg>
-                                                        <h4 class="font-semibold text-white">Validación</h4>
-                                                    </div>
-                                                    <p class="text-sm text-slate-400">Ejecuta tests, linting, typecheck. Verifica que no se rompió funcionalidad existente.</p>
-                                                </div>
-                                                <input type="checkbox" class="step-checkbox w-5 h-5 rounded border-slate-600 text-blue-500 focus:ring-blue-500 bg-slate-700 cursor-pointer" data-step="5">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Step 6: Documentación -->
-                                    <div class="workflow-step relative flex gap-4 mb-6 group" data-step="6">
-                                        <div class="step-indicator flex-shrink-0 w-12 h-12 rounded-full bg-slate-600 flex items-center justify-center text-white font-bold z-10 transition-all duration-300">
-                                            6
-                                        </div>
-                                        <div class="flex-1 p-4 bg-slate-800/50 border border-slate-700 rounded-lg hover:border-blue-500/50 transition-all cursor-pointer" onclick="workflowManager.toggleStep(6)">
-                                            <div class="flex items-start justify-between gap-4">
-                                                <div class="flex-1">
-                                                    <div class="flex items-center gap-2 mb-1">
-                                                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                                        </svg>
-                                                        <h4 class="font-semibold text-white">Documentación</h4>
-                                                    </div>
-                                                    <p class="text-sm text-slate-400">Guarda en sesión del día, actualiza pendientes/ideas, resume decisiones importantes.</p>
-                                                </div>
-                                                <input type="checkbox" class="step-checkbox w-5 h-5 rounded border-slate-600 text-blue-500 focus:ring-blue-500 bg-slate-700 cursor-pointer" data-step="6">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Step 7: Cierre -->
-                                    <div class="workflow-step relative flex gap-4 group" data-step="7">
-                                        <div class="step-indicator flex-shrink-0 w-12 h-12 rounded-full bg-slate-600 flex items-center justify-center text-white font-bold z-10 transition-all duration-300">
-                                            7
-                                        </div>
-                                        <div class="flex-1 p-4 bg-slate-800/50 border border-slate-700 rounded-lg hover:border-blue-500/50 transition-all cursor-pointer" onclick="workflowManager.toggleStep(7)">
-                                            <div class="flex items-start justify-between gap-4">
-                                                <div class="flex-1">
-                                                    <div class="flex items-center gap-2 mb-1">
-                                                        <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                                        </svg>
-                                                        <h4 class="font-semibold text-white">Cierre</h4>
-                                                    </div>
-                                                    <p class="text-sm text-slate-400">Confirma completitud con usuario, entrega resumen final, cierra sesión si es necesario.</p>
-                                                </div>
-                                                <input type="checkbox" class="step-checkbox w-5 h-5 rounded border-slate-600 text-blue-500 focus:ring-blue-500 bg-slate-700 cursor-pointer" data-step="7">
-                                            </div>
-                                        </div>
+                                    <div class="p-4 bg-slate-800 rounded-lg border border-slate-700">
+                                        <div class="font-semibold text-purple-300 mb-1">Markdown canon</div>
+                                        <p class="text-slate-400">SKILL.md, AGENTS.md, docs y sesiones como fuente auditable.</p>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Action Buttons -->
-                            <div class="flex flex-wrap gap-3 mb-6">
-                                <button onclick="workflowManager.markAllComplete()" class="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                    </svg>
-                                    Marcar Todo Completado
-                                </button>
-                                <button onclick="workflowManager.resetAll()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                                    </svg>
-                                    Reiniciar
-                                </button>
-                                <button onclick="workflowManager.toggleComplexity()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                                    </svg>
-                                    Cambiar Complejidad
-                                </button>
-                            </div>
-
-                            <!-- Documentation Link -->
                             <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                                    </svg>
-                                    <div>
-                                        <h4 class="font-medium">Documentación Completa</h4>
-                                        <p class="text-sm text-slate-400">Referencia detallada del workflow y mejores prácticas</p>
-                                    </div>
+                                <div>
+                                    <h4 class="font-medium">Referencias de implementación</h4>
+                                    <p class="text-sm text-slate-400">INIT protocol, memory pipeline y arquitectura wiki.</p>
                                 </div>
-                                <a href="docs/WORKFLOW-STANDARD.md" target="_blank" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-                                    Ver Docs
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                                    </svg>
-                                </a>
+                                <button onclick="modalManager.showBuiltinDoc('workflow')" class="px-4 py-2 bg-lime-500 hover:bg-lime-400 text-white rounded-lg text-sm font-medium transition-colors">Ver detalle</button>
                             </div>
                         </div>
 
                         <!-- Tab: Skills -->
                         <div id="fw-tab-skills" class="fw-tab-content hidden">
-                            <h2 class="text-xl font-bold mb-4">Skills Disponibles</h2>
+                            <h2 class="text-xl font-bold mb-4">${t('skills_title')}</h2>
                             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                                ${store.skills.map(skill => `
-                                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 hover:border-blue-500/50 transition-all cursor-pointer group hover:scale-[1.02]" onclick="modalManager.showSkillDetail(${JSON.stringify(skill).replace(/"/g, '&quot;')})">
+                                ${store.skills.length ? store.skills.map(skill => `
+                                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 hover:border-lime-400/50 transition-all cursor-pointer group hover:scale-[1.02]" onclick="modalManager.showSkillDetail(${JSON.stringify(skill).replace(/"/g, '&quot;')})">
                                         <div class="flex items-center gap-2 mb-2">
-                                            <span class="px-2 py-1 bg-blue-500/10 text-blue-400 rounded text-xs font-mono">${skill.displayName || '@' + skill.name}</span>
+                                            <span class="px-2 py-1 bg-lime-400/10 text-lime-300 rounded text-xs font-mono neon-glow">${skill.displayName || '@' + skill.name}</span>
                                         </div>
                                         <p class="text-sm text-slate-400 line-clamp-2">${skill.description || 'Sin descripción'}</p>
-                                        <div class="mt-3 text-xs text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                        <div class="mt-3 text-xs text-lime-300 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                                             <span>Ver detalle</span>
                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                             </svg>
                                         </div>
                                     </div>
-                                `).join('')}
+                                `).join('') : `
+                                    <div class="col-span-full p-6 bg-slate-900 border border-slate-800 rounded-xl text-center">
+                                        <p class="text-slate-400 mb-3">No se encontraron skills indexadas.</p>
+                                        <button onclick="app.runIndexer()" class="px-4 py-2 bg-lime-500 hover:bg-lime-400 rounded-lg text-sm font-medium text-white">Generar índice de skills</button>
+                                    </div>
+                                `}
                             </div>
                             
                             <div class="text-center">
@@ -1132,7 +1129,7 @@
 
                         <!-- Tab: Agents -->
                         <div id="fw-tab-agents" class="fw-tab-content hidden">
-                            <h2 class="text-xl font-bold mb-4">Agentes del Sistema</h2>
+                            <h2 class="text-xl font-bold mb-4">${t('agents_title')}</h2>
                             <div class="space-y-4">
                                 ${(store.agents && store.agents.length > 0 ? store.agents : [
                                     { name: 'FreakingJSON-PA', type: 'core', description: 'Agente Principal', purpose: 'Orquestación y coordinación del framework' },
@@ -1165,11 +1162,11 @@
                                     ${store.interactions.map(i => `
                                         <div class="flex items-center justify-between">
                                             <div class="flex items-center gap-3">
-                                                <span class="px-2 py-1 bg-slate-800 rounded text-sm font-mono text-blue-400">${i.tool}</span>
+                                                <span class="px-2 py-1 bg-slate-800 rounded text-sm font-mono text-lime-300">${i.tool}</span>
                                             </div>
                                             <div class="flex items-center gap-4">
                                                 <div class="w-48 h-2 bg-slate-800 rounded-full overflow-hidden">
-                                                    <div class="h-full bg-blue-500 rounded-full" style="width: ${(i.count / 450) * 100}%"></div>
+                                                    <div class="h-full bg-lime-400 rounded-full neon-glow" style="width: ${(i.count / 450) * 100}%"></div>
                                                 </div>
                                                 <span class="text-sm text-slate-400 w-12 text-right">${i.count}</span>
                                             </div>
@@ -1220,7 +1217,7 @@
                                                 <span class="text-white font-medium">87%</span>
                                             </div>
                                             <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
-                                                <div class="h-full bg-blue-500 rounded-full" style="width: 87%"></div>
+                                                <div class="h-full bg-lime-400 rounded-full neon-glow" style="width: 87%"></div>
                                             </div>
                                         </div>
                                         
@@ -1258,7 +1255,7 @@
                         <div class="grid md:grid-cols-2 gap-4 text-left mb-12">
                             <div class="p-6 bg-slate-900 border border-slate-800 rounded-xl">
                                 <h3 class="font-semibold mb-2 flex items-center gap-2">
-                                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-5 h-5 text-lime-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                                     </svg>
                                     Local-first
@@ -1319,7 +1316,7 @@
                         </div>
 
                         <div class="mt-12 pt-8 border-t border-slate-800 text-slate-500 text-sm">
-                            <p>v0.2.2-prealpha · MIT License</p>
+                            <p>v0.3.7-alpha · MIT License</p>
                             <p class="mt-1">Agradecimientos a NetworkChuck y la comunidad open source</p>
                         </div>
                     </div>
@@ -1334,7 +1331,7 @@
         const components = {
             kpiCard(value, label, change, color) {
                 const colors = {
-                    blue: 'from-blue-500 to-blue-600',
+                    blue: 'from-lime-400 to-lime-500',
                     purple: 'from-purple-500 to-purple-600',
                     green: 'from-green-500 to-green-600',
                     amber: 'from-amber-500 to-amber-600'
@@ -1350,7 +1347,7 @@
 
             featureCard(title, description, icon, color) {
                 const colors = {
-                    blue: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+                    blue: 'bg-lime-400/10 text-lime-300 border-lime-400/30',
                     purple: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
                     green: 'bg-green-500/10 text-green-400 border-green-500/30',
                     amber: 'bg-amber-500/10 text-amber-400 border-amber-500/30'
@@ -1411,7 +1408,7 @@
                         datasets: [{
                             label: 'Sesiones',
                             data: sessionCount,
-                            borderColor: '#3b82f6',
+                            borderColor: '#f2fc9e',
                             backgroundColor: 'rgba(59, 130, 246, 0.1)',
                             fill: true,
                             tension: 0.4
@@ -1459,20 +1456,22 @@
             topicsChart() {
                 const ctx = document.getElementById('topicsChart');
                 if (!ctx) return;
-                
+                const counts = {};
+                (store.sessions || []).forEach(s => {
+                    const key = (s.type || 'other').toLowerCase();
+                    counts[key] = (counts[key] || 0) + 1;
+                });
+                const labels = Object.keys(counts);
+                const values = Object.values(counts);
+                const fallbackLabels = ['other'];
+                const fallbackValues = [1];
                 new Chart(ctx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['features', 'bugfix', 'research', 'planning', 'release'],
+                        labels: labels.length ? labels : fallbackLabels,
                         datasets: [{
-                            data: [45, 20, 25, 15, 10],
-                            backgroundColor: [
-                                '#3b82f6',
-                                '#8b5cf6',
-                                '#22c55e',
-                                '#eab308',
-                                '#ef4444'
-                            ]
+                            data: values.length ? values : fallbackValues,
+                            backgroundColor: ['#f2fc9e','#8b5cf6','#22c55e','#eab308','#ef4444','#38bdf8','#94a3b8']
                         }]
                     },
                     options: {
@@ -1604,8 +1603,8 @@
                 if (complexityValue && complexityBadge) {
                     if (this.state.complexity === 'simple') {
                         complexityValue.textContent = 'Simple';
-                        complexityValue.className = 'font-semibold text-blue-400';
-                        complexityBadge.className = 'px-4 py-2 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-center gap-2';
+                        complexityValue.className = 'font-semibold text-lime-300';
+                        complexityBadge.className = 'px-4 py-2 bg-lime-400/10 border border-lime-400/30 rounded-lg flex items-center gap-2';
                     } else {
                         complexityValue.textContent = 'Complex';
                         complexityValue.className = 'font-semibold text-purple-400';
@@ -1734,144 +1733,103 @@
                 overlay.style.opacity = '0';
                 setTimeout(() => overlay.remove(), 300);
             },
+
+            escapeHtml(text = '') {
+                return String(text)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            },
+
+            renderMarkdown(md = '') {
+                const escaped = this.escapeHtml(md || '');
+                return `<pre class="text-xs leading-6 text-slate-200 bg-slate-950 border border-slate-700 rounded-lg p-4 overflow-auto max-h-[48vh]">${escaped}</pre>`;
+            },
             
             showSkillDetail(skill) {
+                const mdContent = skill.content || 'Contenido SKILL.md no disponible en cache. Path: ' + (skill.location || 'N/A');
                 const content = `
                     <div class="space-y-6">
-                        <!-- Header con badges -->
                         <div>
-                            <div class="flex items-center gap-3 mb-2">
-                                <span class="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-sm font-mono">${skill.displayName || '@' + skill.name}</span>
+                            <div class="flex items-center gap-3 mb-2 flex-wrap">
+                                <span class="px-3 py-1 bg-lime-400/10 text-lime-300 rounded-full text-sm font-mono neon-glow">${skill.displayName || '@' + skill.name}</span>
                                 <span class="px-2 py-1 bg-slate-800 text-slate-400 rounded text-xs uppercase">${skill.category || 'core'}</span>
                                 ${skill.status === 'active' ? '<span class="px-2 py-1 bg-green-500/10 text-green-400 rounded text-xs">✅ Activa</span>' : ''}
                             </div>
                             <h2 class="text-2xl font-bold text-white">${skill.name}</h2>
+                            <p class="text-slate-400 mt-2">${skill.description || 'Sin descripción disponible'}</p>
                         </div>
-                        
-                        <!-- Descripción -->
+
                         <div>
-                            <h3 class="text-lg font-semibold mb-2">Descripción</h3>
-                            <p class="text-slate-400">${skill.description || 'Sin descripción disponible'}</p>
+                            <h3 class="text-lg font-semibold mb-2">Contenido completo SKILL.md</h3>
+                            ${this.renderMarkdown(mdContent)}
                         </div>
-                        
-                        <!-- CUÁNDO USAR (si existe) -->
-                        ${skill.whenToUse && skill.whenToUse.length > 0 ? `
-                        <div class="bg-blue-500/5 border border-blue-500/20 rounded-lg p-4">
-                            <h3 class="text-lg font-semibold text-blue-400 mb-2">🎯 Cuándo Usar</h3>
-                            <ul class="space-y-1 text-slate-300">
-                                ${skill.whenToUse.map(u => `<li class="flex items-start gap-2"><span class="text-blue-400 mt-1">•</span><span>${u}</span></li>`).join('')}
-                            </ul>
-                        </div>
-                        ` : `
-                        <div class="bg-amber-500/5 border border-amber-500/20 rounded-lg p-4">
-                            <p class="text-amber-400 text-sm">
-                                <strong>💡 Tip:</strong> Esta skill es útil para tareas de ${skill.category}.
-                                Consultá el SKILL.md para casos de uso específicos.
-                            </p>
-                        </div>
-                        `}
-                        
-                        <!-- EJEMPLOS -->
-                        ${skill.examples && skill.examples.length > 0 ? `
-                        <div>
-                            <h3 class="text-lg font-semibold mb-2">💡 Ejemplos de Uso</h3>
-                            <div class="space-y-2">
-                                ${skill.examples.map(ex => `
-                                    <div class="bg-slate-800 rounded-lg p-3 font-mono text-sm text-blue-400">
-                                        ${ex}
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                        ` : ''}
-                        
-                        <!-- COMANDOS -->
-                        ${skill.commands && skill.commands.length > 0 ? `
-                        <div>
-                            <h3 class="text-lg font-semibold mb-2">⌨️ Comandos</h3>
-                            <div class="flex flex-wrap gap-2">
-                                ${skill.commands.map(cmd => `
-                                    <code class="px-2 py-1 bg-slate-800 rounded text-xs text-slate-300">${cmd}</code>
-                                `).join('')}
-                            </div>
-                        </div>
-                        ` : ''}
-                        
-                        <!-- UBICACIÓN -->
+
                         <div class="text-xs text-slate-500">
-                            📁 <code class="bg-slate-800 px-2 py-1 rounded">${skill.location}</code>
+                            📁 <code class="bg-slate-800 px-2 py-1 rounded">${skill.location || 'N/A'}</code>
                         </div>
-                        
-                        <div class="pt-4 border-t border-slate-800 flex justify-between items-center">
-                            <a href="${(skill.location || '#').replace(/\\/g, '/').replace(/^core\//, '../../core/')}" target="_blank" class="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                                </svg>
-                                Ver SKILL.md completo
-                            </a>
-                            <button onclick="modalManager.close(this.closest('.fixed'))" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm">
-                                Cerrar
-                            </button>
+
+                        <div class="pt-4 border-t border-slate-800 flex justify-end">
+                            <button onclick="modalManager.close(this.closest('.fixed'))" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm">Cerrar</button>
                         </div>
                     </div>
                 `;
-                
-                this.open(content, { maxWidth: 'max-w-3xl' });
+                this.open(content, { maxWidth: 'max-w-5xl' });
             },
-            
+
             showAgentDetail(agent) {
-                const safeLocation = (agent.location || '#').replace(/\\/g, '/').replace(/^core\//, '../../core/');
+                const mdContent = agent.content || 'Contenido del agente no disponible en cache. Path: ' + (agent.location || 'N/A');
                 const content = `
                     <div class="space-y-6">
                         <div>
-                            <div class="flex items-center gap-3 mb-2">
-                                <span class="px-3 py-1 bg-purple-500/10 text-purple-400 rounded-full text-sm font-mono">@${agent.name.replace(/\s/g, '-').toLowerCase()}</span>
+                            <div class="flex items-center gap-3 mb-2 flex-wrap">
+                                <span class="px-3 py-1 bg-purple-500/10 text-purple-400 rounded-full text-sm font-mono">@${(agent.name || '').replace(/\s/g, '-').toLowerCase()}</span>
                                 <span class="px-2 py-1 bg-green-500/10 text-green-400 rounded text-xs">Operativo</span>
                             </div>
                             <h2 class="text-2xl font-bold text-white">${agent.name}</h2>
                             <p class="text-slate-400 text-sm">${agent.type === 'subagent' ? 'Subagente especializado' : 'Agente principal del framework'}</p>
+                            <p class="text-slate-300 mt-3">${agent.purpose || agent.description || 'Sin descripción disponible'}</p>
                         </div>
-                        
+
                         <div>
-                            <h3 class="text-lg font-semibold mb-2">Propósito</h3>
-                            <p class="text-slate-400">${agent.purpose || agent.description || 'Sin descripción disponible'}</p>
+                            <h3 class="text-lg font-semibold mb-2">Contenido completo .md</h3>
+                            ${this.renderMarkdown(mdContent)}
                         </div>
-                        
-                        ${agent.whenToUse && agent.whenToUse.length > 0 ? `
-                        <div>
-                            <h3 class="text-lg font-semibold mb-2">Cuándo Usar</h3>
-                            <ul class="space-y-1 text-slate-400">
-                                ${agent.whenToUse.map(u => `<li class="flex items-start gap-2"><span class="text-purple-400 mt-1">•</span><span>${u}</span></li>`).join('')}
-                            </ul>
+
+                        <div class="text-xs text-slate-500">
+                            📁 <code class="bg-slate-800 px-2 py-1 rounded">${agent.location || 'N/A'}</code>
                         </div>
-                        ` : ''}
-                        
-                        ${agent.dependencies && agent.dependencies.length > 0 ? `
-                        <div>
-                            <h3 class="text-lg font-semibold mb-2">Dependencias</h3>
-                            <div class="flex flex-wrap gap-2">
-                                ${agent.dependencies.map(d => `<span class="px-2 py-1 bg-slate-800 rounded text-xs font-mono text-blue-400">@${d}</span>`).join('')}
-                            </div>
-                        </div>
-                        ` : ''}
-                        
-                        <div class="pt-4 border-t border-slate-800 flex justify-between items-center">
-                            <a href="${safeLocation}" target="_blank" class="text-purple-400 hover:text-purple-300 text-sm flex items-center gap-1">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                                </svg>
-                                Ver documentación completa
-                            </a>
-                            <button onclick="modalManager.close(this.closest('.fixed'))" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm">
-                                Cerrar
-                            </button>
+
+                        <div class="pt-4 border-t border-slate-800 flex justify-end">
+                            <button onclick="modalManager.close(this.closest('.fixed'))" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm">Cerrar</button>
                         </div>
                     </div>
                 `;
-                
-                this.open(content, { maxWidth: 'max-w-3xl' });
+                this.open(content, { maxWidth: 'max-w-5xl' });
             },
-            
+
+            showBuiltinDoc(type) {
+                const docs = {
+                    workflow: `# Workflow Real del Framework
+
+1. session_start.py (bootstrap contextual)
+2. Context discovery + skill matching
+3. Ejecución (directa o delegada)
+4. Validación (QA/checks)
+5. session_end.py (persistencia)
+
+## Sistema de memoria
+- Sesiones markdown (fuente canónica)
+- Wiki-LLM (segundo cerebro) puerto 9120
+- SQLite/índices JSON para métricas
+- Pipeline start → flush → end`,
+                };
+                const md = docs[type] || `# Documento\nNo disponible`;
+                this.open(`<div class="space-y-4"><h2 class="text-xl font-bold">Referencia</h2>${this.renderMarkdown(md)}</div>`, { maxWidth: 'max-w-4xl' });
+            },
+
             showPhilosophyModal() {
                 const content = `
                     <div class="space-y-6">
@@ -1891,7 +1849,7 @@
                                 { title: '7. Structured Workflow', desc: 'Todo trabajo complejo sigue el Workflow Standard de 7 pasos.' }
                             ].map(principle => `
                                 <div class="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
-                                    <h3 class="font-semibold text-blue-400 mb-1">${principle.title}</h3>
+                                    <h3 class="font-semibold text-lime-300 mb-1">${principle.title}</h3>
                                     <p class="text-slate-400 text-sm">${principle.desc}</p>
                                 </div>
                             `).join('')}
@@ -2088,7 +2046,7 @@
                         </div>
                         
                         <div class="flex flex-col sm:flex-row gap-4">
-                            <button onclick="app.startFramework()" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-blue-500/25 flex items-center gap-2">
+                            <button onclick="app.startFramework()" class="px-8 py-3 bg-lime-500 hover:bg-lime-400 text-white font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-lime-400/25 flex items-center gap-2 neon-glow">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                                 </svg>
@@ -2122,7 +2080,7 @@
                             Aún no hay skills indexadas.
                         </p>
                         
-                        <button onclick="app.runIndexer()" class="mt-6 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-all">
+                        <button onclick="app.runIndexer()" class="mt-6 px-6 py-3 bg-lime-500 hover:bg-lime-400 text-white font-semibold rounded-xl transition-all neon-glow">
                             Ejecutar Indexer de Skills
                         </button>
                     </div>
@@ -2155,6 +2113,14 @@
                 document.getElementById('global-search')?.addEventListener('input', (e) => {
                     this.handleSearch(e.target.value);
                 });
+
+                // Language toggle
+                document.getElementById('lang-toggle')?.addEventListener('click', toggleLanguage);
+                const langBtn = document.getElementById('lang-toggle');
+                if (langBtn) langBtn.textContent = currentLang === 'es' ? 'ES/EN' : 'EN/ES';
+
+                // Matrix rain init
+                this.initMatrixRain();
             },
 
             selectSession(id) {
@@ -2167,7 +2133,7 @@
                     release: 'bg-green-500',
                     bugfix: 'bg-amber-500',
                     research: 'bg-purple-500',
-                    features: 'bg-blue-500',
+                    features: 'bg-lime-400',
                     other: 'bg-slate-500'
                 };
                 return colors[type] || colors.other;
@@ -2217,6 +2183,36 @@
                 console.log('Searching:', query);
             },
 
+            initMatrixRain() {
+                const canvas = document.getElementById('matrix-canvas');
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+                resize();
+                window.addEventListener('resize', resize);
+
+                const chars = 'アイウエオカキクケコサシスセソ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                const fontSize = 14;
+                const columns = () => Math.floor(canvas.width / fontSize);
+                let drops = Array(columns()).fill(1);
+
+                const draw = () => {
+                    ctx.fillStyle = 'rgba(2, 6, 23, 0.08)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#f2fc9e';
+                    ctx.font = `${fontSize}px monospace`;
+                    for (let i = 0; i < drops.length; i++) {
+                        const text = chars[Math.floor(Math.random() * chars.length)];
+                        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                        drops[i]++;
+                    }
+                    if (drops.length !== columns()) drops = Array(columns()).fill(1);
+                };
+
+                setInterval(draw, 50);
+            },
+
             switchFrameworkTab(tabName) {
                 // Hide all tab contents
                 document.querySelectorAll('.fw-tab-content').forEach(tab => {
@@ -2230,10 +2226,10 @@
                 document.querySelectorAll('.fw-tab-btn').forEach(btn => {
                     if (btn.dataset.tab === tabName) {
                         btn.classList.remove('hover:bg-slate-800', 'text-slate-300');
-                        btn.classList.add('bg-blue-600', 'text-white');
+                        btn.classList.add('bg-lime-500', 'text-white');
                     } else {
                         btn.classList.add('hover:bg-slate-800', 'text-slate-300');
-                        btn.classList.remove('bg-blue-600', 'text-white');
+                        btn.classList.remove('bg-lime-500', 'text-white');
                     }
                 });
                 

@@ -23,7 +23,7 @@
 - `kb-init.py` script to initialize Knowledge Base
 - `codebase/` and `knowledge/` structures created automatically
 - Compatible with upgrades from previous versions
-- Automated propagation across `BASE`, `DEV`, and `PROD`
+- Framework release packaging workflow
 - Stronger public release staging sanitization
 - Public default OpenCode agent runtime under `.opencode/`
 - Stronger reference and public release validation

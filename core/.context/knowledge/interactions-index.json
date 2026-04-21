@@ -1,0 +1,28 @@
+{
+  "interactions": [
+    {
+      "tool": "terminal",
+      "count": 320
+    },
+    {
+      "tool": "read_file",
+      "count": 280
+    },
+    {
+      "tool": "patch",
+      "count": 190
+    },
+    {
+      "tool": "delegate_task",
+      "count": 110
+    },
+    {
+      "tool": "search_files",
+      "count": 160
+    },
+    {
+      "tool": "write_file",
+      "count": 65
+    }
+  ]
+}

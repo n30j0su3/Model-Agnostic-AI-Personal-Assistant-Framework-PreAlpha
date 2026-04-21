@@ -1,0 +1,24 @@
+{
+  "providers": [
+    {
+      "name": "local",
+      "type": "ollama",
+      "base_url": "http://localhost:11434"
+    },
+    {
+      "name": "opencode",
+      "type": "openai_compat",
+      "api_key": "${OPENCODE_API_KEY}",
+      "base_url": "https://api.nanogpt.com/v1",
+      "models": ["qwopus-9b-q4", "qwopus-9b-q8", "qwq-32b-preview"]
+    },
+    {
+      "name": "gemini",
+      "type": "openai_compat",
+      "api_key": "${GEMINI_API_KEY}",
+      "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+      "models": ["gemini-2.0-flash", "gemini-2.5-pro-preview"]
+    }
+  ],
+  "fallback_order": ["local", "opencode", "gemini", "mock"]
+}

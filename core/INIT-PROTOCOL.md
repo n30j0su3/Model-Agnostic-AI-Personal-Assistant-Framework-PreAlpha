@@ -15,7 +15,7 @@ Garantizar que **cualquier interacción** con el framework (independientemente d
 ### Paso 1: Session Start (Siempre)
 
 ```bash
-python core/scripts/session-start.py
+python core/scripts/session_start.py
 ```
 
 **Qué hace**:
@@ -27,7 +27,30 @@ python core/scripts/session-start.py
 
 ---
 
-### Paso 2: Detección de Contexto (Siempre)
+### Paso 2: Bootstrap canónico (Tier 0)
+
+**LEER ESTE ARCHIVO PRIMERO**:
+```bash
+# Leer AGENTS-lite.md — punto de entrada canónico (<500 tokens)
+cat AGENTS-lite.md
+```
+
+**Qué contiene**:
+- Bootstrap mínimo del framework
+- Router de agentes y tiers de referencia
+- Entry point de `session_start.py`
+- Paths críticos de inicialización
+- Recordatorio del principio MVI
+
+**Por qué**: `AGENTS-lite.md` es el Tier 0 consumido por `core/scripts/context_loader.py`, evitando cargar documentación completa antes de que el usuario escriba nada.
+
+**Cuándo**: Al inicio de CADA sesión.
+
+**Fallback**: Si `AGENTS-lite.md` no está disponible, usar `session_start.py` y luego `AGENTS.md` como router de respaldo.
+
+---
+
+### Paso 3: Detección de Contexto (Siempre)
 
 Delegar a `@context-scout`:
 
@@ -59,7 +82,9 @@ verbose: normal           # Nivel de output: silent|minimal|normal|debug
 
 ---
 
-### Paso 3: Carga de Contexto (Condicional)
+### Paso 4: Carga de Contexto (Condicional)
+
+`session_start.py` usa `core/scripts/context_loader.py` para cargar Tier 0-1 inmediatamente y dejar Tier 2-4 en lazy loading.
 
 Cargar automáticamente:
 
@@ -74,12 +99,12 @@ Cargar automáticamente:
    - Comando: `/mode DEV` (o BASE, PROD)
    - Contexto específico del modo (automatizaciones, configs)
 
-### Paso 4: Workflow Gate (Tareas Complejas)
+### Paso 5: Workflow Gate (Tareas Complejas)
 
 Antes de PRDs, roadmap, arquitectura, auditorías amplias o cambios multi-módulo:
 
 ```bash
-python core/scripts/framework-guardian.py \
+python core/scripts/framework_guardian.py \
   --timing pre-execution \
   --task "Descripcion de la tarea" \
   --task-type prd|roadmap|architecture|audit|feature
@@ -119,7 +144,7 @@ framework:
 /init --verbose=debug
 
 # O al iniciar sesión
-python core/scripts/session-start.py --verbose=silent
+python core/scripts/session_start.py
 ```
 
 ---
@@ -150,7 +175,7 @@ Una vez inicializado, estos comandos están disponibles:
 init_sequence:
   mandatory:
     - step: "session_start"
-      command: "python core/scripts/session-start.py"
+      command: "python core/scripts/session_start.py"
       critical: true
     
     - step: "context_detection"
@@ -178,7 +203,7 @@ Para agentes que usen el framework pero no sean pa-assistant:
 
 Antes de cualquier acción:
 
-1. Ejecutar: python core/scripts/session-start.py
+1. Ejecutar: python core/scripts/session_start.py
 2. Delegar a @context-scout para detección de contexto
 3. Cargar contexto detectado
 4. Reportar contexto activo al usuario
@@ -197,7 +222,7 @@ Referencia completa: core/INIT-PROTOCOL.md
 echo "[PA Framework] Inicializando..."
 
 # 1. Session Start
-python core/scripts/session-start.py --output=json > /tmp/pa_session.json
+python core/scripts/session_start.py
 
 # 2. Detect Context
 DETECTED=$(python core/scripts/detect-workspace.py --json)
@@ -229,7 +254,7 @@ Para usuarios que inician sesión manualmente:
 cd /ruta/al/pa-framework
 
 # 2. Ejecutar protocolo
-python core/scripts/session-start.py
+python core/scripts/session_start.py
 python core/scripts/detect-workspace.py
 
 # 3. Verificar contexto
@@ -367,12 +392,65 @@ mkdir -p workspaces/{workspace}/projects/{proyecto}/{BASE,DEV,PROD}
 
 ---
 
+## Unified Memory System (Integral, Persistent, Lossless)
+
+El framework usa un workflow de memoria **integral**: las 4 capas persisten en paralelo y se sincronizan continuamente. No son rutas excluyentes por tipo de tarea.
+
+### Definición de las 4 Capas
+
+| Sistema | ¿Para qué? | Persistencia |
+|---------|------------|--------------|
+| `.md` (Sessions) | Memoria simple/rápida (log cronológico universal) | `core/.context/sessions/YYYY-MM-DD.md` |
+| `Memory MD` | Memoria intermedia (síntesis, patrones, decisiones reutilizables) | `core/.context/memory/` |
+| `SQLite` | Memoria permanente estructurada (TODOs, sesiones completas, mensajes + metadata) | `data/sessions.db` |
+| `Wiki (MkDocs)` | Segundo cerebro relacional (contexto + relaciones/grafos) | `core/.context/knowledge/wiki/` + `docs/` |
+
+### Política de Persistencia Integral
+
+| Principio | Garantía |
+|------|--------|
+| Captura continua | Cada interacción relevante se preserva en sesión y capa estructurada |
+| No pérdida de detalle | SQLite conserva detalle completo e histórico ilimitado |
+| No pérdida de patrones | Extracción periódica a Memory MD |
+| No pérdida de relaciones | Wiki + KB updater mantienen relacionamiento semántico |
+| Cierre robusto | `session_end.py` + `memory_pipeline.py --full-cycle` consolidan todo |
+
+### Triggers Automáticos
+
+| Trigger | Acción automática |
+|---------|-------------------|
+| Nueva interacción | Captura en `.md` + SQLite (hook/bridge) |
+| Decisión/patrón nuevo | Actualización de Memory MD |
+| Consolidación por intervalo | `memory_pipeline --watch` ejecuta ciclo integral |
+| Relacionamiento de conocimiento | `wiki_autopopulate.py` + `kb_updater.py` |
+| Fin de sesión o cierre inesperado | Full-cycle + indexación final |
+
+### Comandos de Verificación Rápida
+
+```bash
+# Estado integral de memoria persistente (4 capas)
+python core/scripts/memory_pipeline.py --status
+
+# Búsqueda cross-session estructurada
+python core/scripts/session_search.py --limit 5
+
+# Health check estructural de memoria/wiki
+python core/scripts/memory_sync.py
+```
+
+> Referencia extendida: `docs/MEMORY-ARCHITECTURE.md`
+
+---
+
 ## Versión y Actualizaciones
 
 | Versión | Fecha | Cambios |
 |---------|-------|---------|
 | 1.0.0 | 2026-02-26 | Creación inicial del protocolo |
+| 1.1.0 | 2026-04-15 | Unified Memory System (LLM-Wiki + Engram) |
+| 1.2.0 | 2026-04-21 | Workflow integral 4 capas (persistencia completa + relacional) |
 
 ---
 
-*Framework PA - Context-Aware Initialization Protocol v1.0*
+*Framework PA - Context-Aware Initialization Protocol v1.2*
+

@@ -1,8 +1,8 @@
-# Model-Agnostic AI Personal Assistant Framework v0.2.2-prealpha
+# Model-Agnostic AI Personal Assistant Framework v0.3.0-alpha
 
 > "Tu Asistente AI Personal. Tu Conocimiento. Tu Control."
 
-[![Release](https://img.shields.io/badge/release-v0.2.2--prealpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.2.2-prealpha)
+[![Release](https://img.shields.io/badge/release-v0.3.0-alpha)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.3.0-alpha)
 [![Instagram](https://img.shields.io/badge/Instagram-%40freakingjson-E4405F?logo=instagram&logoColor=white)](https://instagram.com/freakingjson)
 [![Linktree](https://img.shields.io/badge/Linktree-@freakingjson-43E55C?logo=linktree&logoColor=white)](https://linktr.ee/freakingjson)
 [![Blog](https://img.shields.io/badge/Blog-freakingjson.com-FFA500?logo=firefoxbrowser&logoColor=white)](https://freakingjson.com)
@@ -18,18 +18,13 @@
 
 ## 📢 Última Versión
 
-**v0.2.2-prealpha** - Update reliability and public release refresh
-- Sistema de validación obligatoria de procesos CORE
-- `framework-guardian.py` para validación automática
-- Knowledge extraction automático desde sesiones
-- Configuración en `config/framework.yaml`
-- Actualización segura con preservación de contexto, KB y workspaces
-- Fix del cierre de sesión en runtime público limpio
-
-**v0.1.9-prealpha** - Knowledge Extraction
-- Extracción automática de descubrimientos, prompts, ideas
-- Tags de detección: `#discovery`, `#prompt-success`, `#best-practice`
-- Integración con session-end.py para preservación automática
+**v0.3.7-alpha** - Memory Pipeline + Core Stabilization
+- Sistema Memory Pipeline para persistencia cross-session (CLI + automodes)
+- Saneamiento de release para distribución pública
+- Agente público por defecto para OpenCode
+- Validaciones reforzadas para referencias
+- Actualización segura con preservación de contexto y workspaces
+- Session management optimizado
 
 📄 [Ver Changelog](./CHANGELOG.md) | 🏷️ [Ver Releases](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases)
 > 
@@ -111,11 +106,18 @@ python core/scripts/update.py --check
 python core/scripts/update.py
 ```
 
-Este proceso:
+El proceso oficial:
 - crea un backup de preservación antes de actualizar
-- integra mejoras y nuevos features del framework
-- restaura tu contexto, KB, workspaces y configuraciones sensibles
+- integra mejoras del framework
+- restaura tus archivos de usuario
 - ejecuta migraciones para mantener compatibilidad
+
+Se preservan automáticamente, entre otros:
+- `workspaces/`
+- `core/.context/sessions/`
+- `core/.context/codebase/`
+- KB mutable en `core/.context/knowledge/`
+- `config/mcp.json`, `config/quotas.json`, `opencode.jsonc`
 
 Guía completa: `docs/UPDATE-GUIDE.md`
 
@@ -168,8 +170,8 @@ python core/scripts/update.py
 
 Así se preservan automáticamente tus sesiones, contexto, KB y workspaces.
 
-**¿Las actualizaciones borran mis datos?**
-→ **No, si usas el flujo oficial del framework.** El updater crea backup, restaura los paths protegidos y aplica migraciones para integrar mejoras sin perder tu información.
+**¿Las actualizaciones pueden sobrescribir mis datos?**
+→ **No, si usas el flujo oficial del framework.** El updater crea backup, restaura el estado del usuario y aplica migraciones para integrar nuevos features sin perder información personal.
 
 **¿Qué pasa si algo no funciona?**
 → Revisa nuestra documentación completa o abre un issue en GitHub. La comunidad te ayuda.
@@ -180,7 +182,7 @@ Así se preservan automáticamente tus sesiones, contexto, KB y workspaces.
 
 **¿Eres desarrollador o necesitas información técnica detallada?**
 
-👉 [Ver documentación técnica](./README-technical.md)
+👉 [Ver documentación técnica completa en el repositorio de desarrollo](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework/tree/main/docs/technical)
 
 Incluye:
 - Guía de actualización segura y preservación de datos
