@@ -21,7 +21,7 @@ workspaces/
 dashboard-data.js
 
 # Auto-generated wiki content (regenerar con wiki_populate.py)
-wiki/*.md
+wiki/
 
 # OS files
 .DS_Store
