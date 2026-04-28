@@ -34,7 +34,7 @@ with open('output.txt', 'w', encoding='utf-8') as f:
 from pathlib import Path
 
 # Cross-platform path construction
-base_dir = Path("/home/user")  # o Path("C:\\Users")
+base_dir = Path.home() / "pa-framework"  # Platform-independent  # o Path("C:\\Users")
 config_file = base_dir / "config" / "app.json"
 
 # Path operations

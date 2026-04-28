@@ -1,8 +1,8 @@
-# Model-Agnostic AI Personal Assistant Framework v0.2.2-prealpha
+# Model-Agnostic AI Personal Assistant Framework v0.3.7-alpha
 
 > "Tu Asistente AI Personal. Tu Conocimiento. Tu Control."
 
-[![Release](https://img.shields.io/badge/release-v0.2.2--prealpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.2.2-prealpha)
+[![Release](https://img.shields.io/badge/release-v0.3.7-alpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.3.7-alpha)
 [![Instagram](https://img.shields.io/badge/Instagram-%40freakingjson-E4405F?logo=instagram&logoColor=white)](https://instagram.com/freakingjson)
 [![Linktree](https://img.shields.io/badge/Linktree-@freakingjson-43E55C?logo=linktree&logoColor=white)](https://linktr.ee/freakingjson)
 [![Blog](https://img.shields.io/badge/Blog-freakingjson.com-FFA500?logo=firefoxbrowser&logoColor=white)](https://freakingjson.com)
@@ -18,7 +18,7 @@
 
 ## 📢 Última Versión
 
-**v0.2.2-prealpha** - Update reliability and public release refresh
+**v0.3.7-alpha** - Update reliability and public release refresh
 - Sistema de validación obligatoria de procesos CORE
 - `framework-guardian.py` para validación automática
 - Knowledge extraction automático desde sesiones

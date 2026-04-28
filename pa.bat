@@ -4,7 +4,19 @@ setlocal EnableDelayedExpansion
 cd /d "%~dp0"
 chcp 65001 >nul
 
-echo [INFO] Starting PA Framework bootstrap...
+:: ===========================================================================
+:: PA FRAMEWORK - Inicio rapido para Windows
+:: ===========================================================================
+:: Creado por: FreakingJSON | instagram.com/freakingjson
+:: Version: 0.3.7-alpha
+:: ===========================================================================
+
+:: --- Ayuda rapida (no necesita instalacion) ---
+if /i "%1"=="/?" goto :show_help
+if /i "%1"=="/help" goto :show_help
+if /i "%1"=="-h" goto :show_help
+if /i "%1"=="--help" goto :show_help
+if /i "%1"=="/version" goto :show_version
 
 :: ------------------------------------------------------------
 :: 1) Ensure Python (auto-install via winget when possible)
@@ -63,6 +75,59 @@ if errorlevel 1 (
 !PY_CMD! core\scripts\pa.py %*
 exit /b %errorlevel%
 
+:: ===========================================================================
+:: HELP - Ayuda para usuarios no tecnicos
+:: ===========================================================================
+:show_help
+echo.
+echo ============================================================
+echo   FreakingJSON PA Framework - Guia Rapida v0.3.7-alpha
+echo ============================================================
+echo.
+echo  QUE ES ESTO?
+echo   Es un asistente de IA personal que funciona en tu PC.
+echo   No necesita internet (solo para los modelos de IA en nube).
+echo   Todo queda en tus archivos locales.
+echo.
+echo  COMO USAR:
+echo   Solo ejecuta:  pa.bat
+echo   El menu te guiara paso a paso. No sabes programar? No importa.
+echo.
+echo  PRIMERA VEZ:
+echo   1. Te preguntara por tu idioma preferido
+echo   2. Elegiras que herramienta de IA usar (OpenCode, Claude, etc.)
+echo   3. Y listo! Ya puedes empezar
+echo.
+echo  COMANDOS RAPIDOS:
+echo   pa.bat                    - Menu interactivo (recomendado)
+echo   pa.bat --cli opencode     - Inicia OpenCode directamente
+echo   pa.bat --sync             - Sincroniza configuracion
+echo   pa.bat /help              - Esta ayuda
+echo   pa.bat /version           - Version del framework
+echo.
+echo  NECESITAS AYUDA?
+echo   - Revisa README.md (el archivo de documentacion incluido)
+echo   - Instagram: @freakingjson
+echo.
+echo  "I own my context. I am FreakingJSON."
+echo.
+goto :eof
+
+:: ===========================================================================
+:: VERSION
+:: ===========================================================================
+:show_version
+if exist VERSION (
+  set /p VERSION_CONTENT=<VERSION
+  echo FreakingJSON PA Framework v%VERSION_CONTENT%
+) else (
+  echo FreakingJSON PA Framework v0.3.7-alpha
+)
+goto :eof
+
+:: ===========================================================================
+:: Python detection
+:: ===========================================================================
 :detect_python
 set "PY_CMD="
 python -V >nul 2>nul
@@ -73,6 +138,9 @@ if not defined PY_CMD (
 )
 goto :eof
 
+:: ===========================================================================
+:: Auto-install Python via winget
+:: ===========================================================================
 :install_python_auto
 where winget >nul 2>nul
 if errorlevel 1 (
@@ -89,6 +157,9 @@ if errorlevel 1 (
 )
 goto :eof
 
+:: ===========================================================================
+:: Auto-install OpenCode
+:: ===========================================================================
 :install_opencode_auto
 :: Try npm first
 where npm >nul 2>nul

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FreakingJSON Personal Assistant Framework — Instalador v0.3.0-alpha
+FreakingJSON Personal Assistant Framework — Instalador v0.3.7-alpha
 
 Crea estructura, configura perfil y sincroniza contexto.
 Framework multi-IA standalone — OpenCode, Claude, Gemini, Codex, Ollama.
@@ -17,6 +17,18 @@ import sys
 import webbrowser
 from datetime import datetime
 from pathlib import Path
+# Windows UTF-8 encoding fix (evita acentos corruptos)
+if sys.platform == "win32" and sys.stdout.isatty():
+    try:
+        import io
+        sys.stdout = io.TextIOWrapper(
+            sys.stdout.buffer, encoding="utf-8", errors="replace"
+        )
+        sys.stderr = io.TextIOWrapper(
+            sys.stderr.buffer, encoding="utf-8", errors="replace"
+        )
+    except (ValueError, AttributeError):
+        pass
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CORE_DIR = SCRIPT_DIR.parent
@@ -143,13 +155,17 @@ def main():
 
     print(
         f"\n{Colors.HEADER}{Colors.BOLD}  ╔══════════════════════════════════════════════════════════╗\n"
-        f"  ║   FreakingJSON Personal Assistant Framework v0.3.0-alpha    ║\n"
+        f"  ║   FreakingJSON Personal Assistant Framework v0.3.7-alpha    ║\n"
         f"  ║   I own my context. I am FreakingJSON.                      ║\n"
         f"  ╚══════════════════════════════════════════════════════════╝{Colors.END}\n"
     )
     print_info(f"Sistema: {platform.system()} {platform.release()}")
     print_info(f"Python: {platform.python_version()}")
     print_info(f"Directorio: {REPO_ROOT}\n")
+    print(Colors.BOLD + Colors.CYAN + "  === ASISTENTE DE CONFIGURACION INICIAL ===" + Colors.END)
+    print(Colors.CYAN + "  Este asistente te guiara paso a paso para configurar" + Colors.END)
+    print(Colors.CYAN + "  tu asistente de IA personal. Solo toma 2 minutos." + Colors.END)
+    print()
 
     # Check Python version
     if sys.version_info < MIN_PYTHON:
@@ -165,6 +181,10 @@ def main():
         CONTEXT_DIR / "sessions",
         CONTEXT_DIR / "codebase",
         CONTEXT_DIR / "backups",
+        CONTEXT_DIR / "memory",
+        CONTEXT_DIR / "memory" / "summaries",
+        CONTEXT_DIR / "memory" / "profile",
+        CONTEXT_DIR / "knowledge" / "wiki",
         CORE_DIR / "agents" / "subagents",
         CORE_DIR / "skills" / "core",
         REPO_ROOT / "workspaces",

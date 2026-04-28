@@ -1,8 +1,7 @@
-# User Profile
+# Perfil de Usuario
+# Archivo semilla - se actualiza durante la instalacion
 
-## Last Updated
-- 2026-04-21 13:39
-
-## Topics
-
-## Decisions
+## Preferencias Iniciales
+- Idioma: es
+- Framework: PA Framework v0.3.7-alpha
+- Estado: Primera ejecucion

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FreakingJSON PA Framework — Control Panel v0.3.0-alpha
+FreakingJSON PA Framework — Control Panel v0.3.7-alpha
 Menú reorganizado según N30's spec: 7 opciones principales.
 
 Creator: FreakingJSON (instagram.com/freakingjson, freakingjson.com)
@@ -15,6 +15,18 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
+# Windows UTF-8 encoding fix (evita acentos corruptos)
+if sys.platform == "win32" and sys.stdout.isatty():
+    try:
+        import io
+        sys.stdout = io.TextIOWrapper(
+            sys.stdout.buffer, encoding="utf-8", errors="replace"
+        )
+        sys.stderr = io.TextIOWrapper(
+            sys.stderr.buffer, encoding="utf-8", errors="replace"
+        )
+    except (ValueError, AttributeError):
+        pass
 
 
 # --- RESOLVE PATHS ---
@@ -187,7 +199,7 @@ def print_banner():
     )
     print(
         c(
-            "║   FreakingJSON PA Framework — v0.3.0-alpha          ║",
+           "║   FreakingJSON PA Framework — v0.3.7-alpha          ║",
             f"{Colors.HEADER}{Colors.BOLD}",
         )
     )
@@ -318,16 +330,23 @@ def try_auto_launch_cli(cli: str, prompt: str, workdir: Path) -> bool:
     if not can_auto_inject:
         return False
     
+    # Verify CLI exists in PATH before attempting to run
+    cli_path = shutil.which(cli)
+    if not cli_path:
+        print_warn(f"CLI '{CLI_LABELS.get(cli, cli)}' no está disponible en PATH.")
+        print_info("Usando modo manual (fallback): se mostrará el prompt para copiar.")
+        return False
+
     try:
         print_info(f"Auto-iniciando {CLI_LABELS.get(cli, cli)} con prompt...")
         print_info("Presiona Ctrl+C para salir del CLI y volver al menú.\n")
         subprocess.run(command, cwd=workdir, check=False)
         return True
     except FileNotFoundError:
-        print_error(f"CLI '{cli}' no encontrado en PATH.")
+        print_info(f"Auto-launch no disponible para {CLI_LABELS.get(cli, cli)}. Cambiando a modo manual...")
         return False
     except Exception as e:
-        print_warn(f"Auto-launch falló: {e}")
+        print_warn(f"Auto-launch falló: {e}. Cambiando a modo manual...")
         return False
 
 
@@ -1141,7 +1160,7 @@ def _save_profile(lang: str = "es", default_cli: str = "opencode"):
     """Save profile.md with current settings."""
     import platform as plat
 
-    version = "0.3.0-alpha"
+    version = "0.3.7-alpha"
     vf = REPO_ROOT / "VERSION"
     if vf.exists():
         version = vf.read_text(encoding="utf-8").strip()
@@ -1289,7 +1308,7 @@ def show_help():
 
 def show_cli_help():
     """Display CLI help and exit."""
-    version = "0.3.0-alpha"
+    version = "0.3.7-alpha"
     vf = REPO_ROOT / "VERSION"
     if vf.exists():
         version = vf.read_text(encoding="utf-8").strip()
@@ -1465,7 +1484,7 @@ def main_menu():
 # --- ENTRY POINT ---
 def main():
     parser = argparse.ArgumentParser(
-        description="FreakingJSON PA Framework Control Panel v0.3.0-alpha",
+        description="FreakingJSON PA Framework Control Panel v0.3.7-alpha",
         add_help=False,  # Custom help handler
     )
     parser.add_argument("--sync", action="store_true", help="Run sync and exit")
@@ -1482,7 +1501,7 @@ def main():
 
     # Handle --version
     if args.version:
-        version = "0.3.0-alpha"
+        version = "0.3.7-alpha"
         vf = REPO_ROOT / "VERSION"
         if vf.exists():
             version = vf.read_text(encoding="utf-8").strip()

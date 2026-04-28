@@ -81,6 +81,11 @@ SESSIONS_DIR = CONTEXT_DIR / "sessions"
 CODEBASE_DIR = CONTEXT_DIR / "codebase"
 KNOWLEDGE_DIR = CONTEXT_DIR / "knowledge"
 
+# Ensure critical directories exist (first-run safety)
+SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
+CODEBASE_DIR.mkdir(parents=True, exist_ok=True)
+KNOWLEDGE_DIR.mkdir(parents=True, exist_ok=True)
+
 # --- WARM START CACHE (v2.2.0) ---
 CACHE_DIR = CONTEXT_DIR / ".cache"
 WARM_CACHE_PATH = CACHE_DIR / "warm-start.json"
@@ -92,7 +97,7 @@ _coordinator = None
 
 # --- MIGRATION CHECK (v0.2.0) ---
 def check_pending_migrations():
-    """Verifica si hay migraciones pendientes y alerta al usuario."""
+    """Verifica si hay migraciones pendientes y las aplica automaticamente."""
     try:
         migrate_script = SCRIPT_DIR / "migrate.py"
         if migrate_script.exists():
@@ -103,12 +108,21 @@ def check_pending_migrations():
                 timeout=5,
                 cwd=REPO_ROOT,
             )
-            # Si hay migraciones pendientes, mostrar aviso
+            # Si hay migraciones pendientes, aplicarlas automaticamente
             if result.returncode != 0 or "0" not in result.stdout:
-                print(c("\n[MIGRATE] Detectadas migraciones pendientes", Colors.YELLOW))
-                print(
-                    c("  Ejecuta: python core/scripts/migrate.py --apply", Colors.CYAN)
+                print(c("\\n[MIGRATE] Aplicando migraciones pendientes...", Colors.CYAN))
+                apply_result = subprocess.run(
+                    [sys.executable, str(migrate_script), "--apply"],
+                    capture_output=True,
+                    text=True,
+                    timeout=60,
+                    cwd=REPO_ROOT,
                 )
+                if apply_result.returncode == 0:
+                    print(c("  [OK] Migraciones aplicadas correctamente", Colors.GREEN))
+                else:
+                    print(c(f"  [WARN] Migraciones no se pudieron aplicar: {apply_result.stderr.strip()}", Colors.YELLOW))
+                    print(c("  Ejecuta manualmente: python core/scripts/migrate.py --apply", Colors.CYAN))
     except Exception:
         pass  # No bloquear inicio si falla verificación
 
@@ -945,7 +959,52 @@ def main():
     # Detectar modelo
     model = detect_model_from_env()
 
-    # 1. Inicializar Multi-CLI Coordinator (PRIMERO)
+    # 1. Auto-descubrimiento de sistemas de memoria (v0.3.7-alpha)
+    # Ejecuta persistent_storage_discover.py para detectar SQLite, Wiki, MD Memory, Sessions MD
+    # y mostrar el estado al agente
+    try:
+        discover_script = SCRIPT_DIR / "persistent_storage_discover.py"
+        if discover_script.exists():
+            discover_result = subprocess.run(
+                [sys.executable, str(discover_script), "--integration"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                cwd=REPO_ROOT,
+            )
+            if discover_result.returncode == 0 and discover_result.stdout.strip():
+                storage_status = discover_result.stdout.strip()
+                print(c(f"[STORAGE] Sistemas de memoria descubiertos:", Colors.CYAN))
+                # Parse JSON and display nicely
+                try:
+                    import json
+                    status_data = json.loads(storage_status)
+                    systems = []
+                    if status_data.get("sqlite_available"):
+                        systems.append("SQLite")
+                    if status_data.get("wiki_available"):
+                        systems.append("Wiki")
+                    if status_data.get("md_memory_available"):
+                        systems.append("MD Memory")
+                    if status_data.get("sessions_md_available"):
+                        systems.append("Sessions MD")
+                    if systems:
+                        print(c(f"  [OK] Disponible: {', '.join(systems)}", Colors.GREEN))
+                    else:
+                        print(c(f"  [i] Sin sistemas persistentes (primera ejecucion)", Colors.DIM))
+                    if not status_data.get("all_available"):
+                        missing = []
+                        if not status_data.get("sqlite_available"): missing.append("SQLite")
+                        if not status_data.get("wiki_available"): missing.append("Wiki")
+                        if not status_data.get("md_memory_available"): missing.append("MD Memory")
+                        if not status_data.get("sessions_md_available"): missing.append("Sessions MD")
+                        print(c(f"  [i] Sistemas pendientes: {', '.join(missing)}", Colors.DIM))
+                except json.JSONDecodeError:
+                    print(c(f"  [OK] Descubrimiento completado", Colors.DIM))
+    except Exception:
+        pass  # No bloquear inicio si falla discovery
+
+    # 2. Inicializar Multi-CLI Coordinator (PRIMERO)
     coord = init_multi_cli_coordinator(model)
 
     # 2. Validar agente (quick check)

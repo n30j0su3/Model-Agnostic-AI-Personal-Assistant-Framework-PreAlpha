@@ -136,7 +136,65 @@ Sistema centralizado de almacenamiento y conocimiento del asistente personal.
         )
         created.append("logging-config.md")
 
+        # Memory MD directory
+    MEMORY_DIR = CONTEXT_DIR / "memory"
+    MEMORY_DIR.mkdir(parents=True, exist_ok=True)
+    (MEMORY_DIR / "summaries").mkdir(parents=True, exist_ok=True)
+    (MEMORY_DIR / "profile").mkdir(parents=True, exist_ok=True)
+
+    if not (MEMORY_DIR / "context_injection.md").exists():
+        (MEMORY_DIR / "context_injection.md").write_text(
+            "# Context Injection - MD Memory\n\n"
+            "## Estado\n"
+            "- Primera ejecucion: Completada\n"
+            "- Sesiones previas: 0\n\n",
+            encoding="utf-8",
+        )
+        created.append("memory/context_injection.md")
+
+    if not (MEMORY_DIR / "session.json").exists():
+        import json as _json
+        (MEMORY_DIR / "session.json").write_text(
+            _json.dumps({
+                "has_previous_session": False,
+                "last_session_date": None,
+                "first_run": True,
+                "completed": False,
+            }, indent=2),
+            encoding="utf-8",
+        )
+        created.append("memory/session.json")
+
+    if not (MEMORY_DIR / "profile" / "user.md").exists():
+        (MEMORY_DIR / "profile" / "user.md").write_text(
+            "# Perfil de Usuario\n\n"
+            "## Preferencias\n"
+            "- Idioma: es\n"
+            "- Framework: PA Framework v0.3.7-alpha\n"
+            "- Estado: Inicializado\n",
+            encoding="utf-8",
+        )
+        created.append("memory/profile/user.md")
+
+    # Wiki seed
+    WIKI_DIR = KB_DIR / "wiki"
+    WIKI_DIR.mkdir(parents=True, exist_ok=True)
+
+    if not (WIKI_DIR / "README.md").exists():
+        (WIKI_DIR / "README.md").write_text(
+            "# Wiki - Knowledge Base\n\n"
+            "## Estado\n"
+            "- Inicializado correctamente\n"
+            "- Seed file presente\n"
+            "- Se pobla automaticamente con cada sesion\n"
+            "\n"
+            "> NOTA: Ejecuta wiki_populate.py para poblarla con contenido.\n",
+            encoding="utf-8",
+        )
+        created.append("knowledge/wiki/README.md")
+
     # Codebase - recordatorios
+
     CODEBASE_DIR.mkdir(parents=True, exist_ok=True)
     if not (CODEBASE_DIR / "recordatorios.md").exists():
         (CODEBASE_DIR / "recordatorios.md").write_text(

@@ -5,7 +5,7 @@
 - `core/recovery/triggers.py` (Error detection and triggers)
 
 **Version**: v1.0.0  
-**Status**: ✅ Frozen (v0.3.0-alpha)  
+**Status**: ✅ Frozen (v0.3.7-alpha)  
 
 ---
 

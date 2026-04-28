@@ -121,7 +121,7 @@ class SessionBridge:
         
         base_metadata = {
             "started_at": timestamp.isoformat(),
-            "framework_version": "v0.3.0-alpha",
+            "framework_version": "v0.3.7-alpha",
             "platform": sys.platform,
             "init_type": self._determine_init_type()
         }

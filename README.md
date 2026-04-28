@@ -1,8 +1,18 @@
-# Model-Agnostic AI Personal Assistant Framework v0.3.0-alpha
+# Model-Agnostic AI Personal Assistant Framework v0.3.7-alpha
+<!-- ================================================================ -->
+<!-- ¿ERES USUARIO NUEVO O NO SABES PROGRAMAR?                        -->
+<!-- Lee README-simple.md — es la guia pensada para ti.               -->
+<!-- ================================================================ -->
+
+> 💡 **¿Primera vez usando el framework?**  
+> **Lee [README-simple.md](./README-simple.md)** — es la guia pensada para usuarios sin experiencia tecnica.  
+> Este archivo (README.md) contiene documentacion detallada para usuarios avanzados.
+
+---
 
 > "Tu Asistente AI Personal. Tu Conocimiento. Tu Control."
 
-[![Release](https://img.shields.io/badge/release-v0.3.0-alpha)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.3.0-alpha)
+[![Release](https://img.shields.io/badge/release-v0.3.7-alpha)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.3.7-alpha)
 [![Instagram](https://img.shields.io/badge/Instagram-%40freakingjson-E4405F?logo=instagram&logoColor=white)](https://instagram.com/freakingjson)
 [![Linktree](https://img.shields.io/badge/Linktree-@freakingjson-43E55C?logo=linktree&logoColor=white)](https://linktr.ee/freakingjson)
 [![Blog](https://img.shields.io/badge/Blog-freakingjson.com-FFA500?logo=firefoxbrowser&logoColor=white)](https://freakingjson.com)

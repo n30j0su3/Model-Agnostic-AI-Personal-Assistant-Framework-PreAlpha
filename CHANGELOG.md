@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v0.3.8-alpha] - 2026-04-28 (Production Audit + Sanitization)
+
+### Added
+
+- **system_check.py**: Script de validacion integral con 23 componentes, modo `--fix` y salida JSON.
+- **Auto-descubrimiento de memoria**: `session_start.py` ejecuta automaticamente `persistent_storage_discover.py` y muestra estado de SQLite, Wiki, MD Memory y Sessions MD al iniciar sesion.
+- **Seed files para MD Memory y Wiki**: Directorios `core/.context/memory/` y `core/.context/knowledge/wiki/` incluidos en distribucion con archivos semilla.
+- **pa.bat /help /version**: Seccion de ayuda para usuarios no tecnicos en ASCII puro.
+- **README.md redirect**: Usuarios nuevos redirigidos a `README-simple.md` como entry point.
+- **navigation.md**: Archivo de navegacion faltante creado con mapa completo de archivos clave.
+- **update-protected-paths.txt**: Poblado con 27 paths protegidos durante actualizaciones.
+
+### Fixed
+
+- **Windows UTF-8 encoding**: `pa.py`, `install.py`, `system_check.py` ahora configuran `sys.stdout` para UTF-8 en Windows, corrigiendo acentos corruptos.
+- **CLI opencode error**: Mensaje cambiado de `[ERROR]` a `[WARN]` con fallback automatico a modo manual.
+- **Migraciones auto-aplicadas**: `session_start.py` ya no solo muestra warning — aplica `migrate.py --apply` automaticamente.
+- **Leaks sanitizados**: Eliminados paths reales de desarrollador (`/home/freakingjson/`) de documentacion y ejemplos. Eliminado QA checklist interno con datos de entorno DEV.
+- **Terminologia interna sanitizada**: Referencias a BASE/DEV/PROD reemplazadas por lenguaje generico.
+- **Versiones sincronizadas**: Todos los archivos actualizados de `v0.3.0-alpha` a `v0.3.7-alpha` (READMEs, docstrings, banners, metadata).
+
+### Changed
+
+- **quick-start.md**: Auto-descubrimiento movido al TOP como instruccion obligatoria.
+
 ## [v0.3.7-alpha] - 2026-04-20 (Memory Pipeline + Dashboard)
 
 ### Added

@@ -73,7 +73,7 @@ temp_file = Path(tempfile.gettempdir()) / "session.db"
 
 ```python
 # WRONG
-data_dir = Path("/home/freakingjson/.pa-framework")
+data_dir = Path.home() / ".pa-framework"  # Better: use home directory
 
 # CORRECT
 data_dir = Path.home() / ".pa-framework"

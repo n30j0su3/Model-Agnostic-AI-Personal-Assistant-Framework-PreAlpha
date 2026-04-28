@@ -1,8 +1,9 @@
 {
-  "has_previous_session": true,
-  "last_session_date": "2026-04-21",
+  "has_previous_session": false,
+  "last_session_date": null,
   "topics": [],
   "decisions": [],
   "pending_tasks": [],
-  "completed": true
+  "completed": false,
+  "first_run": true
 }
