@@ -1,6 +1,6 @@
 # AGENTS-full — Framework Complete Documentation (Tier 3)
 
-> **Version: v0.3.7-alpha** | Documentación completa (Tier 4). Bootstrap canónico: `AGENTS-lite.md`; router operativo: `AGENTS.md`.
+> **Version: v0.3.8-alpha** | Documentación completa (Tier 4). Bootstrap canónico: `AGENTS-lite.md`; router operativo: `AGENTS.md`.
 
 ---
 
@@ -114,9 +114,9 @@ python core/scripts/framework_guardian.py --timing pre-release
 
 ```
 [CORE-006] Version Governance
-  [✓] VERSION: 0.3.7-alpha
-  [✓] README.md: 0.3.7-alpha
-  [✓] AGENTS.md: 0.3.7-alpha
+  [✓] VERSION: 0.3.8-alpha
+  [✓] README.md: 0.3.8-alpha
+  [✓] AGENTS.md: 0.3.8-alpha
   
 [CORE-007] Release Sanitization
   [✓] No credentials found

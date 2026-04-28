@@ -8,7 +8,7 @@ chcp 65001 >nul
 :: PA FRAMEWORK - Inicio rapido para Windows
 :: ===========================================================================
 :: Creado por: FreakingJSON | instagram.com/freakingjson
-:: Version: 0.3.7-alpha
+:: Version: 0.3.8-alpha
 :: ===========================================================================
 
 :: --- Ayuda rapida (no necesita instalacion) ---
@@ -81,7 +81,7 @@ exit /b %errorlevel%
 :show_help
 echo.
 echo ============================================================
-echo   FreakingJSON PA Framework - Guia Rapida v0.3.7-alpha
+echo   FreakingJSON PA Framework - Guia Rapida v0.3.8-alpha
 echo ============================================================
 echo.
 echo  QUE ES ESTO?
@@ -121,7 +121,7 @@ if exist VERSION (
   set /p VERSION_CONTENT=<VERSION
   echo FreakingJSON PA Framework v%VERSION_CONTENT%
 ) else (
-  echo FreakingJSON PA Framework v0.3.7-alpha
+  echo FreakingJSON PA Framework v0.3.8-alpha
 )
 goto :eof
 

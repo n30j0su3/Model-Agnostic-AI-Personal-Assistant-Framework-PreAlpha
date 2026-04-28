@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FreakingJSON Personal Assistant Framework — Instalador v0.3.7-alpha
+FreakingJSON Personal Assistant Framework — Instalador v0.3.8-alpha
 
 Crea estructura, configura perfil y sincroniza contexto.
 Framework multi-IA standalone — OpenCode, Claude, Gemini, Codex, Ollama.
@@ -155,7 +155,7 @@ def main():
 
     print(
         f"\n{Colors.HEADER}{Colors.BOLD}  ╔══════════════════════════════════════════════════════════╗\n"
-        f"  ║   FreakingJSON Personal Assistant Framework v0.3.7-alpha    ║\n"
+        f"  ║   FreakingJSON Personal Assistant Framework v0.3.8-alpha    ║\n"
         f"  ║   I own my context. I am FreakingJSON.                      ║\n"
         f"  ╚══════════════════════════════════════════════════════════╝{Colors.END}\n"
     )

@@ -2,7 +2,7 @@
 
 > **Don't have a CLI installed? This guide will help you get started!**
 > 
-> *Version: v0.3.7-alpha | Updated: April 2026*
+> *Version: v0.3.8-alpha | Updated: April 2026*
 
 ---
 
@@ -612,4 +612,4 @@ opencode setup
 
 ---
 
-*PA Framework v0.3.7-alpha | For more information, see the [main documentation](./GETTING-STARTED.md)*
+*PA Framework v0.3.8-alpha | For more information, see the [main documentation](./GETTING-STARTED.md)*

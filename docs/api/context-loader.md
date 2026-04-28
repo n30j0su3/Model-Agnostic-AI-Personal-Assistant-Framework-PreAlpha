@@ -2,7 +2,7 @@
 
 **Module**: `core/scripts/context_loader.py`  
 **Version**: v1.0.0  
-**Status**: ✅ Frozen (v0.3.7-alpha)  
+**Status**: ✅ Frozen (v0.3.8-alpha)  
 
 ---
 

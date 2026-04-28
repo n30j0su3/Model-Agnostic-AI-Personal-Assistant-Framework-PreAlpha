@@ -2,7 +2,7 @@
 
 > **5-Minute Visual Tutorial for New Users**
 > 
-> *Version: v0.3.7-alpha | Updated: April 2026*
+> *Version: v0.3.8-alpha | Updated: April 2026*
 
 ---
 

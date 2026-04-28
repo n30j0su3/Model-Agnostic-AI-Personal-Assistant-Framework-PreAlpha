@@ -5,7 +5,7 @@
 - `core/scripts/knowledge-extractor.py` (KnowledgeExtractor)
 
 **Version**: v1.0.0 / v2.0.0  
-**Status**: ✅ Frozen (v0.3.7-alpha)  
+**Status**: ✅ Frozen (v0.3.8-alpha)  
 
 ---
 

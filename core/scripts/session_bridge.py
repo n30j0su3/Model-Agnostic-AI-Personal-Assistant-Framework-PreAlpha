@@ -68,7 +68,7 @@ except ImportError:
     MEMORY_AVAILABLE = False
     print("[BRIDGE] Warning: session_memory not available, using fallback")
 
-# v0.3.7-alpha: User Memory integration (persistent facts)
+# v0.3.8-alpha: User Memory integration (persistent facts)
 try:
     from user_memory import get_user_memory, UserMemoryStore
     USER_MEMORY_AVAILABLE = True
@@ -86,7 +86,7 @@ class SessionBridge:
     """
     
     def __init__(self, store_path: Optional[str] = None):
-        """Initialize bridge with SessionStore + UserMemoryStore (v0.3.7-alpha)"""
+        """Initialize bridge with SessionStore + UserMemoryStore (v0.3.8-alpha)"""
         if MEMORY_AVAILABLE:
             self.store = get_default_store()
         else:
@@ -97,7 +97,7 @@ class SessionBridge:
             if not self.fallback_path.exists():
                 self.fallback_path.write_text(json.dumps({"sessions": []}))
         
-        # v0.3.7-alpha: User Memory for persistent facts
+        # v0.3.8-alpha: User Memory for persistent facts
         self.user_memory: Optional[UserMemoryStore] = None
         if USER_MEMORY_AVAILABLE:
             self.user_memory = get_user_memory()
@@ -121,7 +121,7 @@ class SessionBridge:
         
         base_metadata = {
             "started_at": timestamp.isoformat(),
-            "framework_version": "v0.3.7-alpha",
+            "framework_version": "v0.3.8-alpha",
             "platform": sys.platform,
             "init_type": self._determine_init_type()
         }
@@ -359,11 +359,11 @@ class SessionBridge:
                     recent.append(session.get("session_id"))
             return recent
     
-    # === User Memory Methods (v0.3.7-alpha) ===
+    # === User Memory Methods (v0.3.8-alpha) ===
     
     def get_user_facts(self, category: Optional[str] = None, priority: Optional[str] = None) -> List[Dict]:
         """
-        Get user facts from persistent memory (v0.3.7-alpha).
+        Get user facts from persistent memory (v0.3.8-alpha).
         
         Args:
             category: Filter by category (project, preference, goal, fact, context)
@@ -380,7 +380,7 @@ class SessionBridge:
     
     def get_user_fact(self, key: str) -> Optional[Dict]:
         """
-        Get a specific user fact by key (v0.3.7-alpha).
+        Get a specific user fact by key (v0.3.8-alpha).
         
         Args:
             key: Fact key (e.g., "active_project")
@@ -405,7 +405,7 @@ class SessionBridge:
         metadata: Optional[Dict] = None
     ) -> Optional[Dict]:
         """
-        Set a user fact in persistent memory (v0.3.7-alpha).
+        Set a user fact in persistent memory (v0.3.8-alpha).
         
         Args:
             key: Unique key for the fact
@@ -435,7 +435,7 @@ class SessionBridge:
     
     def archive_user_fact(self, key: str) -> bool:
         """
-        Archive a user fact (soft delete) (v0.3.7-alpha).
+        Archive a user fact (soft delete) (v0.3.8-alpha).
         
         Args:
             key: Fact key to archive
@@ -450,7 +450,7 @@ class SessionBridge:
     
     def get_user_context_summary(self) -> str:
         """
-        Get formatted user context for session start (v0.3.7-alpha).
+        Get formatted user context for session start (v0.3.8-alpha).
         
         Returns a concise summary of user facts suitable for
         injection into session context.
@@ -475,7 +475,7 @@ class SessionBridge:
     
     def get_user_memory_stats(self) -> Dict:
         """
-        Get user memory statistics (v0.3.7-alpha).
+        Get user memory statistics (v0.3.8-alpha).
         
         Returns:
             User memory stats dict

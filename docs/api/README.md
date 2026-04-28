@@ -1,6 +1,6 @@
 # PA Framework — API Reference (Phase 3 Frozen APIs)
 
-**Version**: v0.3.7-alpha  
+**Version**: v0.3.8-alpha  
 **Status**: APIs FROZEN — No breaking changes allowed  
 **Phase**: 5 Workstream 1 — API Stabilization  
 
