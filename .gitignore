@@ -1,0 +1,59 @@
+# =====================================================================
+# PA Framework — .gitignore
+# =====================================================================
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# User data (sessions, memory, logs)
+data/*.db
+data/*.log
+data/bridge.log
+core/.context/sessions/
+core/.context/codebase/
+core/.context/backups/
+core/.context/projects/
+core/.context/vitals/
+workspaces/
+
+# Generated dashboard data (regenerar con generate_dashboard_data.py)
+dashboard-data.js
+
+# Auto-generated wiki content (regenerar con wiki_populate.py)
+wiki/*.md
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+venv/
+.venv/
+
+# Build artifacts
+*.zip
+*.tar.gz
+dist/
+build/
+
+# Local config overrides
+config/mcp.json
+config/quotas.json
+opencode.jsonc.local
+
+# Test coverage
+.coverage
+htmlcov/
+.coverage.*
