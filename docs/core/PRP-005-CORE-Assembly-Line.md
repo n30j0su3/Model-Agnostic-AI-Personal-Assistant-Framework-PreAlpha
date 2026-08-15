@@ -173,9 +173,8 @@ DELIMITAR → MAPEAR → EJECUTAR → VALIDAR → PRESERVAR
 - `@session-manager`: Gestión de sesión
 
 ### Scripts
-- `core/scripts/session-start.py`: Inicia sesión con contexto
-- `core/scripts/session-end.py`: Cierra y preserva
-- `core/scripts/framework-guardian.py`: Validación
+- `core/scripts/session_start.py`: Inicia sesión con contexto
+- `core/scripts/session_end.py`: Cierra y preserva
 
 ### Documentación
 - [Workflow Standard](../WORKFLOW-STANDARD.md) - Proceso de 7 pasos macro

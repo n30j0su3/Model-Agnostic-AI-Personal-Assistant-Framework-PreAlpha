@@ -25,10 +25,10 @@ permissions:
     "core/.context/codebase/**": "allow"
     "**/*": "deny"
   bash:
-    "python core/scripts/session-start.py": "allow"
-    "python core/scripts/session-end.py": "allow"
-    "python core/scripts/session-indexer.py *": "allow"
-    "python core/scripts/knowledge-extractor.py *": "allow"
+    "python core/scripts/session_start.py": "allow"
+    "python core/scripts/session_end.py": "allow"
+    "python core/scripts/session_indexer.py *": "allow"
+    "python core/scripts/knowledge_extractor.py *": "allow"
     "python *": "deny"
 
 tags:
@@ -152,10 +152,10 @@ Las operaciones del SessionManager se implementan via scripts:
 
 | Operación | Script | Comando |
 |-----------|--------|---------|
-| `crear_sesion()` | session-start.py | `python core/scripts/session-start.py` |
-| `cerrar_sesion()` | session-end.py | `python core/scripts/session-end.py` |
-| `indexar_sesion()` | session-indexer.py | `python core/scripts/session-indexer.py --today` |
-| `rebuild_index()` | session-indexer.py | `python core/scripts/session-indexer.py --rebuild` |
+| `crear_sesion()` | session-start.py | `python core/scripts/session_start.py` |
+| `cerrar_sesion()` | session-end.py | `python core/scripts/session_end.py` |
+| `indexar_sesion()` | session-indexer.py | `python core/scripts/session_indexer.py --today` |
+| `rebuild_index()` | session-indexer.py | `python core/scripts/session_indexer.py --rebuild` |
 | `listar_sesiones(n)` | (usar glob/read) | `core/.context/sessions/*.md` |
 
 ### Invocación desde Agente Principal
@@ -168,7 +168,7 @@ Cuando el usuario diga:
 
 **Ejecutar**:
 ```bash
-python core/scripts/session-end.py
+python core/scripts/session_end.py
 ```
 
 **Confirmar**:

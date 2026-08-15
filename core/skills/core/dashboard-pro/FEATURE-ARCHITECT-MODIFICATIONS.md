@@ -128,13 +128,13 @@ Extraer del PRD:
 **3b.5 Comandos de Soporte**:
 ```bash
 # Verificar disponibilidad de skill
-python core/scripts/skill-check.py dashboard-pro
+python core/skills/core/dashboard-pro/scripts/skill-check.py  # opcional, crear si se necesita
 
 # Verificar entregables
-python core/scripts/verify-deliverable.py --feature BL-XXX --type dashboard
+python core/skills/core/dashboard-pro/scripts/verify-deliverable.py  # opcional, crear si se necesita
 
 # Integrar entregables
-python core/scripts/integrate-deliverable.py --feature BL-XXX --source workspaces/temp/ --target workspaces/{project}/
+python core/skills/core/dashboard-pro/scripts/integrate-deliverable.py  # opcional, crear si se necesita
 ```
 ```
 

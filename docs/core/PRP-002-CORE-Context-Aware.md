@@ -75,7 +75,7 @@ El contexto encontrado se integra automáticamente en:
 - `@session-manager`: Gestiona contexto de sesión
 
 ### Scripts
-- `core/scripts/session-start.py`: Carga contexto automáticamente
+- `core/scripts/session_start.py`: Carga contexto automáticamente
 - `core/agents/subagents/context-scout.md`: Subagente de descubrimiento de contexto
 
 ### Archivos de Contexto

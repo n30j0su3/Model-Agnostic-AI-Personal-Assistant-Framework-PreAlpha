@@ -52,7 +52,7 @@ Este bootstrap/script:
 
 ### Step 5: Propagación de Framework
 
-Si la tarea implica actualizar `BASE`, `DEV` o `PROD`, sigue `docs/FRAMEWORK-PROPAGATION-PROTOCOL.md` y usa `python core/scripts/propagate-framework-updates.py`.
+Si la tarea implica actualizar el framework, usa `python core/scripts/update.py` (actualización segura con preservación de contexto personal).
 
 ---
 
@@ -86,10 +86,8 @@ El **Framework Enforcement System** garantiza que cualquier IA que use el framew
 **ANTES de acciones críticas** (commit, push, release), ejecutar:
 
 ```bash
-python core/scripts/framework_guardian.py --timing pre-execution --task "descripcion"
-python core/scripts/framework_guardian.py --timing pre-commit
-python core/scripts/framework_guardian.py --timing pre-push
-python core/scripts/framework_guardian.py --timing pre-release
+python core/scripts/system_check.py            # 23 checks de salud
+python core/scripts/system_check.py --fix      # reparación automática
 ```
 
 ### Validaciones por Timing
@@ -168,7 +166,7 @@ Esto asegura:
    - Agregar `time_end` en frontmatter
    - Agregar sección `## Cierre` con resumen
 2. Mover pendientes nuevos a `core/.context/codebase/recordatorios.md`
-3. Indexar: `python core/scripts/session-indexer.py --today`
+3. Indexar: `python core/scripts/session_indexer.py --today`
 
 ### Cierre Automático (atexit)
 

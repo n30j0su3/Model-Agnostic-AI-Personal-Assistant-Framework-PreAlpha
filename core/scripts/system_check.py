@@ -504,12 +504,25 @@ def main():
         description="PA Framework — System Health Check",
     )
     parser.add_argument("--fix", action="store_true", help="Intentar reparar automaticamente")
+    parser.add_argument("--quiet-first-run", action="store_true",
+                        help="Modo silencioso para auto-heal de primer arranque (session_start)")
     parser.add_argument("--json", action="store_true", help="Salida JSON")
     parser.add_argument("--quick", action="store_true", help="Solo checks criticos")
     args = parser.parse_args()
 
     if args.fix:
-        auto_fix()
+        # quiet-first-run: solo imprimir lo creado (llamado por session_start)
+        if args.quiet_first_run:
+            import io
+            import contextlib
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf):
+                auto_fix()
+            created = [l for l in buf.getvalue().splitlines() if "Creado" in l or "creado" in l]
+            for l in created:
+                print(l)
+        else:
+            auto_fix()
         return 0
 
     results_data, elapsed = run_all_checks(quick=args.quick)

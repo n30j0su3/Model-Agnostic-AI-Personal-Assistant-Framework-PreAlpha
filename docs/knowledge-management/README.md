@@ -409,4 +409,4 @@ pytest tests/knowledge_management_test.py::TestBM25Search -v
 
 - [Phase 5 Workstream 1](../phase5-ws1-completion.md) — Pattern Detection Extension
 - [Phase 4 Metrics](./phase4_metrics_report.md) — Recovery System
-- [Session Indexer](../core/scripts/session-indexer.py) — Index generation
+- [Session Indexer](../core/scripts/session_indexer.py) — Index generation

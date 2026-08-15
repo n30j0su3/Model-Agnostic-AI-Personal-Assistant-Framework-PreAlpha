@@ -1,6 +1,6 @@
 # AGENTS — Framework Bootstrap (Tier 0)
 
-> **Version: v0.3.8-alpha** | **Industry Standard Entry Point**
+> **Version: v0.3.9-alpha** | **Industry Standard Entry Point**
 > **Phase 3 Prototype**: Context Loader + Recovery Orchestrator + Modular Knowledge Extraction
 
 ---

@@ -286,7 +286,7 @@ Open in your browser:
 
 Option 2: From Command Line
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-python core/scripts/dashboard-launcher.py
+python -m http.server 8000   # luego abre http://localhost:8000/dashboard.html
 ```
 
 ### What You'll See

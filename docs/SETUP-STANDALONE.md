@@ -58,7 +58,7 @@ export GEMINI_API_KEY="your-key-here"
 ### Step 3: Initialize Session
 
 ```bash
-python core/scripts/session-start.py
+python core/scripts/session_start.py
 ```
 
 Expected output:
@@ -76,7 +76,7 @@ Expected output:
 | SkillExecutor | `core/skills/skill_executor.py` | ✅ Yes | TOML skills in `skills/*.toml` |
 | MultiEngine | `core/providers/multi_engine.py` | ✅ Yes | JSON/YAML config |
 | ContextLoader | `core/scripts/context_loader.py` | ✅ Yes | Tier-based lazy loading |
-| SessionStart | `core/scripts/session-start.py` | ✅ Yes | Bootstrap script |
+| SessionStart | `core/scripts/session_start.py` | ✅ Yes | Bootstrap script |
 
 ---
 

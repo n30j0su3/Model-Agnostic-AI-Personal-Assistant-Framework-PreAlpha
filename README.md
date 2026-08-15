@@ -1,4 +1,4 @@
-# Model-Agnostic AI Personal Assistant Framework v0.3.8-alpha
+# Model-Agnostic AI Personal Assistant Framework v0.3.9-alpha
 <!-- ================================================================ -->
 <!-- ¿ERES USUARIO NUEVO O NO SABES PROGRAMAR?                        -->
 <!-- Lee README-simple.md — es la guia pensada para ti.               -->
@@ -12,7 +12,7 @@
 
 > "Tu Asistente AI Personal. Tu Conocimiento. Tu Control."
 
-[![Release](https://img.shields.io/badge/release-v0.3.8-alpha)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.3.8-alpha)
+[![Release](https://img.shields.io/badge/release-v0.3.9-alpha)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.3.9-alpha)
 [![Instagram](https://img.shields.io/badge/Instagram-%40freakingjson-E4405F?logo=instagram&logoColor=white)](https://instagram.com/freakingjson)
 [![Linktree](https://img.shields.io/badge/Linktree-@freakingjson-43E55C?logo=linktree&logoColor=white)](https://linktr.ee/freakingjson)
 [![Blog](https://img.shields.io/badge/Blog-freakingjson.com-FFA500?logo=firefoxbrowser&logoColor=white)](https://freakingjson.com)
@@ -28,7 +28,7 @@
 
 ## 📢 Última Versión
 
-**v0.3.8-alpha** - Memory Pipeline + Core Stabilization
+**v0.3.9-alpha** - Memory Pipeline + Core Stabilization
 - Sistema Memory Pipeline para persistencia cross-session (CLI + automodes)
 - Saneamiento de release para distribución pública
 - Agente público por defecto para OpenCode

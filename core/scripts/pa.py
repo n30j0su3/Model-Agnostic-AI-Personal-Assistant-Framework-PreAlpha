@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FreakingJSON PA Framework — Control Panel v0.3.8-alpha
+FreakingJSON PA Framework — Control Panel v0.3.9-alpha
 Menú reorganizado según N30's spec: 7 opciones principales.
 
 Creator: FreakingJSON (instagram.com/freakingjson, freakingjson.com)
@@ -199,7 +199,7 @@ def print_banner():
     )
     print(
         c(
-           "║   FreakingJSON PA Framework — v0.3.8-alpha          ║",
+           "║   FreakingJSON PA Framework — v0.3.9-alpha          ║",
             f"{Colors.HEADER}{Colors.BOLD}",
         )
     )
@@ -1160,7 +1160,7 @@ def _save_profile(lang: str = "es", default_cli: str = "opencode"):
     """Save profile.md with current settings."""
     import platform as plat
 
-    version = "0.3.8-alpha"
+    version = "0.3.9-alpha"
     vf = REPO_ROOT / "VERSION"
     if vf.exists():
         version = vf.read_text(encoding="utf-8").strip()
@@ -1308,7 +1308,7 @@ def show_help():
 
 def show_cli_help():
     """Display CLI help and exit."""
-    version = "0.3.8-alpha"
+    version = "0.3.9-alpha"
     vf = REPO_ROOT / "VERSION"
     if vf.exists():
         version = vf.read_text(encoding="utf-8").strip()
@@ -1484,7 +1484,7 @@ def main_menu():
 # --- ENTRY POINT ---
 def main():
     parser = argparse.ArgumentParser(
-        description="FreakingJSON PA Framework Control Panel v0.3.8-alpha",
+        description="FreakingJSON PA Framework Control Panel v0.3.9-alpha",
         add_help=False,  # Custom help handler
     )
     parser.add_argument("--sync", action="store_true", help="Run sync and exit")
@@ -1501,7 +1501,7 @@ def main():
 
     # Handle --version
     if args.version:
-        version = "0.3.8-alpha"
+        version = "0.3.9-alpha"
         vf = REPO_ROOT / "VERSION"
         if vf.exists():
             version = vf.read_text(encoding="utf-8").strip()
