@@ -58,6 +58,30 @@ Author: FreakingJSON-PA Framework
 """
 
 import sys
+
+
+# --- Windows console compatibility (v0.4.0-beta) -----------------------------
+# Consolas legacy (cmd.exe / cp1252) no pueden imprimir Unicode (✓, →, ó).
+# Re-ensoblamos stdout/stderr con 'replace' para no crashear; el texto
+# legible sobrevive. No-op en UTF-8 (Linux/macOS/Windows Terminal).
+def _console_safe_streams():
+    import sys
+    for name in ("stdout", "stderr"):
+        stream = getattr(sys, name, None)
+        if stream is None or stream.encoding is None:
+            continue
+        try:
+            stream.encoding.lower().encode("\u2192")
+        except (LookupError, UnicodeEncodeError):
+            import io, os
+            enc = stream.encoding
+            setattr(sys, name, io.TextIOWrapper(
+                stream.buffer, encoding=enc, errors="replace",
+                line_buffering=stream.line_buffering if hasattr(stream, "line_buffering") else False,
+            ))
+
+_console_safe_streams()
+# ----------------------------------------------------------------------------
 import os
 import re
 import json

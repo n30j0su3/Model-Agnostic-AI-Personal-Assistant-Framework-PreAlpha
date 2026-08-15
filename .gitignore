@@ -11,7 +11,8 @@ data/*.db
 data/*.log
 data/bridge.log
 core/.context/sessions/
-core/.context/codebase/
+core/.context/codebase/*
+!core/.context/codebase/backlog.seed.md
 core/.context/backups/
 core/.context/projects/
 core/.context/vitals/
