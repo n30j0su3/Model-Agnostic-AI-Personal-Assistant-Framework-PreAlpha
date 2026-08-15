@@ -953,7 +953,22 @@ def main():
 
     start_time = datetime.now()
 
-    # 0. Verificar migraciones pendientes (NUEVO - v0.2.0)
+    # 0. Auto-heal en primer arranque (v0.3.9-alpha): si faltan MASTER.md,
+    #    profile.md o workspaces/, crearlos desde templates ANTES de validar.
+    #    Fresh install pasa de 3 errores a 0 sin comandos extra.
+    try:
+        heal_script = SCRIPT_DIR / "system_check.py"
+        if heal_script.exists():
+            heal_result = subprocess.run(
+                [sys.executable, str(heal_script), "--fix", "--quiet-first-run"],
+                capture_output=True, text=True, timeout=30,
+            )
+            if heal_result.returncode == 0 and "creado" in (heal_result.stdout or "").lower():
+                print("  [OK] Primer arranque: contexto base creado (MASTER.md, profile.md)")
+    except Exception:
+        pass  # nunca bloquear el arranque por el auto-heal
+
+    # 0b. Verificar migraciones pendientes (v0.2.0)
     check_pending_migrations()
 
     # Detectar modelo

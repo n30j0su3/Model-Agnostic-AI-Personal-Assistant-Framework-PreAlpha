@@ -308,6 +308,71 @@ class KnowledgeExtractor:
         return {**stats, "success": ok}
 
 
+class SQLiteSessionContent:
+    """
+    Duck-typed adapter: makes a SQLite session (data/sessions.db) look like
+    SessionContent (.raw / .lines) so PatternDetector can extract knowledge
+    from captured conversations, not only from .md files (v0.3.9-alpha).
+    """
+
+    def __init__(self, session_id: str, messages: List[Dict]):
+        self.session_id = session_id
+        self.name = f"sqlite-{session_id[:8]}.md"
+        lines = [f"# Session {session_id} (SQLite capture)"]
+        for m in messages:
+            ts = datetime.fromtimestamp(m["timestamp"]).strftime("%H:%M")
+            lines.append(f"\n## {m['role'].title()} [{ts}]")
+            lines.append(m["content"])
+        self._raw = "\n".join(lines)
+
+    @property
+    def raw(self) -> str:
+        return self._raw
+
+    @property
+    def lines(self) -> List[str]:
+        return self._raw.split("\n")
+
+
+def iter_sqlite_sessions(limit: int = 0) -> List[Dict]:
+    """
+    Read captured sessions from data/sessions.db (SessionBridge output).
+    Returns a list of {"session_id", "messages": [...]} dicts.
+    Empty list when the DB or the table does not exist (graceful).
+    """
+    import sqlite3
+
+    db = REPO_ROOT / "data" / "sessions.db"
+    if not db.exists():
+        return []
+    try:
+        con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+        con.row_factory = sqlite3.Row
+    except sqlite3.Error:
+        return []
+    out: List[Dict] = []
+    try:
+        q = "SELECT session_id FROM sessions ORDER BY created_at DESC"
+        if limit:
+            q += f" LIMIT {int(limit)}"
+        sids = [r["session_id"] for r in con.execute(q).fetchall()]
+        for sid in sids:
+            msgs = [
+                dict(r) for r in con.execute(
+                    "SELECT role, content, timestamp FROM session_messages "
+                    "WHERE session_id = ? ORDER BY timestamp ASC",
+                    (sid,),
+                ).fetchall()
+            ]
+            if msgs:
+                out.append({"session_id": sid, "messages": msgs})
+    except sqlite3.Error:
+        return []
+    finally:
+        con.close()
+    return out
+
+
 def extract_all_knowledge(session_file: Path) -> Dict:
     return KnowledgeExtractor().extract_all_knowledge(session_file)
 def extract_session_discoveries(session_file: Path) -> List[Dict]:
@@ -318,3 +383,82 @@ def extract_validated_ideas(session_file: Path) -> List[Dict]:
     return KnowledgeExtractor().extract_validated_ideas(session_file)
 def extract_best_practices(session_file: Path) -> List[Dict]:
     return KnowledgeExtractor().extract_best_practices(session_file)
+
+
+# ============================================================================
+# CLI (v0.3.9-alpha) — fixes the false-green in memory_pipeline:
+# the pipeline runs `python knowledge_extractor.py` expecting a CLI that
+# did not exist. Sources: --md (Markdown sessions) + --sqlite (captured).
+# ============================================================================
+
+def _cli() -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="PA Framework — Knowledge Extractor (MD + SQLite, v0.3.9)",
+    )
+    src = parser.add_mutually_exclusive_group()
+    src.add_argument("--md", action="store_true",
+                     help="Extract from Markdown sessions only")
+    src.add_argument("--sqlite", action="store_true",
+                     help="Extract from SQLite captures only")
+    parser.add_argument("--file", type=str, default=None,
+                        help="Extract from a single .md session file")
+    parser.add_argument("--limit", type=int, default=0,
+                        help="Max SQLite sessions to process (0 = all)")
+    parser.add_argument("--quiet", action="store_true", help="Suppress per-item output")
+    args = parser.parse_args()
+
+    ex = KnowledgeExtractor()
+    totals = {"discoveries": 0, "prompts": 0, "ideas": 0, "best_practices": 0}
+    ok_any = False
+
+    # Single file mode
+    if args.file:
+        p = Path(args.file)
+        if not p.exists():
+            _safe_print(_c(f"[ERROR] File not found: {p}", _RED))
+            return 1
+        res = ex.extract_all_knowledge(p)
+        ok_any = res.get("success", False)
+        for k in totals:
+            totals[k] += res.get(k, 0)
+    else:
+        # Markdown sessions (default when neither --md nor --sqlite)
+        if not args.sqlite:
+            sessions_dir = REPO_ROOT / "core" / ".context" / "sessions"
+            if sessions_dir.exists():
+                for sf in sorted(sessions_dir.glob("*.md")):
+                    try:
+                        res = ex.extract_all_knowledge(sf)
+                        ok_any = ok_any or res.get("success", False)
+                        for k in totals:
+                            totals[k] += res.get(k, 0)
+                    except Exception as e:
+                        _safe_print(_c(f"[WARN] {sf.name}: {e}", _RED))
+        # SQLite captures (default when neither flag given, or explicit --sqlite)
+        if not args.md:
+            for sess in iter_sqlite_sessions(limit=args.limit):
+                adapter = SQLiteSessionContent(sess["session_id"], sess["messages"])
+                try:
+                    res = ex.extract_all_knowledge_from_session(
+                        adapter, session_id=adapter.name
+                    )
+                    ok_any = ok_any or res.get("success", False)
+                    for k in totals:
+                        totals[k] += res.get(k, 0)
+                except Exception as e:
+                    _safe_print(_c(f"[WARN] {adapter.name}: {e}", _RED))
+
+    if not args.quiet:
+        _safe_print(
+            "Knowledge extraction: "
+            + ", ".join(f"{v} {k}" for k, v in totals.items())
+            + ("" if ok_any else " [WARN: all sources failed]")
+        )
+    # Exit 0 when extraction ran on at least one source successfully
+    return 0 if ok_any else 1
+
+
+if __name__ == "__main__":
+    sys.exit(_cli())

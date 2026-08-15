@@ -209,9 +209,7 @@ Si falta algo, usa el Protocolo de Clarificación.
    - Mapear a backlog IDs (BL-XXX)
 
 2. **Marcar BL-XXX como "En Progreso"**
-   ```bash
-   python core/scripts/backlog-manager.py update BL-XXX --status "En Progreso"
-   ```
+   Edita `core/.context/codebase/backlog.md` y cambia el status del item BL-XXX a "En Progreso".
 
 3. **Implementar cambios**
    - Crear skill/agent según corresponda
@@ -223,9 +221,7 @@ Si falta algo, usa el Protocolo de Clarificación.
    - Actualizar `core/skills/catalog.json` si es skill
 
 5. **Marcar BL-XXX como "Hecho"**
-   ```bash
-   python core/scripts/backlog-manager.py update BL-XXX --status "Hecho"
-   ```
+   Edita `core/.context/codebase/backlog.md` y cambia el status del item BL-XXX a "Hecho".
 
 6. **Agregar entrada al historial del backlog**
    - Fecha y descripción del cambio
@@ -256,24 +252,15 @@ El usuario trabaja contigo y tú propones/validas.
 
 ### Modo Research (BL-104)
 Analizas el estado del framework vs mejores prácticas.
-```bash
-python core/scripts/research-tool.py [--topic "AI Automation"]
-```
+Ejecuta `python core/scripts/research_tool.py` para comparar skills locales contra la knowledge base.
 - Compara skills locales con knowledge_base.json
 - Identifica gaps y oportunidades
 - Propones mejoras priorizadas
 
 ## Herramientas de Soporte
 
-- `core/scripts/backlog-manager.py` — CRUD seguro del backlog
-  - `python core/scripts/backlog-manager.py list` — Listar items
-  - `python core/scripts/backlog-manager.py add "Descripción" --priority Alta` — Agregar
-  - `python core/scripts/backlog-manager.py update BL-XXX --status "En Progreso"` — Actualizar
-
-- `core/scripts/research-tool.py` — Comparar framework vs knowledge base
-  - `python core/scripts/research-tool.py` — Análisis completo
-  - `python core/scripts/research-tool.py --topic "Productivity"` — Enfocado en tema
-
+- `core/scripts/backlog_manager.py` — CRUD seguro del backlog (list/add/update)
+- `core/scripts/research_tool.py` — Comparar framework vs knowledge base (--topic, --json)
 - `@prd-generator` — Generar PRDs con historias de usuario
 
 ## Comandos de Productividad

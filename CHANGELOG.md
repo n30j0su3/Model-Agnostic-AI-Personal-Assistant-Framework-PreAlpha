@@ -1,9 +1,59 @@
 # Changelog
 
+## [v0.4.0-beta] - 2026-08-15 (Fresh Install Impecable + Ecosistema)
+
+> Release consolidado del plan de mejora 2026-08 (4 fases). Sin breaking changes de API;
+> los datos del usuario (sesiones, memoria, backlog, workspaces) se preservan al actualizar.
+
+### Fase 1 — Memoria Unificada
+- Búsqueda unificada MD + SQLite (`session_search` ya ve las capturas del `message_hook`).
+- `knowledge_extractor` lee SQLite directamente (adapter) + CLI completa.
+- Facts automáticos: "Recuerda que..." -> `user_facts` sin tags residuales.
+- `system_check --fix` crea MASTER.md/profile.md desde templates.
+- MASTER.md/profile.md movidos a .gitignore (previene leak de contexto personal).
+- Dashboard-data conectado a la memoria unificada; fecha real (antes hardcodeada).
+
+### Fase 2 — Fresh Install Impecable
+- `session_start` auto-heal: primer arranque crea contexto base (0 errores sin comandos extra).
+- Doc-drift cero: 17 archivos limpiados (framework-guardian inexistente, scripts con
+  guion renombrados, launchers reales, propagación legacy).
+- Versiones sincronizadas en todos los archivos vía `version_updater`.
+
+### Fase 3 — Ecosistema
+- context-scout v1+v2 fusionados (la v2 era huérfana y estaba sin router).
+- Catálogo de skills 23/23 sincronizado (8 skills faltantes agregadas).
+- `migrate.py`: bug crítico corregido — creaba backlog.md como JSON '{}'.
+  Ahora los .md se crean desde seeds con el formato correcto.
+- Backlog CRUD funcional desde fresh install (seed + auto-fix).
+
+### Fase 4 — Release v0.4.0-beta
+- Version bump coordinado (VERSION, README, AGENTS, dashboard, pa.py, ROADMAP, branding).
+- Release notes honestas en docs/RELEASES/v0.4.0-beta.md.
+- Gate E2E de actualización validado (v0.3.8 -> v0.4.0 preservando datos).
+
+**Tests:** 231 passed, 1 skipped (suite completa).
+
+
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [v0.3.9-alpha] - 2026-08-15 (Unified Memory)
+
+### Fixed
+
+- **Busqueda unificada MD + SQLite**: `session_search.py` ahora indexa TAMBIEN las sesiones capturadas via `message_hook`/`SessionBridge` en `data/sessions.db` (antes: solo leia `.context/sessions/*.md`, por lo que la memoria capturada era invisible para la busqueda). Feature-flag `sessions.unified_search` en `config/framework.yaml` para rollback.
+- **Knowledge extraction conectado a SQLite**: nuevo adapter `SQLiteSessionContent` + CLI en `knowledge_extractor.py`. Antes el script no tenia CLI y `memory_pipeline` lo invocaba sin efecto (false-green reportado como exito).
+- **Facts automaticos**: `message_hook.py` extrae "Recuerda que..." de mensajes de usuario y los persiste en `user_facts` (SQLite) via `SessionBridge.set_user_fact`.
+- **system_check --fix crea MASTER.md y profile.md**: desde `MASTER.template.md` / `profile.template.md`. Fresh install queda en 0 errores tras `--fix`.
+- **Dashboard data conectado a la memoria unificada**: `generate_dashboard_data.py` incluye sesiones SQLite capturadas (antes solo leia el indice MD = 0 sesiones visibles) y usa fecha real de generacion (antes hardcodeada a 2026-03-06).
+
+### Added
+
+- `core/.context/profile.template.md`: template de perfil personal (no se sube al repo).
+- `.gitignore`: `core/.context/MASTER.md` y `core/.context/profile.md` nunca se commitean (contexto personal del usuario).
 
 ---
 

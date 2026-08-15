@@ -399,6 +399,47 @@ def auto_fix():
     fixed = 0
     failed = 0
 
+    # 0. v0.3.9-alpha: crear MASTER.md y profile.md desde templates si faltan
+    template_fixes = [
+        (CONTEXT_DIR / "MASTER.template.md", CONTEXT_DIR / "MASTER.md", "MASTER.md (desde template)"),
+        (CONTEXT_DIR / "profile.template.md", CONTEXT_DIR / "profile.md", "profile.md (desde template)"),
+    ]
+    for tpl, target, label in template_fixes:
+        if not target.exists():
+            if tpl.exists():
+                try:
+                    target.write_text(tpl.read_text(encoding="utf-8"), encoding="utf-8")
+                    print_ok(f"Creado: {label}")
+                    fixed += 1
+                except Exception as e:
+                    print_error(f"No se pudo crear {label}: {e}")
+                    failed += 1
+            else:
+                try:
+                    target.write_text(
+                        "# Perfil de instalación\n\n"
+                        "(Personaliza este archivo con tus datos — no se sube al repo público.)\n",
+                        encoding="utf-8",
+                    )
+                    print_ok(f"Creado: {label} (mínimo)")
+                    fixed += 1
+                except Exception as e:
+                    print_error(f"No se pudo crear {label}: {e}")
+                    failed += 1
+
+    # 0.5 v0.3.9-alpha: seed del backlog (backlog_manager depende de él)
+    backlog = CONTEXT_DIR / "codebase" / "backlog.md"
+    seed = CONTEXT_DIR / "codebase" / "backlog.seed.md"
+    if not backlog.exists() and seed.exists():
+        try:
+            backlog.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(seed, backlog)
+            print(f"  [OK] Creado: backlog.md (desde seed)")
+            fixed += 1
+        except Exception as e:
+            print(f"  [!] No se pudo crear backlog.md: {e}")
+            failed += 1
+
     # 1. Crear directorios faltantes del framework
     dirs_to_create = [
         CONTEXT_DIR / "sessions",
@@ -476,12 +517,25 @@ def main():
         description="PA Framework — System Health Check",
     )
     parser.add_argument("--fix", action="store_true", help="Intentar reparar automaticamente")
+    parser.add_argument("--quiet-first-run", action="store_true",
+                        help="Modo silencioso para auto-heal de primer arranque (session_start)")
     parser.add_argument("--json", action="store_true", help="Salida JSON")
     parser.add_argument("--quick", action="store_true", help="Solo checks criticos")
     args = parser.parse_args()
 
     if args.fix:
-        auto_fix()
+        # quiet-first-run: solo imprimir lo creado (llamado por session_start)
+        if args.quiet_first_run:
+            import io
+            import contextlib
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf):
+                auto_fix()
+            created = [l for l in buf.getvalue().splitlines() if "Creado" in l or "creado" in l]
+            for l in created:
+                print(l)
+        else:
+            auto_fix()
         return 0
 
     results_data, elapsed = run_all_checks(quick=args.quick)

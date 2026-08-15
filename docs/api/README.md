@@ -17,8 +17,8 @@ This document provides the complete API reference for all Phase 3 components. Th
 | ContextLoader | `core/scripts/context_loader.py` | v1.0.0 | ✅ Frozen |
 | RecoveryOrchestrator | `core/recovery/orchestrator.py` | v1.0.0 | ✅ Frozen |
 | RecoveryTriggers | `core/recovery/triggers.py` | v1.0.0 | ✅ Frozen |
-| KnowledgePatternDetector | `core/scripts/knowledge-pattern-detector.py` | v1.0.0 | ✅ Frozen |
-| KnowledgeExtractor | `core/scripts/knowledge-extractor.py` | v2.0.0 | ✅ Frozen |
+| KnowledgePatternDetector | `core/scripts/knowledge_pattern_detector.py` | v1.0.0 | ✅ Frozen |
+| KnowledgeExtractor | `core/scripts/knowledge_extractor.py` | v2.0.0 | ✅ Frozen |
 | ErrorLogger v2 | `core/scripts/error_logger.py` | v2.0.0 | ✅ Frozen |
 
 ---
@@ -104,8 +104,8 @@ All Phase 3 components use Python 3.11+ type hints. Validate with:
 mypy --strict core/scripts/context_loader.py
 mypy --strict core/recovery/orchestrator.py
 mypy --strict core/scripts/error_logger.py
-mypy --strict core/scripts/knowledge-extractor.py
-mypy --strict core/scripts/knowledge-pattern-detector.py
+mypy --strict core/scripts/knowledge_extractor.py
+mypy --strict core/scripts/knowledge_pattern_detector.py
 ```
 
 ---

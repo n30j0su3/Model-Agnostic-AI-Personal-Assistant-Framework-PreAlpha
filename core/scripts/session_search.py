@@ -31,6 +31,48 @@ CONTEXT_DIR = REPO_ROOT / "core" / ".context"
 SESSIONS_DIR = CONTEXT_DIR / "sessions"
 KNOWLEDGE_DIR = CONTEXT_DIR / "knowledge"
 INDEX_FILE = KNOWLEDGE_DIR / "sessions-index.json"
+SQLITE_DB = REPO_ROOT / "data" / "sessions.db"
+CONFIG_FILE = REPO_ROOT / "config" / "framework.yaml"
+
+
+def _unified_search_enabled() -> bool:
+    """
+    Feature flag: unified MD + SQLite search (v0.3.9-alpha).
+
+    Reads `sessions.unified_search` from config/framework.yaml.
+    Defaults to True when missing or unreadable (rollback: set to false).
+    Uses stdlib only; degrades gracefully without PyYAML.
+    """
+    if not CONFIG_FILE.exists():
+        return True
+    try:
+        text = CONFIG_FILE.read_text(encoding="utf-8")
+    except IOError:
+        return True
+
+    # Try PyYAML first (accurate), fall back to a simple indentation parser.
+    try:
+        import yaml  # type: ignore
+        cfg = yaml.safe_load(text) or {}
+        val = (cfg.get("sessions") or {}).get("unified_search")
+        if isinstance(val, bool):
+            return val
+        if isinstance(val, str):
+            return val.strip().lower() in ("true", "1", "yes")
+    except ImportError:
+        pass
+
+    in_sessions = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if not line.startswith((" ", "\t")):
+            in_sessions = stripped.startswith("sessions:")
+            continue
+        if in_sessions and stripped.startswith("unified_search:"):
+            return stripped.split(":", 1)[1].strip().lower() in ("true", "1", "yes")
+    return True
 
 
 class BM25Search:
@@ -199,18 +241,114 @@ class SessionSearch:
         self.bm25.index_documents(self.sessions_content)
 
     def _load_session_content(self):
-        """Load full content of all sessions."""
+        """Load full content of all sessions (Markdown + SQLite, unified v0.3.9)."""
         self.sessions_content = {}
         if not SESSIONS_DIR.exists():
+            pass
+        else:
+            sessions_list = self.index_data.setdefault("sessions", [])
+            known_ids = {s.get("id") for s in sessions_list}
+            for session_file in SESSIONS_DIR.glob("*.md"):
+                if re.match(r"\d{4}-\d{2}-\d{2}", session_file.name):
+                    try:
+                        content = session_file.read_text(encoding='utf-8')
+                        self.sessions_content[session_file.stem] = content
+                        # Auto-index MD sessions missing from sessions-index.json
+                        # (before v0.3.9 these were unsearchable until
+                        #  session_indexer.py ran)
+                        if session_file.stem not in known_ids:
+                            sessions_list.append({
+                                "id": session_file.stem,
+                                "title": f"Sesión {session_file.stem}",
+                                "date": session_file.stem,
+                                "type": "other",
+                                "topics": ["markdown"],
+                                "summary": f"Sesión MD {session_file.stem} (auto-indexada)",
+                                "stats": {
+                                    "word_count": len(content.split()),
+                                    "lsp_errors": 0,
+                                },
+                                "source": "markdown",
+                            })
+                            known_ids.add(session_file.stem)
+                    except IOError:
+                        pass
+
+        # --- Unified memory: index SQLite sessions too (v0.3.9-alpha) ---
+        if _unified_search_enabled():
+            self._load_sqlite_sessions()
+
+    def _load_sqlite_sessions(self):
+        """Load session content persisted by SessionBridge into data/sessions.db.
+
+        Each SQLite session becomes a searchable document keyed by
+        'sqlite-<short_id>' so it never collides with Markdown dates.
+        The stored messages are rendered in the same Markdown-ish shape
+        the BM25 tokenizer expects, and a minimal index entry is injected
+        so filters and result formatting keep working.
+        """
+        if not SQLITE_DB.exists():
+            return
+        try:
+            import sqlite3
+        except ImportError:
+            return
+        try:
+            con = sqlite3.connect(f"file:{SQLITE_DB}?mode=ro", uri=True)
+            con.row_factory = sqlite3.Row
+        except sqlite3.Error:
             return
 
-        for session_file in SESSIONS_DIR.glob("*.md"):
-            if re.match(r"\d{4}-\d{2}-\d{2}", session_file.name):
-                try:
-                    content = session_file.read_text(encoding='utf-8')
-                    self.sessions_content[session_file.stem] = content
-                except IOError:
-                    pass
+        sessions_list = self.index_data.setdefault("sessions", [])
+        known_ids = {s.get("id") for s in sessions_list}
+        added = 0
+        try:
+            rows = con.execute(
+                "SELECT session_id, created_at, last_activity FROM sessions"
+            ).fetchall()
+            for row in rows:
+                sid = row["session_id"]
+                doc_id = f"sqlite-{sid[:8]}"
+                if doc_id in known_ids or doc_id in self.sessions_content:
+                    continue
+                msgs = con.execute(
+                    "SELECT role, content, timestamp FROM session_messages "
+                    "WHERE session_id = ? ORDER BY timestamp ASC",
+                    (sid,),
+                ).fetchall()
+                if not msgs:
+                    continue
+                # Render messages in the same Markdown-like shape as MD sessions
+                lines = ["# SQLite Session (captured via message_hook)"]
+                for m in msgs:
+                    role = m["role"]
+                    ts = datetime.fromtimestamp(m["timestamp"]).strftime("%H:%M")
+                    lines.append(f"\n## {role.title()} [{ts}]")
+                    lines.append(m["content"])
+                self.sessions_content[doc_id] = "\n".join(lines)
+
+                created = datetime.fromtimestamp(row["created_at"])
+                stats = {
+                    "word_count": sum(len(m["content"].split()) for m in msgs),
+                    "message_count": len(msgs),
+                    "lsp_errors": 0,
+                }
+                sessions_list.append({
+                    "id": doc_id,
+                    "title": f"Captura SQLite {sid[:8]} ({len(msgs)} msjs)",
+                    "date": created.strftime("%Y-%m-%d"),
+                    "type": "sqlite",
+                    "topics": ["sqlite", "captured"],
+                    "summary": f"SQLite session {sid[:8]} — {len(msgs)} messages (auto-indexed)",
+                    "stats": stats,
+                    "source": "sqlite",
+                })
+                added += 1
+        except sqlite3.Error:
+            pass  # unreadable schema / locked db — search stays MD-only
+        finally:
+            con.close()
+        self._sqlite_sessions_added = added
 
     def search_sessions(
         self,
@@ -385,7 +523,7 @@ def format_results(results: List[Dict], verbose: bool = False) -> str:
 
     for i, session in enumerate(results, 1):
         session_id = session.get("id", "Unknown")
-        title = session.get("title", "Sin título")
+        title = session.get("title") or session.get("summary", "Sin título")
         date = session.get("date", session_id)
         topics = ", ".join(session.get("topics", [])) or "Sin tags"
         session_type = session.get("type", "other")

@@ -1,8 +1,8 @@
 # Knowledge Management API Reference
 
 **Modules**: 
-- `core/scripts/knowledge-pattern-detector.py` (KnowledgePatternDetector)
-- `core/scripts/knowledge-extractor.py` (KnowledgeExtractor)
+- `core/scripts/knowledge_pattern_detector.py` (KnowledgePatternDetector)
+- `core/scripts/knowledge_extractor.py` (KnowledgeExtractor)
 
 **Version**: v1.0.0 / v2.0.0  
 **Status**: ✅ Frozen (v0.3.8-alpha)  

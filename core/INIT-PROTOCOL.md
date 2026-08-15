@@ -104,10 +104,7 @@ Cargar automáticamente:
 Antes de PRDs, roadmap, arquitectura, auditorías amplias o cambios multi-módulo:
 
 ```bash
-python core/scripts/framework_guardian.py \
-  --timing pre-execution \
-  --task "Descripcion de la tarea" \
-  --task-type prd|roadmap|architecture|audit|feature
+python core/scripts/system_check.py --quick
 ```
 
 **Obligatorio además**:
@@ -225,7 +222,7 @@ echo "[PA Framework] Inicializando..."
 python core/scripts/session_start.py
 
 # 2. Detect Context
-DETECTED=$(python core/scripts/detect-workspace.py --json)
+DETECTED=$(python core/scripts/context_loader.py --json 2>/dev/null || echo "{}")
 echo "[PA Framework] Contexto detectado:"
 echo "$DETECTED" | jq -r '
   "  Workspace: \(.workspace.name)",
@@ -255,7 +252,7 @@ cd /ruta/al/pa-framework
 
 # 2. Ejecutar protocolo
 python core/scripts/session_start.py
-python core/scripts/detect-workspace.py
+python core/scripts/context_loader.py
 
 # 3. Verificar contexto
 # (La salida muestra workspace, proyecto y modo detectados)

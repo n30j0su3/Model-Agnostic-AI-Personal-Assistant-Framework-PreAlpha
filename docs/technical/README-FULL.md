@@ -144,7 +144,7 @@ Comandos:
 6. **Configura tu perfil** editando `core/.context/MASTER.md`.
 7. **Inicializa KB**:
    ```bash
-   python core/scripts/kb-init.py
+   python core/scripts/kb_init.py
    ```
 8. **Verifica** que se generaron archivos de contexto en `core/.context/` y `core/.context/sessions/`.
 9. **Comienza a trabajar** en tu carpeta `workspaces/` (allí van tus archivos personales).

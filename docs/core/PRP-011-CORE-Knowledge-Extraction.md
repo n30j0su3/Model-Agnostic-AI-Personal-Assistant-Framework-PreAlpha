@@ -102,9 +102,9 @@ El conocimiento extraído está disponible para:
 ## Herramientas y Recursos
 
 ### Scripts
-- `core/scripts/knowledge-extractor.py`: Orquestación de extracción y persistencia dual (JSON + MD)
-- `core/scripts/knowledge-pattern-detector.py`: Detección modular de patrones y extracción cross-session
-- `core/scripts/session-end.py`: Integra extracción al cierre
+- `core/scripts/knowledge_extractor.py`: Orquestación de extracción y persistencia dual (JSON + MD)
+- `core/scripts/knowledge_pattern_detector.py`: Detección modular de patrones y extracción cross-session
+- `core/scripts/session_end.py`: Integra extracción al cierre
 
 ### Knowledge Base
 - `knowledge/knowledge-index.json`: Índice central

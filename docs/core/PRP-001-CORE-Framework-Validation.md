@@ -67,8 +67,8 @@ Busca en el índice de skills:
 ## Herramientas y Recursos
 
 ### Scripts
-- `core/scripts/skills-indexer.py`: Genera índice de skills
-- `core/scripts/session-start.py`: Muestra skills disponibles
+- `core/scripts/skills_indexer.py`: Genera índice de skills
+- `core/scripts/session_start.py`: Muestra skills disponibles
 
 ### Skills de Apoyo
 - `@skill-discovery`: Identifica skills apropiadas

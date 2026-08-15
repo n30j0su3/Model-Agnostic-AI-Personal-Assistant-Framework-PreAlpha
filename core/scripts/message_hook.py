@@ -59,6 +59,7 @@ Author: FreakingJSON-PA Framework
 
 import sys
 import os
+import re
 import json
 from pathlib import Path
 from datetime import datetime
@@ -198,12 +199,18 @@ class MessageHook:
             capture_meta.update(metadata)
         
         success = False
-        
+
         if self.bridge:
             success = self.bridge.add_message(role, content, capture_meta)
             if success:
                 self.message_count += 1
                 self._log("CAPTURE", f"{role}: {len(content)} chars")
+                # v0.3.9-alpha: auto-extract user facts from explicit
+                # "recuerda que..." user messages → user_memory (SQLite)
+                if role == "user":
+                    fact = self._extract_user_fact(content)
+                    if fact:
+                        self._store_user_fact(fact)
         else:
             # Fallback: append to buffer
             self._buffer.append({
@@ -302,6 +309,44 @@ class MessageHook:
         return stats
     
     # === Private Methods ===
+    
+    # v0.3.9-alpha — automatic user facts ("Recuerda que ...")
+    _FACT_PATTERN = re.compile(
+        r"(?:recuerda\s+que|remember\s+that|no\s+olvides\s+que)\s*[:,]?\s*(.+)",
+        re.IGNORECASE,
+    )
+
+    def _extract_user_fact(self, content: str) -> Optional[str]:
+        """Extract a durable fact from an explicit 'Recuerda que...' message."""
+        m = self._FACT_PATTERN.search(content)
+        if not m:
+            return None
+        fact = m.group(1).strip()
+        # Discard trivial fragments and questions (not durable facts)
+        if len(fact) < 4 or fact.endswith("?"):
+            return None
+        # Strip trailing knowledge tags — they are not part of the fact
+        fact = re.sub(r"\s*#[\w-]+\s*$", "", fact).strip()
+        return fact[:300]
+
+    def _store_user_fact(self, fact: str) -> None:
+        """Persist the fact via SessionBridge → user_memory (SQLite)."""
+        try:
+            if self.bridge and hasattr(self.bridge, "set_user_fact"):
+                today = datetime.now().strftime("%Y-%m-%d")
+                self.bridge.set_user_fact(
+                    key=f"auto_{abs(hash(fact)) & 0xFFFFFFFF:X}",
+                    value=fact,
+                    category="preference",
+                    priority="medium",
+                    description="Auto-extracted from 'Recuerda que...' message",
+                    source="message_hook",
+                    metadata={"date": today},
+                )
+                self._log("FACT_STORED", fact[:60])
+        except Exception as e:
+            # Fact extraction must NEVER break message capture
+            self._log("FACT_ERROR", str(e)[:60])
     
     def _sanitize_content(self, content: str) -> str:
         """Sanitize message content."""

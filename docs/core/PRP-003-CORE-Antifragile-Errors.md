@@ -97,7 +97,7 @@ Actualizar para evitar recurrencia:
 - `core/scripts/error_logger.py`: Logging dual (JSON + MD) con clasificación ADR-004 y sugerencia de recovery
 - `core/recovery/orchestrator.py`: Orquesta matching de playbooks y ejecución de recovery
 - `core/recovery/triggers.py`: Clasificación de errores y decisión de trigger de recovery
-- `core/scripts/knowledge-pattern-detector.py`: Detecta recurrencias y patrones cross-session
+- `core/scripts/knowledge_pattern_detector.py`: Detecta recurrencias y patrones cross-session
 
 ### Knowledge Base
 - `knowledge/errors/`: Logs de errores
