@@ -780,23 +780,63 @@ def submenu_memoria_wiki():
 def _select_free_model():
     """v0.5.0-alpha: Seleccionar modelo free disponible y guardar en config."""
     print(c("\n  [MODELO] Seleccionar Modelo Free\n", f"{Colors.BOLD}{Colors.CYAN}"))
-    
-    # Ejecutar script de selección
-    script = SCRIPT_DIR / "select_free_model.py"
-    if not script.exists():
-        print_error("No se encontró select_free_model.py")
+
+    # Importar el módulo directamente (sin subprocess): evita timeouts del
+    # cold-start de opencode serve en Windows y conserva el menú interactivo.
+    import sys as _sys
+    if str(SCRIPT_DIR) not in _sys.path:
+        _sys.path.insert(0, str(SCRIPT_DIR))
+    try:
+        import select_free_model as sfm
+    except Exception as e:
+        print_error(f"No se pudo cargar select_free_model.py: {e}")
         pause()
         return
-    
-    result = subprocess.run(
-        [get_python(), str(script)],
-        cwd=REPO_ROOT, capture_output=True, text=True, timeout=30
-    )
-    
-    print(result.stdout)
-    if result.returncode != 0:
-        print_error("No se pudo obtener la lista de modelos.")
-        print_info("Asegúrate de que opencode serve esté corriendo en algún puerto (47017-47021).")
+
+    try:
+        port = sfm.ensure_opencode_serve()
+    except Exception as e:
+        print_error(f"Error arrancando opencode serve: {e}")
+        port = None
+    if port is None:
+        print_error("opencode serve no está disponible.")
+        print_info("Instala opencode o arranca 'opencode serve' manualmente (puertos 47017-47021).")
+        pause()
+        return
+
+    print_info(f"Consultando modelos free (serve en puerto {port})…")
+    try:
+        models = sfm.get_free_models(port, timeout=25)
+    except Exception as e:
+        print_error(f"Error consultando modelos: {e}")
+        models = []
+
+    if not models:
+        print_error("No se encontraron modelos free.")
+        print_info("Verifica autenticación de opencode (opencode auth login) o tu conexión.")
+        pause()
+        return
+
+    for i, m in enumerate(models, 1):
+        print(f"  {i}. {m}")
+
+    raw = input(f"\n  Selecciona un número [1-{len(models)}, Enter=1]: ").strip()
+    idx = 0
+    if raw:
+        try:
+            idx = int(raw) - 1
+        except ValueError:
+            idx = -1
+        if not (0 <= idx < len(models)):
+            print_error("Selección fuera de rango.")
+            pause()
+            return
+    selected = models[idx]
+    try:
+        sfm.save_selection(selected)
+        print_ok(f"Modelo configurado: {selected}")
+    except Exception as e:
+        print_error(f"Error guardando config: {e}")
     pause()
 
 
