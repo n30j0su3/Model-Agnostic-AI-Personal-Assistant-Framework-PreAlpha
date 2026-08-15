@@ -342,6 +342,26 @@ def build_cli_command(cli: str, prompt: str, workdir: Path) -> tuple[list[str], 
         return [cli], False
 
 
+def _framework_bootstrap() -> bool:
+    """v0.4.0-beta: validación + inicialización REAL del framework antes de
+    lanzar el CLI. Ejecuta session_start.py (auto-heal + migraciones + carga
+    de contexto). Si falla algo crítico, avisa pero no bloquea el chat."""
+    script = SCRIPT_DIR / "session_start.py"
+    if not script.exists():
+        return True  # nada que ejecutar; no bloquear
+    try:
+        result = subprocess.run(
+            [get_python(), str(script)],
+            cwd=REPO_ROOT, capture_output=True, text=True, timeout=90,
+        )
+        if result.returncode != 0:
+            print_warn("session_start reportó problemas (ver arriba). Continuando…")
+        return True
+    except Exception as e:
+        print_warn(f"Bootstrap del framework omitido: {e}")
+        return True
+
+
 def try_auto_launch_cli(cli: str, prompt: str, workdir: Path) -> bool:
     """
     Attempt to auto-launch CLI with prompt injected.
@@ -360,6 +380,13 @@ def try_auto_launch_cli(cli: str, prompt: str, workdir: Path) -> bool:
         print_warn(f"CLI '{CLI_LABELS.get(cli, cli)}' no está disponible en PATH.")
         print_info("Usando modo manual (fallback): se mostrará el prompt para copiar.")
         return False
+
+    # v0.4.0-beta (Windows fix): resolver el ejecutable real con shutil.which.
+    # En Windows npm instala 'opencode.cmd'; subprocess sin shell=True no lo
+    # encuentra pasando solo el nombre (FileNotFoundError silencioso que
+    # degradaba a modo manual). Pasar la ruta absoluta funciona cross-platform.
+    command = list(command)
+    command[0] = cli_path
 
     try:
         print_info(f"Auto-iniciando {CLI_LABELS.get(cli, cli)} con prompt...")
@@ -493,6 +520,10 @@ def menu_launch_ai(cli_override: str = None):
 
     # Ensure today's session exists
     _ensure_session_file()
+
+    # v0.4.0-beta: validación + inicialización real del framework (auto-heal,
+    # migraciones, contexto) ANTES de lanzar el CLI externo.
+    _framework_bootstrap()
 
     # Get magic prompt
     magic = get_magic_prompt()
@@ -1568,6 +1599,9 @@ def main():
         
         # Ensure session file exists
         _ensure_session_file()
+        
+        # v0.4.0-beta: validación + inicialización real antes del CLI
+        _framework_bootstrap()
         
         # Get magic prompt and try auto-launch
         magic = get_magic_prompt()

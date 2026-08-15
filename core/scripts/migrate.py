@@ -299,6 +299,19 @@ def apply_migration(version: str, force: bool = False) -> bool:
         else:
             safe_print(f"  [FILE] Creando: {path}")
             initial = {}
+            if not path.endswith(".json"):
+                # v0.4.0-beta: archivos NO-JSON (ej. update-protected-paths.txt)
+                # nunca se crean como '{}'. Seed si existe; si no, texto vacío.
+                # (bug real: migrate pisaba .txt con '{}' JSON)
+                seed = full_path.with_suffix(full_path.suffix + ".seed")
+                if seed.exists():
+                    full_path.parent.mkdir(parents=True, exist_ok=True)
+                    full_path.write_text(seed.read_text(encoding="utf-8"), encoding="utf-8")
+                    safe_print(c(f"  [OK] {path} creado desde seed", Colors.GREEN))
+                    continue
+                full_path.parent.mkdir(parents=True, exist_ok=True)
+                full_path.write_text("", encoding="utf-8")
+                continue
             if path.endswith(".md"):
                 # v0.3.9-alpha: archivos .md nunca se crean como JSON.
                 # Usar seed si existe; si no, markdown vacío.

@@ -8,7 +8,7 @@ chcp 65001 >nul
 :: PA FRAMEWORK - Inicio rapido para Windows
 :: ===========================================================================
 :: Creado por: FreakingJSON | instagram.com/freakingjson
-:: Version: 0.3.8-alpha
+:: Version: 0.4.0-beta
 :: ===========================================================================
 
 :: --- Ayuda rapida (no necesita instalacion) ---
@@ -81,7 +81,7 @@ exit /b %errorlevel%
 :show_help
 echo.
 echo ============================================================
-echo   FreakingJSON PA Framework - Guia Rapida v0.3.8-alpha
+echo   FreakingJSON PA Framework - Guia Rapida v0.4.0-beta
 echo ============================================================
 echo.
 echo  QUE ES ESTO?
@@ -100,7 +100,8 @@ echo   3. Y listo! Ya puedes empezar
 echo.
 echo  COMANDOS RAPIDOS:
 echo   pa.bat                    - Menu interactivo (recomendado)
-echo   pa.bat --cli opencode     - Inicia OpenCode directamente
+echo   pa.bat --cli opencode     - Inicia OpenCode directamente (flujo base)
+echo                             : validacion + init del framework + TUI opencode
 echo   pa.bat --sync             - Sincroniza configuracion
 echo   pa.bat /help              - Esta ayuda
 echo   pa.bat /version           - Version del framework
@@ -121,7 +122,7 @@ if exist VERSION (
   set /p VERSION_CONTENT=<VERSION
   echo FreakingJSON PA Framework v%VERSION_CONTENT%
 ) else (
-  echo FreakingJSON PA Framework v0.3.8-alpha
+  echo FreakingJSON PA Framework v%VERSION_CONTENT%
 )
 goto :eof
 

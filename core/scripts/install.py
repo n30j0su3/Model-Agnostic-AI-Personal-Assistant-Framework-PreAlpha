@@ -328,22 +328,13 @@ Bienvenida. Este framework actúa como asistente personal para tareas diarias, i
     
     # Dashboard path
     dashboard_path = REPO_ROOT / "dashboard.html"
-    
-    # Auto-open dashboard in browser (unless --no-browser flag)
-    if not args.no_browser and dashboard_path.exists():
-        print(f"\n{Colors.CYAN}  🌐 Abriendo dashboard en navegador...{Colors.END}")
-        try:
-            webbrowser.open(f"file://{dashboard_path}")
-            print_ok("Dashboard abierto en tu navegador.")
-        except Exception as e:
-            print_warn(f"No se pudo abrir el navegador: {e}")
-            print_info(f"Puedes abrir manualmente: {dashboard_path}")
-    elif args.no_browser:
-        print_info(f"Modo headless: dashboard no abierto (--no-browser)")
-        if dashboard_path.exists():
-            print_info(f"Dashboard disponible en: {dashboard_path}")
-    else:
-        print_warn(f"Dashboard no encontrado: {dashboard_path}")
+
+    # v0.4.0-beta: NO auto-abrir el dashboard. El framework real se ejecuta
+    # sobre opencode (pa.bat/pa.sh -> menu -> "Iniciar Sesion IA").
+    # El dashboard es una vista complementaria, no el resultado de instalar.
+    if dashboard_path.exists():
+        print_info(f"Dashboard (opcional): {dashboard_path}")
+    print_info(f"Siguiente paso: ejecuta {next_step} y elige 'Iniciar Sesión IA' (opencode)")
     
     print(f"\n{Colors.GREEN}{Colors.BOLD}  ¡Gracias por instalar FreakingJSON PA Framework!{Colors.END}")
     print(f"{Colors.CYAN}  ─────────────────────────────────────────────────{Colors.END}")
