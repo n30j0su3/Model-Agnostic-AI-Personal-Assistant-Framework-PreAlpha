@@ -25,8 +25,9 @@ import time
 import webbrowser
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent  # core/scripts → core → root
 DASHBOARD_HTML = REPO_ROOT / "dashboard.html"
+SERVER_SCRIPT = REPO_ROOT / "core" / "scripts" / "dashboard_server.py"
 OPENCODE_PORT = 47017
 DASHBOARD_PORT = 8760
 
@@ -130,14 +131,13 @@ def start_dashboard_server():
     
     log("Iniciando dashboard server...", Colors.CYAN)
     
-    server_script = REPO_ROOT / "core" / "scripts" / "dashboard_server.py"
-    if not server_script.exists():
-        log(f"✗ No encontrado: {server_script}", Colors.RED, bold=True)
+    if not SERVER_SCRIPT.exists():
+        log(f"✗ No encontrado: {SERVER_SCRIPT}", Colors.RED, bold=True)
         return False
     
     try:
         proc = subprocess.Popen(
-            [sys.executable, str(server_script), "--port", str(DASHBOARD_PORT)],
+            [sys.executable, str(SERVER_SCRIPT), "--port", str(DASHBOARD_PORT)],
             cwd=str(REPO_ROOT),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,

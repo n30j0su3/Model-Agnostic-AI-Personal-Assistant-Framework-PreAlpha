@@ -17,6 +17,7 @@ if /i "%1"=="/help" goto :show_help
 if /i "%1"=="-h" goto :show_help
 if /i "%1"=="--help" goto :show_help
 if /i "%1"=="/version" goto :show_version
+if /i "%1"=="/uninstall" goto :run_uninstall
 
 :: ------------------------------------------------------------
 :: 1) Ensure Python (auto-install via winget when possible)
@@ -112,6 +113,18 @@ echo   - Instagram: @freakingjson
 echo.
 echo  "I own my context. I am FreakingJSON."
 echo.
+goto :eof
+
+:: ===========================================================================
+:: Desinstalador
+:: ===========================================================================
+:run_uninstall
+echo.
+echo ===============================================
+echo   PA Framework - Desinstalador
+echo ===============================================
+echo.
+%PY_CMD% core\scripts\uninstall.py
 goto :eof
 
 :: ===========================================================================

@@ -1,13 +1,11 @@
 @echo off
 REM FreakingJSON PA Framework — Dashboard Launcher (Windows)
 REM Doble-click para iniciar el dashboard con auto-configuración
+REM Uso: dashboard-launcher.bat [/uninstall]
 
-echo.
-echo ===============================================
-echo   FreakingJSON PA Framework
-echo   Dashboard Launcher v0.5.0-alpha
-echo ===============================================
-echo.
+cd /d "%~dp0"
+
+if /i "%1"=="/uninstall" goto :run_uninstall
 
 REM Verificar Python
 where python >nul 2>&1
@@ -41,3 +39,13 @@ echo Iniciando dashboard...
 python "%~dp0core\scripts\dashboard_launcher.py"
 
 pause
+goto :eof
+
+:run_uninstall
+echo.
+echo ===============================================
+echo   PA Framework - Desinstalador
+echo ===============================================
+echo.
+python core\scripts\uninstall.py
+goto :eof
