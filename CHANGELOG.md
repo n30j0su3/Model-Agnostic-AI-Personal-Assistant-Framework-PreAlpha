@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Knowledge extraction conectado a SQLite**: nuevo adapter `SQLiteSessionContent` + CLI en `knowledge_extractor.py`. Antes el script no tenia CLI y `memory_pipeline` lo invocaba sin efecto (false-green reportado como exito).
 - **Facts automaticos**: `message_hook.py` extrae "Recuerda que..." de mensajes de usuario y los persiste en `user_facts` (SQLite) via `SessionBridge.set_user_fact`.
 - **system_check --fix crea MASTER.md y profile.md**: desde `MASTER.template.md` / `profile.template.md`. Fresh install queda en 0 errores tras `--fix`.
+- **Dashboard data conectado a la memoria unificada**: `generate_dashboard_data.py` incluye sesiones SQLite capturadas (antes solo leia el indice MD = 0 sesiones visibles) y usa fecha real de generacion (antes hardcodeada a 2026-03-06).
 
 ### Added
 

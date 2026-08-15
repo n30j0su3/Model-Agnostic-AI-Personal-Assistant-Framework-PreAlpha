@@ -259,6 +259,7 @@ class SessionSearch:
                         if session_file.stem not in known_ids:
                             sessions_list.append({
                                 "id": session_file.stem,
+                                "title": f"Sesión {session_file.stem}",
                                 "date": session_file.stem,
                                 "type": "other",
                                 "topics": ["markdown"],
@@ -334,6 +335,7 @@ class SessionSearch:
                 }
                 sessions_list.append({
                     "id": doc_id,
+                    "title": f"Captura SQLite {sid[:8]} ({len(msgs)} msjs)",
                     "date": created.strftime("%Y-%m-%d"),
                     "type": "sqlite",
                     "topics": ["sqlite", "captured"],

@@ -17,6 +17,7 @@ Versión: 1.0.0 (Dashboard v2.0 - File:// Compatible)
 """
 
 import json
+from datetime import datetime
 from pathlib import Path
 
 # Paths
@@ -45,15 +46,31 @@ def generate_dashboard_data():
     print("\n[DATA] Dashboard Data Generator")
     print("=" * 60)
     
-    # Cargar índices
+    # Cargar indices
     print("\nCargando indices...")
     sessions_data = load_json_file(KNOWLEDGE_DIR / "sessions-index.json")
     skills_data = load_json_file(KNOWLEDGE_DIR / "skills-index.json")
     agents_data = load_json_file(KNOWLEDGE_DIR / "agents-index.json")
+
+    # v0.3.9-alpha: unified memory — incluir sesiones SQLite capturadas y
+    # sesiones MD faltantes (mismas fuentes que session_search.py)
+    try:
+        import importlib.util
+        ss_path = SCRIPT_DIR / "session_search.py"
+        spec = importlib.util.spec_from_file_location("session_search", ss_path)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        searcher = mod.SessionSearch()
+        unified = searcher.index_data.get("sessions", [])
+        if unified:
+            sessions_data = {"sessions": unified}
+            print(f"   [UNIFIED] {len(unified)} sesiones (MD + SQLite)")
+    except Exception as e:
+        print(f"   [WARN] Unified search unavailable, MD index only: {e}")
     
     # Preparar datos para embedir
     dashboard_data = {
-        "generatedAt": "2026-03-06T12:00:00Z",
+        "generatedAt": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
         "version": "2.0.0",
         "sessions": sessions_data.get("sessions", []),
         "skills": skills_data.get("skills", []),
