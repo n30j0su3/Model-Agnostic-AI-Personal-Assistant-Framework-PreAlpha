@@ -2,6 +2,63 @@
 """v0.5.0-alpha: Seleccionar modelo free disponible desde opencode serve."""
 import subprocess, json, urllib.request, socket, sys, time, os, re
 
+
+def ensure_opencode_serve():
+    """Iniciar opencode serve si no está corriendo."""
+    import socket, subprocess, time, shutil
+    
+    # Verificar si ya hay un serve corriendo
+    for port in range(47017, 47022):
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(1)
+            if s.connect_ex(('127.0.0.1', port)) == 0:
+                s.close()
+                print(f"opencode serve detectado en puerto {port}")
+                return port
+            s.close()
+        except:
+            pass
+    
+    # No hay serve, intentar iniciar
+    print("Iniciando opencode serve...")
+    exe = shutil.which("opencode")
+    if not exe:
+        home_bin = Path.home() / ".opencode" / "bin" / "opencode"
+        if home_bin.exists():
+            exe = str(home_bin)
+    
+    if not exe:
+        return None
+    
+    try:
+        # Iniciar en background
+        proc = subprocess.Popen(
+            [exe, "serve", "--port", "47017"],
+            cwd=str(REPO_ROOT),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+        time.sleep(3)  # esperar arranque
+        
+        # Verificar si arrancó
+        for _ in range(10):
+            try:
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.settimeout(1)
+                if s.connect_ex(('127.0.0.1', 47017)) == 0:
+                    s.close()
+                    print(f"✓ opencode serve iniciado en puerto 47017")
+                    return 47017
+                s.close()
+            except:
+                pass
+            time.sleep(1)
+    except Exception as e:
+        print(f"Error iniciando serve: {e}")
+    
+    return None
+
 def get_free_models(timeout=10):
     """Consultar /config de opencode serve y extraer modelos free."""
     for port in [47017, 47018, 47019, 47020, 47021]:
@@ -32,7 +89,11 @@ def get_free_models(timeout=10):
     return []
 
 def main():
-    models = get_free_models()
+    port = ensure_opencode_serve()
+    if port is None:
+        print('NO_SERVE')
+        return 1
+    models = get_free_models(timeout=15)
     if not models:
         print("NO_MODELS")
         return 1
