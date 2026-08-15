@@ -4,41 +4,21 @@
   "mcp": {
     "context7": {
       "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "@upstash/context7-mcp"
-      ],
-      "environment": {
-        "DEFAULT_MINIMUM_TOKENS": ""
-      },
-      "enabled": true
+      "command": ["npx", "-y", "@upstash/context7-mcp"],
+      "environment": { "DEFAULT_MINIMUM_TOKENS": "" },
+      "enabled": false
     },
     "sequentialthinking": {
       "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "@modelcontextprotocol/server-sequential-thinking"
-      ],
-      "enabled": true
+      "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "enabled": false
     },
     "github-mcp-server": {
+      ".md": "DESHABILITADO por defecto: requería Node + token de GitHub y añade ~40 herramientas (~4K tokens) al contexto inicial. Actívalo solo si lo necesitas.",
       "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "@modelcontextprotocol/server-github",
-        "run",
-        "-i",
-        "--rm",
-        "-e",
-        "GITHUB_PERSONAL_ACCESS_TOKEN",
-        "ghcr.io/github/github-mcp-server"
-      ],
-      "environment": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_GITHUB_TOKEN_HERE"
-      }
+      "command": ["npx", "-y", "@modelcontextprotocol/server-github", "run", "-i", "--rm", "-e", "GITHUB_PERSONAL_ACCESS_TOKEN", "ghcr.io/github/github-mcp-server"],
+      "environment": { "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_GITHUB_TOKEN_HERE" },
+      "enabled": false
     }
   }
 }

@@ -1,5 +1,34 @@
 {
-  "total_sessions": 0,
-  "sessions": [],
-  "last_updated": "2026-08-15T14:30:38.359078"
+  "total_sessions": 1,
+  "sessions": [
+    {
+      "id": "2026-08-15",
+      "date": "2026-08-15",
+      "time_start": "--:--",
+      "time_end": "17:50",
+      "title": "Session Log - 2026-08-15",
+      "summary": "",
+      "topics": [],
+      "type": "other",
+      "stats": {
+        "interactions": 0,
+        "files_modified": 0,
+        "decisions": 0,
+        "lsp_errors": 0,
+        "word_count": 42
+      },
+      "highlights": [],
+      "file_path": "sessions/2026-08-15.md",
+      "status": "completed",
+      "content": "---\n# Session Log - 2026-08-15\nid: session-2026-08-15\ndate: 2026-08-15\nagent: FreakingJSON\nstatus: completed\n\ntime_end: 17:50\n\n\n---\n\n# Sesión 2026-08-15\n\n## Inicio\n- **Hora**: 13:48\n- **Agente**: @FreakingJSON\n- **Multi-CLI**: Activo (0 otras instancias)\n\n## Log de Actividades\n\n\n## Pendientes\n\n\n## Resumen\n\n"
+    }
+  ],
+  "last_updated": "2026-08-15T17:50:17.231929",
+  "filters": {
+    "by_topic": {},
+    "by_type": {
+      "other": 1
+    }
+  },
+  "topics_registry": []
 }
