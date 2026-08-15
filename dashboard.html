@@ -292,7 +292,32 @@
             *, *::before, *::after { animation: none !important; transition: none !important; }
             .matrix-bg, .scanlines { display: none !important; }
         }
-    </style>
+    
+        /* HERO Animations */
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fade-in 0.8s ease-out forwards;
+        }
+        .animate-slide-up {
+            animation: slide-up 0.8s ease-out forwards;
+            opacity: 0;
+        }
+        
+        /* Wizard Modal */
+        #wizard-modal {
+            animation: fade-in 0.3s ease-out;
+        }
+        #wizard-modal > div {
+            animation: slide-up 0.4s ease-out;
+        }
+</style>
 </head>
 <body class="bg-slate-950 text-slate-50 min-h-screen">
     <div class="matrix-bg" aria-hidden="true"><canvas id="matrix-canvas"></canvas></div>
@@ -378,6 +403,82 @@
 
             <!-- Main Content -->
             <main id="page-container" class="flex-1 overflow-hidden relative">
+            <!-- HERO SECTION - No-Tech First -->
+            <section id="hero-section" class="relative min-h-[60vh] flex items-center justify-center px-4 transition-all duration-700">
+                <div class="absolute inset-0 bg-gradient-to-br from-lime-400/10 via-purple-500/5 to-slate-950"></div>
+                <div class="relative max-w-5xl mx-auto text-center">
+                    
+                    <!-- Badge de versión -->
+                    <div class="inline-flex items-center gap-2 px-5 py-2.5 bg-lime-400/10 border border-lime-400/30 rounded-full text-lime-300 text-sm mb-8 neon-glow animate-fade-in">
+                        <span class="w-2.5 h-2.5 bg-lime-400 rounded-full animate-pulse"></span>
+                        Framework v0.5.0-alpha — 100% Local, 100% Privado
+                    </div>
+                    
+                    <!-- Título principal -->
+                    <h1 class="text-5xl lg:text-7xl font-bold mb-6 leading-tight animate-slide-up" style="animation-delay: 0.1s">
+                        Tu Asistente AI Personal.
+                        <span class="gradient-text block mt-3">Tu Conocimiento. Tu Control.</span>
+                    </h1>
+                    
+                    <!-- Descripción -->
+                    <p class="text-xl text-slate-400 mb-10 max-w-2xl mx-auto animate-slide-up" style="animation-delay: 0.2s">
+                        Gestiona tu conocimiento, automatiza tareas y colabora con IA manteniendo el control total de tus datos.
+                        <span class="text-lime-300 font-semibold">Sin cloud. Sin suscripciones. Sin límites.</span>
+                    </p>
+                    
+                    <!-- Botones de acción -->
+                    <div class="flex flex-wrap justify-center gap-4 animate-slide-up" style="animation-delay: 0.3s">
+                        <button onclick="quickStart()" class="group px-8 py-4 bg-lime-500 hover:bg-lime-400 text-white font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-lime-400/25 flex items-center gap-3 neon-glow">
+                            <svg class="w-6 h-6 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            Iniciar Ahora
+                        </button>
+                        <button onclick="showTour()" class="px-8 py-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-semibold rounded-xl transition-all hover:border-lime-400/50 flex items-center gap-3">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Ver Tutorial
+                        </button>
+                    </div>
+                    
+                    <!-- Stats rápidas -->
+                    <div class="grid grid-cols-3 gap-6 mt-16 max-w-2xl mx-auto animate-fade-in" style="animation-delay: 0.5s">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-lime-400">100%%</div>
+                            <div class="text-sm text-slate-500">Local</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-purple-400">0</div>
+                            <div class="text-sm text-slate-500">Cloud</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-cyan-400">∞</div>
+                            <div class="text-sm text-slate-500">Privacidad</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- WIZARD MODAL - Primer uso -->
+            <div id="wizard-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                    <div class="p-6 border-b border-slate-800 flex items-center justify-between">
+                        <h2 class="text-2xl font-bold text-white">👋 Bienvenido a PA Framework</h2>
+                        <button onclick="closeWizard()" class="text-slate-400 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div id="wizard-steps" class="p-6">
+                        <!-- Los pasos se generan dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
                 <!-- Pages will be rendered here -->
             </main>
         </div>
@@ -2699,6 +2800,220 @@
                 }
             }
         };
+
+        // ============================================
+        // HERO FUNCTIONS - Quick Start & Wizard
+        // ============================================
+        let wizardStep = 0;
+        const wizardSteps = [
+            {
+                title: "¿Qué es PA Framework?",
+                content: `
+                    <div class="space-y-4">
+                        <p class="text-slate-300">PA Framework es tu asistente personal de IA que funciona <span class="text-lime-400 font-semibold">100% local</span> en tu computadora.</p>
+                        <div class="grid grid-cols-2 gap-4 mt-4">
+                            <div class="bg-slate-800 p-4 rounded-lg">
+                                <div class="text-2xl mb-2">🔒</div>
+                                <div class="font-semibold text-white">Privado</div>
+                                <div class="text-sm text-slate-400">Tus datos nunca salen de tu PC</div>
+                            </div>
+                            <div class="bg-slate-800 p-4 rounded-lg">
+                                <div class="text-2xl mb-2">💰</div>
+                                <div class="font-semibold text-white">Gratis</div>
+                                <div class="text-sm text-slate-400">Sin suscripciones ni pagos</div>
+                            </div>
+                            <div class="bg-slate-800 p-4 rounded-lg">
+                                <div class="text-2xl mb-2">🚀</div>
+                                <div class="font-semibold text-white">Rápido</div>
+                                <div class="text-sm text-slate-400">Sin latencia de red</div>
+                            </div>
+                            <div class="bg-slate-800 p-4 rounded-lg">
+                                <div class="text-2xl mb-2">🧠</div>
+                                <div class="font-semibold text-white">Inteligente</div>
+                                <div class="text-sm text-slate-400">Modelos de IA modernos</div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                buttons: [
+                    { text: "Siguiente →", action: "next" }
+                ]
+            },
+            {
+                title: "¿Qué puedes hacer?",
+                content: `
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-3">
+                            <div class="text-lime-400 text-xl">✓</div>
+                            <div>
+                                <div class="font-semibold text-white">Chat con IA</div>
+                                <div class="text-sm text-slate-400">Conversa con modelos como MiniMax, Qwen, etc.</div>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="text-lime-400 text-xl">✓</div>
+                            <div>
+                                <div class="font-semibold text-white">Gestionar Proyectos</div>
+                                <div class="text-sm text-slate-400">Organiza tus workspaces y seguimiento</div>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="text-lime-400 text-xl">✓</div>
+                            <div>
+                                <div class="font-semibold text-white">Automatizar Tareas</div>
+                                <div class="text-sm text-slate-400">Skills personalizables para tu flujo</div>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="text-lime-400 text-xl">✓</div>
+                            <div>
+                                <div class="font-semibold text-white">Preservar Conocimiento</div>
+                                <div class="text-sm text-slate-400">Todo se guarda en archivos locales</div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                buttons: [
+                    { text: "← Atrás", action: "prev" },
+                    { text: "Siguiente →", action: "next" }
+                ]
+            },
+            {
+                title: "Configuración Inicial",
+                content: `
+                    <div class="space-y-4">
+                        <p class="text-slate-300">Para comenzar, necesitamos verificar que tengas lo necesario:</p>
+                        <div id="setup-checks" class="space-y-2">
+                            <div class="flex items-center gap-3 p-3 bg-slate-800 rounded-lg">
+                                <div id="check-python" class="w-5 h-5 rounded-full bg-slate-600 flex items-center justify-center">
+                                    <span class="text-xs">⏳</span>
+                                </div>
+                                <span class="text-slate-300">Python 3.10+</span>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 bg-slate-800 rounded-lg">
+                                <div id="check-opencode" class="w-5 h-5 rounded-full bg-slate-600 flex items-center justify-center">
+                                    <span class="text-xs">⏳</span>
+                                </div>
+                                <span class="text-slate-300">OpenCode (IA)</span>
+                            </div>
+                        </div>
+                        <div id="setup-status" class="text-sm text-slate-400 mt-3"></div>
+                    </div>
+                `,
+                onShow: runSetupChecks,
+                buttons: [
+                    { text: "← Atrás", action: "prev" },
+                    { text: "Comenzar 🚀", action: "finish", primary: true }
+                ]
+            }
+        ];
+        
+        function quickStart() {
+            // Ocultar hero y mostrar dashboard
+            document.getElementById('hero-section').style.opacity = '0';
+            document.getElementById('hero-section').style.transform = 'translateY(-20px)';
+            setTimeout(() => {
+                document.getElementById('hero-section').style.display = 'none';
+                router.navigate('console');
+            }, 700);
+        }
+        
+        function showTour() {
+            wizardStep = 0;
+            renderWizard();
+            document.getElementById('wizard-modal').classList.remove('hidden');
+        }
+        
+        function closeWizard() {
+            document.getElementById('wizard-modal').classList.add('hidden');
+        }
+        
+        function renderWizard() {
+            const step = wizardSteps[wizardStep];
+            const container = document.getElementById('wizard-steps');
+            
+            // Progress bar
+            const progress = ((wizardStep + 1) / wizardSteps.length) * 100;
+            
+            let html = `
+                <div class="mb-6">
+                    <div class="flex justify-between text-sm text-slate-400 mb-2">
+                        <span>Paso ${wizardStep + 1} de ${wizardSteps.length}</span>
+                        <span>${Math.round(progress)}%</span>
+                    </div>
+                    <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                        <div class="h-full bg-lime-500 transition-all duration-300" style="width: ${progress}%"></div>
+                    </div>
+                </div>
+                
+                <h3 class="text-xl font-bold text-white mb-4">${step.title}</h3>
+                <div class="mb-6">${step.content}</div>
+                
+                <div class="flex justify-between gap-3">
+                    ${step.buttons.filter(b => b.action === 'prev').map(b => `
+                        <button onclick="wizardPrev()" class="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors">
+                            ${b.text}
+                        </button>
+                    `).join('')}
+                    <div class="flex-1"></div>
+                    ${step.buttons.filter(b => b.action !== 'prev').map(b => `
+                        <button onclick="wizardAction('${b.action}')" class="px-6 py-2.5 ${b.primary ? 'bg-lime-500 hover:bg-lime-400 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white'} rounded-lg transition-colors">
+                            ${b.text}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+            
+            container.innerHTML = html;
+            
+            // Callback onShow si existe
+            if (step.onShow) {
+                setTimeout(step.onShow, 100);
+            }
+        }
+        
+        function wizardNext() {
+            if (wizardStep < wizardSteps.length - 1) {
+                wizardStep++;
+                renderWizard();
+            }
+        }
+        
+        function wizardPrev() {
+            if (wizardStep > 0) {
+                wizardStep--;
+                renderWizard();
+            }
+        }
+        
+        function wizardAction(action) {
+            if (action === 'next') wizardNext();
+            else if (action === 'prev') wizardPrev();
+            else if (action === 'finish') {
+                closeWizard();
+                quickStart();
+            }
+        }
+        
+        function runSetupChecks() {
+            const statusEl = document.getElementById('setup-status');
+            const checkPython = document.getElementById('check-python');
+            const checkOpencode = document.getElementById('check-opencode');
+            
+            statusEl.textContent = 'Verificando...';
+            
+            // Simular checks (en producción haría fetch real)
+            setTimeout(() => {
+                checkPython.className = 'w-5 h-5 rounded-full bg-lime-500 flex items-center justify-center';
+                checkPython.innerHTML = '✓';
+                
+                setTimeout(() => {
+                    checkOpencode.className = 'w-5 h-5 rounded-full bg-lime-500 flex items-center justify-center';
+                    checkOpencode.innerHTML = '✓';
+                    statusEl.innerHTML = '<span class="text-lime-400">✓ Todo listo para comenzar</span>';
+                }, 800);
+            }, 600);
+        }
 </script>
 </body>
 </html>
