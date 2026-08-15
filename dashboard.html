@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PA Framework Command Center v0.4.0-beta</title>
+    <title>PA Framework Command Center v0.5.0-alpha</title>
     <meta name="description" content="Dashboard profesional del FreakingJSON Personal Assistant Framework">
     
     <!-- Tailwind CSS -->
@@ -325,7 +325,7 @@
                         <img src="Logo-freakinjson-blanco-alta.png" alt="FreakingJSON" class="w-8 h-8 rounded-lg object-contain">
                         <div class="hidden sm:block">
                             <h1 class="font-semibold text-sm">FreakingJSON</h1>
-                            <p class="text-xs text-slate-400">v0.4.0-beta</p>
+                            <p class="text-xs text-slate-400">v0.5.0-alpha</p>
                         </div>
                     </div>
                 </div>
@@ -358,6 +358,11 @@
                             </svg>
                         </button>
                         <button onclick="router.navigate('console')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="console" title="Consola">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 3h3M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/>
+                            </svg>
+                        </button>
+                        onclick="router.navigate('modelo')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="modelo" title="Modelo">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 3h3M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/>
                             </svg>
@@ -416,7 +421,7 @@
                 tab_skills: 'Skills',
                 tab_agents: 'Agents',
                 workflow_title: 'Workflow Real del Framework',
-                workflow_desc: 'Flujo operativo real usado por PA Framework v0.4.0-beta (sin placeholders).',
+                workflow_desc: 'Flujo operativo real usado por PA Framework v0.5.0-alpha (sin placeholders).',
                 skills_title: 'Skills Disponibles',
                 agents_title: 'Agentes del Sistema',
                 console_title: 'Consola',
@@ -430,7 +435,17 @@
                 console_config: 'Configuración (.md)',
                 console_config_ph: 'Selecciona MASTER.md o profile.md…',
                 console_save: 'Guardar',
-                console_bridge_off: 'Consola offline — ejecuta: python core/scripts/dashboard_server.py'
+                console_bridge_off: 'Consola offline — ejecuta: python core/scripts/dashboard_server.py',
+                modelo_title: 'Modelo IA',
+                modelo_subtitle: 'Seleccionar modelo free disponible — opencode serve',
+                modelo_current: 'Modelo actual:',
+                modelo_select_btn: 'Detectar modelos free',
+                modelo_available: 'Modelos free disponibles:',
+                modelo_select_ph: 'Selecciona un modelo…',
+                modelo_save: 'Guardar selección',
+                modelo_saved: '✓ Modelo guardado en .opencode/config.json',
+                modelo_error: '✗ Error: no se pudo conectar con opencode serve',
+                modelo_help: 'Ejecuta `python core/scripts/select_free_model.py` o usa el menú de pa.py → Comportamiento Agente → M'
             },
             en: {
                 hero_title: 'Your Personal AI Assistant.',
@@ -444,7 +459,7 @@
                 tab_skills: 'Skills',
                 tab_agents: 'Agents',
                 workflow_title: 'Real Framework Workflow',
-                workflow_desc: 'Operational flow used by PA Framework v0.4.0-beta (no placeholders).',
+                workflow_desc: 'Operational flow used by PA Framework v0.5.0-alpha (no placeholders).',
                 skills_title: 'Available Skills',
                 agents_title: 'System Agents',
                 console_title: 'Console',
@@ -458,7 +473,17 @@
                 console_config: 'Config (.md)',
                 console_config_ph: 'Pick MASTER.md or profile.md…',
                 console_save: 'Save',
-                console_bridge_off: 'Console offline — run: python core/scripts/dashboard_server.py'
+                console_bridge_off: 'Console offline — run: python core/scripts/dashboard_server.py',
+                modelo_title: 'AI Model',
+                modelo_subtitle: 'Select free model available — opencode serve',
+                modelo_current: 'Current model:',
+                modelo_select_btn: 'Detect free models',
+                modelo_available: 'Free models available:',
+                modelo_select_ph: 'Select a model…',
+                modelo_save: 'Save selection',
+                modelo_saved: '✓ Model saved to .opencode/config.json',
+                modelo_error: '✗ Error: could not connect to opencode serve',
+                modelo_help: 'Run `python core/scripts/select_free_model.py` or use pa.py menu → Agent Behavior → M'
             }
         };
         let currentLang = localStorage.getItem('pa-dashboard-lang') || 'es';
@@ -495,7 +520,7 @@
                 ['Referencias de implementación','Implementation references'],
                 ['Ver detalle','View detail'],
                 ['Cerrar','Close'],
-                ['Flujo operativo real usado por PA Framework v0.4.0-beta (sin placeholders).','Operational flow used by PA Framework v0.4.0-beta (no placeholders).'],
+                ['Flujo operativo real usado por PA Framework v0.5.0-alpha (sin placeholders).','Operational flow used by PA Framework v0.5.0-alpha (no placeholders).'],
                 ['Pipeline de Sesión','Session Pipeline'],
                 ['Sistema de Memoria (completo)','Memory System (complete)'],
                 ['Arquitectura de Persistencia','Persistence Architecture'],
@@ -640,7 +665,7 @@
 
             loadDemoData() {
                 store.sessions = [
-                    { id: '2026-03-04', title: 'Release v0.4.0-beta + Knowledge Base', summary: 'Release oficial con implementación completa', topics: ['release', 'knowledge-base'], type: 'release', stats: { interactions: 85, files_modified: 15, decisions: 5 } },
+                    { id: '2026-03-04', title: 'Release v0.5.0-alpha + Knowledge Base', summary: 'Release oficial con implementación completa', topics: ['release', 'knowledge-base'], type: 'release', stats: { interactions: 85, files_modified: 15, decisions: 5 } },
                     { id: '2026-03-03', title: 'Fix README técnico', summary: 'Corrección de documentación en PROD', topics: ['fix', 'docs'], type: 'bugfix', stats: { interactions: 25, files_modified: 3, decisions: 2 } },
                     { id: '2026-02-28', title: 'Investigación MCP', summary: 'Research sobre Model Context Protocol', topics: ['research', 'mcp'], type: 'research', stats: { interactions: 45, files_modified: 2, decisions: 3 } }
                 ];
@@ -681,6 +706,9 @@
                 if (this.currentPage === 'console') {
                     paConsole.init();
                 }
+                if (this.currentPage === 'modelo') {
+                    modeloPage.init();
+                }
             }
         };
 
@@ -697,7 +725,7 @@
                         <div class="relative max-w-4xl mx-auto text-center">
                             <div class="inline-flex items-center gap-2 px-4 py-2 bg-lime-400/10 border border-lime-400/30 rounded-full text-lime-300 text-sm mb-8 neon-glow">
                                 <span class="w-2 h-2 bg-lime-400 rounded-full animate-pulse neon-glow"></span>
-                                Framework v0.4.0-beta
+                                Framework v0.5.0-alpha
                             </div>
                             
                             <h1 class="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
@@ -893,7 +921,7 @@
 
                     <!-- Footer -->
                     <footer class="py-12 px-4 border-t border-slate-800 text-center text-slate-500">
-                        <p>FreakingJSON Framework v0.4.0-beta · MIT License</p>
+                        <p>FreakingJSON Framework v0.5.0-alpha · MIT License</p>
                         <p class="mt-2 text-sm">"El conocimiento verdadero trasciende a lo público"</p>
                     </footer>
                 </div>
@@ -1272,7 +1300,7 @@
             },
 
             console() {
-                // v0.4.0-beta: Consola operativa — requiere dashboard_server.py
+                // v0.5.0-alpha: Consola operativa — requiere dashboard_server.py
                 // (python core/scripts/dashboard_server.py → http://127.0.0.1:8760)
                 return `
                 <div class="max-w-6xl mx-auto px-4 py-8 fade-in">
@@ -1345,7 +1373,50 @@
                     </div>
                 </div>
                 `;
-            },
+            }
+        modelo() {
+            // v0.5.0-alpha: Página de selección de modelo IA
+            return `
+            <div class="max-w-4xl mx-auto px-4 py-8 fade-in">
+                <div class="mb-6">
+                    <h1 class="text-3xl font-bold text-white">${t('modelo_title')}</h1>
+                    <p class="text-slate-400 mt-1">${t('modelo_subtitle')}</p>
+                </div>
+
+                <div class="bg-slate-900/60 rounded-2xl border border-slate-800 p-6 mb-6">
+                    <h2 class="text-xl font-semibold text-white mb-4">${t('modelo_current')}</h2>
+                    <div id="modelo-current" class="text-lime-400 font-mono text-lg mb-4">Cargando…</div>
+                    
+                    <button id="modelo-detect-btn" onclick="modeloPage.detect()" class="px-6 py-3 bg-lime-500 hover:bg-lime-400 text-white rounded-lg transition-colors flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        ${t('modelo_select_btn')}
+                    </button>
+                </div>
+
+                <div id="modelo-results" class="hidden bg-slate-900/60 rounded-2xl border border-slate-800 p-6">
+                    <h2 class="text-xl font-semibold text-white mb-4">${t('modelo_available')}</h2>
+                    <select id="modelo-select" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-lime-400 mb-4">
+                        <option value="">${t('modelo_select_ph')}</option>
+                    </select>
+                    <button id="modelo-save-btn" onclick="modeloPage.save()" class="px-6 py-3 bg-lime-500 hover:bg-lime-400 text-white rounded-lg transition-colors flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        ${t('modelo_save')}
+                    </button>
+                    <div id="modelo-feedback" class="mt-4 text-sm"></div>
+                </div>
+
+                <div class="bg-slate-900/40 rounded-xl border border-slate-800 p-4 text-slate-400 text-sm">
+                    <p class="font-semibold text-slate-300 mb-2">ℹ️ ${t('modelo_help')}</p>
+                </div>
+            </div>
+            `;
+        }
+
+,
 
             about() {
                 return `
@@ -1424,7 +1495,7 @@
                         </div>
 
                         <div class="mt-12 pt-8 border-t border-slate-800 text-slate-500 text-sm">
-                            <p>v0.4.0-beta · MIT License</p>
+                            <p>v0.5.0-alpha · MIT License</p>
                             <p class="mt-1">Agradecimientos a NetworkChuck y la comunidad open source</p>
                         </div>
                     </div>
@@ -2354,7 +2425,7 @@
         };
 
         // ============================================
-        // PA CONSOLE — puente con dashboard_server.py (v0.4.0-beta)
+        // PA CONSOLE — puente con dashboard_server.py (v0.5.0-alpha)
         // ============================================
         const paConsole = {
             session: null,
@@ -2520,6 +2591,114 @@
         document.addEventListener('DOMContentLoaded', () => {
             app.init();
         });
-    </script>
+    
+        // ============================================
+        // MODELO PAGE — Selección de modelo IA
+        // ============================================
+        const modeloPage = {
+            currentModel: '',
+            
+            async init() {
+                await this.loadCurrentModel();
+            },
+            
+            async loadCurrentModel() {
+                try {
+                    const resp = await fetch('/config');
+                    if (resp.ok) {
+                        const cfg = await resp.json();
+                        this.currentModel = cfg.model || '(no configurado)';
+                    }
+                } catch(e) {
+                    // fallback: leer de .opencode/config.json
+                    try {
+                        const resp = await fetch('.opencode/config.json');
+                        if (resp.ok) {
+                            const cfg = await resp.json();
+                            this.currentModel = cfg.model || '(no configurado)';
+                        }
+                    } catch(e2) {
+                        this.currentModel = '(no configurado)';
+                    }
+                }
+                const el = document.getElementById('modelo-current');
+                if (el) el.textContent = this.currentModel;
+            },
+            
+            async detect() {
+                const btn = document.getElementById('modelo-detect-btn');
+                const results = document.getElementById('modelo-results');
+                const select = document.getElementById('modelo-select');
+                
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = 'Detectando…';
+                }
+                
+                try {
+                    const resp = await fetch('/api/models/free');
+                    if (!resp.ok) throw new Error('No response');
+                    const models = await resp.json();
+                    
+                    if (models && models.length > 0) {
+                        select.innerHTML = '<option value="">Selecciona un modelo…</option>';
+                        models.forEach(m => {
+                            const opt = document.createElement('option');
+                            opt.value = m;
+                            opt.textContent = m;
+                            select.appendChild(opt);
+                        });
+                        if (results) results.classList.remove('hidden');
+                    } else {
+                        this.showFeedback('No se encontraron modelos free', 'error');
+                    }
+                } catch(e) {
+                    this.showFeedback('Error: no se pudo conectar con opencode serve. Ejecuta dashboard_server.py primero.', 'error');
+                }
+                
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Detectar modelos free';
+                }
+            },
+            
+            async save() {
+                const select = document.getElementById('modelo-select');
+                const model = select.value;
+                const feedback = document.getElementById('modelo-feedback');
+                
+                if (!model) {
+                    this.showFeedback('Selecciona un modelo primero', 'error');
+                    return;
+                }
+                
+                try {
+                    const resp = await fetch('/config', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({model: model})
+                    });
+                    
+                    if (resp.ok) {
+                        this.showFeedback('✓ Modelo guardado en .opencode/config.json', 'success');
+                        this.currentModel = model;
+                        await this.loadCurrentModel();
+                    } else {
+                        throw new Error('Save failed');
+                    }
+                } catch(e) {
+                    this.showFeedback('✗ Error al guardar', 'error');
+                }
+            },
+            
+            showFeedback(msg, type) {
+                const el = document.getElementById('modelo-feedback');
+                if (el) {
+                    el.textContent = msg;
+                    el.className = 'mt-4 text-sm ' + (type === 'error' ? 'text-red-400' : 'text-lime-400');
+                }
+            }
+        };
+</script>
 </body>
 </html>

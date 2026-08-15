@@ -61,3 +61,14 @@ opencode.jsonc.local
 .coverage
 htmlcov/
 .coverage.*
+# Datos personales (no incluir en ZIP público)
+core/.context/memory/
+core/.context/knowledge/users/
+core/.context/knowledge/interactions-index.json
+core/.context/knowledge/last_mined.json
+core/.context/.cache/
+# Archivos temporales de desarrollo
+README-UPDATE-*.md
+TEST-INSTRUCTIONS-*.md
+VALIDATION-CHECKLIST.md
+Logo-*.png

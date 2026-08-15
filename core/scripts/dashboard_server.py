@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FreakingJSON PA Framework — Dashboard Server (v0.4.0-beta)
+FreakingJSON PA Framework — Dashboard Server (v0.5.0-alpha)
 
 Puente local entre dashboard.html y el framework + opencode.
 
@@ -11,6 +11,8 @@ Qué hace:
   - Edición + preservación (.bak) de core/.context/MASTER.md y profile.md.
   - Diagnóstico del framework (system_check) y bootstrap (session_start).
   - Lanzamiento del TUI opencode externo en una terminal nueva (best effort).
+  - API `/api/models/free`: detecta modelos free disponibles.
+  - API `/config` POST: guarda configuración (ej. modelo seleccionado).
 
 Esencia respetada: local-first, zero-config, stdlib-only, loopback-only (127.0.0.1).
 
@@ -184,7 +186,7 @@ def launch_opencode_tui() -> dict:
 
 # ---------------------------------------------------------------- handler ---
 class Handler(BaseHTTPRequestHandler):
-    server_version = "PA-Dashboard/0.4.0-beta"
+    server_version = "PA-Dashboard/0.5.0-alpha"
 
     # ---- plumbing ----
     def _json(self, obj: object, status: int = 200) -> None:
@@ -248,6 +250,25 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(run_py("system_check.py", "--quick", timeout=60))
         if path == "/api/framework/bootstrap":
             return self._json(run_py("session_start.py", timeout=90))
+        
+        if path == "/api/models/free":
+            # Detectar modelos free desde opencode serve
+            if not opencode_serving():
+                return self._json([], 200)  # vacío si no hay serve
+            st, cfg = oc_call("/config")
+            if st != 200 or not isinstance(cfg, dict):
+                return self._json([], 200)
+            providers = cfg.get("providers", [])
+            free_models = []
+            for p in providers:
+                if isinstance(p, dict):
+                    name = p.get("name", p.get("id", ""))
+                    for m in p.get("models", []):
+                        if isinstance(m, dict):
+                            mid = m.get("id", "")
+                            if m.get("free", False) or "free" in mid.lower():
+                                free_models.append(f"{name}/{mid}" if name else mid)
+            return self._json(free_models)
 
         # estáticos: dashboard-data.js, knowledge indexes, assets
         rel = path.lstrip("/")
