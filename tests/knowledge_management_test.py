@@ -40,6 +40,11 @@ def load_module_from_path(name: str, path: Path):
 
 # Load modules
 session_search = load_module_from_path("session_search", SCRIPT_DIR / "session_search.py")
+
+
+def days_ago_date(days_ago: int) -> str:
+    """v0.4.0-beta: fecha ISO de hace N días — tests fecha-independientes."""
+    return (datetime.now() - timedelta(days=days_ago)).strftime("%Y-%m-%d")
 knowledge_export = load_module_from_path("knowledge_export", SCRIPT_DIR / "knowledge_export.py")
 knowledge_import = load_module_from_path("knowledge_import", SCRIPT_DIR / "knowledge_import.py")
 usage_insights = load_module_from_path("usage_insights", SCRIPT_DIR / "usage_insights.py")
@@ -66,15 +71,31 @@ def temp_dir():
 @pytest.fixture
 def sample_sessions_index(temp_dir):
     """Create a sample sessions index file."""
+    # v0.4.0-beta fix: fechas RELATIVAS a hoy — los tests de timeframe
+    # ('30d'/'7d') y rangos de export dependían de fechas hardcodeadas
+    # 2026-04-xx y fallaban al pasar el tiempo.
+    _today = datetime.now()
+    _d = days_ago_date  # helper módulo-level (definido abajo del fixture)
+    _DATES = {
+        "2026-04-01": _d(120),
+        "2026-04-05": _d(29),
+        "2026-04-04": _d(29),
+        "2026-04-10": _d(3),
+        "2026-04-09": _d(3),
+        "2026-04-15": _d(1),
+        "2026-04-14": _d(1),
+        "2026-04-17": _d(0),
+        "2026-04-16": _d(0),
+    }
     index_data = {
-        "version": "1.0",
+        "version": "10",
         "description": "Test index",
         "last_updated": datetime.now().isoformat(),
         "total_sessions": 5,
         "sessions": [
             {
-                "id": "2026-04-01",
-                "date": "2026-04-01",
+                "id": _DATES["2026-04-01"],
+                "date": _DATES["2026-04-01"],
                 "title": "Session One - Error Handling",
                 "summary": "Discussed error handling patterns",
                 "topics": ["errors", "python", "best-practices"],
@@ -91,8 +112,8 @@ def sample_sessions_index(temp_dir):
                 "status": "completed"
             },
             {
-                "id": "2026-04-05",
-                "date": "2026-04-05",
+                "id": _DATES["2026-04-05"],
+                "date": _DATES["2026-04-05"],
                 "title": "Session Two - Feature Implementation",
                 "summary": "Implemented new search feature",
                 "topics": ["features", "search", "python"],
@@ -109,8 +130,8 @@ def sample_sessions_index(temp_dir):
                 "status": "completed"
             },
             {
-                "id": "2026-04-10",
-                "date": "2026-04-10",
+                "id": _DATES["2026-04-10"],
+                "date": _DATES["2026-04-10"],
                 "title": "Session Three - Bug Fixes",
                 "summary": "Fixed critical bugs",
                 "topics": ["bugfix", "errors", "testing"],
@@ -127,8 +148,8 @@ def sample_sessions_index(temp_dir):
                 "status": "completed"
             },
             {
-                "id": "2026-04-15",
-                "date": "2026-04-15",
+                "id": _DATES["2026-04-15"],
+                "date": _DATES["2026-04-15"],
                 "title": "Session Four - Architecture Review",
                 "summary": "Reviewed system architecture",
                 "topics": ["architecture", "design", "planning"],
@@ -145,8 +166,8 @@ def sample_sessions_index(temp_dir):
                 "status": "completed"
             },
             {
-                "id": "2026-04-17",
-                "date": "2026-04-17",
+                "id": _DATES["2026-04-17"],
+                "date": _DATES["2026-04-17"],
                 "title": "Session Five - Knowledge Management",
                 "summary": "Phase 5 implementation",
                 "topics": ["knowledge", "features", "phase5"],
@@ -165,9 +186,9 @@ def sample_sessions_index(temp_dir):
         ],
         "filters": {
             "by_topic": {
-                "errors": ["2026-04-01", "2026-04-10"],
-                "python": ["2026-04-01", "2026-04-05"],
-                "features": ["2026-04-05", "2026-04-17"]
+                "errors": [_DATES["2026-04-01"], _DATES["2026-04-10"]],
+                "python": [_DATES["2026-04-01"], _DATES["2026-04-05"]],
+                "features": [_DATES["2026-04-05"], _DATES["2026-04-17"]]
             },
             "by_type": {
                 "research": 1,
@@ -318,6 +339,14 @@ class TestSessionSearch:
             "INDEX_FILE",
             sample_sessions_index["index_file"]
         )
+        # v0.4.0-beta fix: SessionSearch fusiona sesiones de SQLITE_DB en init;
+        # sin esto, un repo con data/sessions.db real contamina el fixture
+        # (assert 6 == 5) — se apunta a una ruta inexistente para aislar.
+        monkeypatch.setattr(
+            session_search,
+            "SQLITE_DB",
+            sample_sessions_index["temp_dir"] / "no-existe" / "sessions.db"
+        )
 
         searcher = SessionSearch()
         assert len(searcher.index_data.get("sessions", [])) == 5
@@ -338,6 +367,14 @@ class TestSessionSearch:
             session_search,
             "INDEX_FILE",
             sample_sessions_index["index_file"]
+        )
+        # v0.4.0-beta fix: SessionSearch fusiona sesiones de SQLITE_DB en init;
+        # sin esto, un repo con data/sessions.db real contamina el fixture
+        # (assert 6 == 5) — se apunta a una ruta inexistente para aislar.
+        monkeypatch.setattr(
+            session_search,
+            "SQLITE_DB",
+            sample_sessions_index["temp_dir"] / "no-existe" / "sessions.db"
         )
 
         searcher = SessionSearch()
@@ -364,6 +401,14 @@ class TestSessionSearch:
             "INDEX_FILE",
             sample_sessions_index["index_file"]
         )
+        # v0.4.0-beta fix: SessionSearch fusiona sesiones de SQLITE_DB en init;
+        # sin esto, un repo con data/sessions.db real contamina el fixture
+        # (assert 6 == 5) — se apunta a una ruta inexistente para aislar.
+        monkeypatch.setattr(
+            session_search,
+            "SQLITE_DB",
+            sample_sessions_index["temp_dir"] / "no-existe" / "sessions.db"
+        )
 
         searcher = SessionSearch()
 
@@ -375,9 +420,9 @@ class TestSessionSearch:
         results = searcher.search_sessions(filters={"session_type": "features"}, limit=10)
         assert len(results) == 2
 
-        # Filter by date range
+        # Filter by date range (fechas del fixture dinámico: _d(29) a _d(1))
         results = searcher.search_sessions(
-            filters={"from_date": "2026-04-05", "to_date": "2026-04-15"},
+            filters={"from_date": days_ago_date(29), "to_date": days_ago_date(1)},
             limit=10
         )
         assert len(results) == 3
@@ -398,6 +443,14 @@ class TestSessionSearch:
             session_search,
             "INDEX_FILE",
             sample_sessions_index["index_file"]
+        )
+        # v0.4.0-beta fix: SessionSearch fusiona sesiones de SQLITE_DB en init;
+        # sin esto, un repo con data/sessions.db real contamina el fixture
+        # (assert 6 == 5) — se apunta a una ruta inexistente para aislar.
+        monkeypatch.setattr(
+            session_search,
+            "SQLITE_DB",
+            sample_sessions_index["temp_dir"] / "no-existe" / "sessions.db"
         )
 
         searcher = SessionSearch()
@@ -899,6 +952,14 @@ class TestKnowledgeManagementIntegration:
             "INDEX_FILE",
             sample_sessions_index["index_file"]
         )
+        # v0.4.0-beta fix: SessionSearch fusiona sesiones de SQLITE_DB en init;
+        # sin esto, un repo con data/sessions.db real contamina el fixture
+        # (assert 6 == 5) — se apunta a una ruta inexistente para aislar.
+        monkeypatch.setattr(
+            session_search,
+            "SQLITE_DB",
+            sample_sessions_index["temp_dir"] / "no-existe" / "sessions.db"
+        )
 
         searcher = SessionSearch()
 
@@ -924,18 +985,26 @@ class TestAPIFunctions:
         test_sessions_dir = temp_dir / "api-sessions"
         test_index_file = test_knowledge_dir / "sessions-index.json"
 
+        # v0.4.0-beta fix: el módulo top-level se carga con spec_from_file_location
+        # (no queda en sys.modules), por lo que `import knowledge_export` aquí crea
+        # OTRO objeto con paths reales y el monkeypatch original parcheaba el objeto
+        # equivocado → export corría contra el índice real → sessions_exported: 0.
+        # Fix: parchear el MISMO objeto (ke_module) que se va a llamar.
+        import importlib
+        import knowledge_export as ke_module
+
         monkeypatch.setattr(
-            knowledge_export,
+            ke_module,
             "KNOWLEDGE_DIR",
             test_knowledge_dir
         )
         monkeypatch.setattr(
-            knowledge_export,
+            ke_module,
             "SESSIONS_DIR",
             test_sessions_dir
         )
         monkeypatch.setattr(
-            knowledge_export,
+            ke_module,
             "INDEX_FILE",
             test_index_file
         )
@@ -947,11 +1016,6 @@ class TestAPIFunctions:
         shutil.copy(sample_sessions_index["index_file"], test_index_file)
         for session_file in sample_sessions_index["sessions_dir"].glob("*.md"):
             shutil.copy(session_file, test_sessions_dir / session_file.name)
-
-        # Force reimport to pick up monkeypatched paths
-        import importlib
-        import knowledge_export as ke_module
-        importlib.reload(ke_module)
 
         result = ke_module.export_knowledge(
             str(temp_dir / "api-export"),
@@ -1048,18 +1112,22 @@ class TestAPIFunctions:
         test_sessions_dir = temp_dir / "insights-sessions"
         test_index_file = test_knowledge_dir / "sessions-index.json"
 
+        # v0.4.0-beta fix: parchear ui_module (mismo objeto que se llama) —
+        # ver comentario en test_export_knowledge_api.
+        import usage_insights as ui_module
+
         monkeypatch.setattr(
-            usage_insights,
+            ui_module,
             "KNOWLEDGE_DIR",
             test_knowledge_dir
         )
         monkeypatch.setattr(
-            usage_insights,
+            ui_module,
             "SESSIONS_DIR",
             test_sessions_dir
         )
         monkeypatch.setattr(
-            usage_insights,
+            ui_module,
             "INDEX_FILE",
             test_index_file
         )
@@ -1071,11 +1139,6 @@ class TestAPIFunctions:
         shutil.copy(sample_sessions_index["index_file"], test_index_file)
         for session_file in sample_sessions_index["sessions_dir"].glob("*.md"):
             shutil.copy(session_file, test_sessions_dir / session_file.name)
-
-        # Force reimport
-        import importlib
-        import usage_insights as ui_module
-        importlib.reload(ui_module)
 
         insights = ui_module.get_usage_insights(timeframe='all')
 
