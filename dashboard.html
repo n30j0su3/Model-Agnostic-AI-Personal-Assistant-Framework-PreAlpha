@@ -359,7 +359,7 @@
                 </div>
                         <div class="hidden sm:block">
                             <h1 class="font-semibold text-sm">FreakingJSON</h1>
-                            <p class="text-xs text-slate-400">v0.5.0-alpha</p>
+                            <p class="text-xs text-slate-400">v0.5.0-alpha <span id="build-id" class="text-slate-600"></span></p>
                         </div>
                     </div>
                 </div>
@@ -2702,6 +2702,18 @@
         // Initialize app when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
             app.init();
+            // BUILD ID: hash SHA-256 del HTML servido — permite verificar
+            // de un vistazo que el navegador no sirve una versión cacheada
+            (async () => {
+                try {
+                    const r = await fetch('/');
+                    const txt = await r.text();
+                    const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt));
+                    const hex = [...new Uint8Array(h)].map(b => b.toString(16).padStart(2, '0')).join('');
+                    const el = document.getElementById('build-id');
+                    if (el) el.textContent = '· build ' + hex.slice(0, 8);
+                } catch (e) { /* no crítico */ }
+            })();
         });
     
         // ============================================

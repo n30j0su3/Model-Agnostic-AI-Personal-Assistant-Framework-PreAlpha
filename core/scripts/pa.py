@@ -1604,6 +1604,7 @@ def main_menu():
         print(f"    {c('5', Colors.CYAN)}. [LAUNCH] {c('Iniciar Sesión IA', Colors.BOLD)}")
         print(f"    {c('6', Colors.CYAN)}. [UPDATE] Actualizar Framework")
         print(f"    {c('7', Colors.CYAN)}. [HELP] {c('Ayuda', Colors.YELLOW)}")
+        print(f"    {c('8', Colors.RED)}. [UNINSTALL] Desinstalar Framework")
         print(f"    {c('0', Colors.RED)}. [EXIT] Salir")
         print()
 
@@ -1626,6 +1627,8 @@ def main_menu():
             menu_updates()
         elif choice == "7":
             menu_help()
+        elif choice == "8":
+            menu_uninstall()
         elif choice.lower() in {"h", "/help", "-h", "--help"}:
             menu_help()
         else:
@@ -1634,6 +1637,29 @@ def main_menu():
 
 
 # --- ENTRY POINT ---
+def menu_uninstall():
+    """v0.5.0: Opción 8 — Desinstalación controlada del framework."""
+    print(c("\n  [UNINSTALL] Desinstalar Framework\n", f"{Colors.BOLD}{Colors.YELLOW}"))
+    print_warn("Esta acción eliminará componentes del framework.")
+    print_info("Los datos personales (sesiones, conocimiento) se preservan por defecto.")
+    print_info("El desinstalador pedirá confirmación en cada paso.")
+    if input(f"  {c('¿Continuar? (s/N)', Colors.BOLD)}: ").strip().lower() not in ("s", "si", "sí", "y", "yes"):
+        print_ok("Desinstalación cancelada.")
+        pause()
+        return
+    script = SCRIPT_DIR / "uninstall.py"
+    if not script.exists():
+        print_error("No se encontró uninstall.py")
+        pause()
+        return
+    try:
+        # Mismo intérprete, TTY heredado (interactivo), sin capture
+        subprocess.run([get_python(), str(script)], cwd=REPO_ROOT, check=False)
+    except Exception as e:
+        print_error(f"Error ejecutando desinstalador: {e}")
+    pause()
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="FreakingJSON PA Framework Control Panel v0.4.0-beta",
