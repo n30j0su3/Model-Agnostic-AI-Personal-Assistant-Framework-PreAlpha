@@ -24,14 +24,11 @@ from typing import Dict, List, Optional, Tuple
 
 if sys.platform == "win32" and sys.stdout.isatty():
     try:
-        import io
-
-        sys.stdout = io.TextIOWrapper(
-            sys.stdout.buffer, encoding="utf-8", errors="replace"
-        )
-        sys.stderr = io.TextIOWrapper(
-            sys.stderr.buffer, encoding="utf-8", errors="replace"
-        )
+        
+        # v0.4.0-beta fix: reconfigure in-place (TextIOWrapper nuevo dejaba un wrapper
+# huérfano que su GC cerraba → "I/O operation on closed file"/"lost sys.stderr" al salir)
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
     except (ValueError, AttributeError):
         pass
 

@@ -73,12 +73,11 @@ def _console_safe_streams():
         try:
             stream.encoding.lower().encode("\u2192")
         except (LookupError, UnicodeEncodeError):
-            import io, os
-            enc = stream.encoding
-            setattr(sys, name, io.TextIOWrapper(
-                stream.buffer, encoding=enc, errors="replace",
-                line_buffering=stream.line_buffering if hasattr(stream, "line_buffering") else False,
-            ))
+            # v0.4.0-beta fix: reconfigure in-place (idem patrón A)
+            try:
+                stream.reconfigure(errors="replace")
+            except (ValueError, AttributeError):
+                pass
 
 _console_safe_streams()
 # ----------------------------------------------------------------------------
