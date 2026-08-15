@@ -1,0 +1,48 @@
+{
+  "framework_version": "0.4.0-beta",
+  "migrations_applied": [
+    "v0.1.0",
+    "v0.1.4",
+    "v0.1.7",
+    "v0.2.0",
+    "v0.2.1"
+  ],
+  "last_migration": "2026-08-15T13:48:53.988487",
+  "migrations_log": [
+    {
+      "version": "v0.1.0",
+      "name": "initial_structure",
+      "timestamp": "2026-08-15T13:48:53.770900",
+      "errors": null,
+      "success": true
+    },
+    {
+      "version": "v0.1.4",
+      "name": "vitals_system",
+      "timestamp": "2026-08-15T13:48:53.771184",
+      "errors": null,
+      "success": true
+    },
+    {
+      "version": "v0.1.7",
+      "name": "knowledge_base",
+      "timestamp": "2026-08-15T13:48:53.800342",
+      "errors": null,
+      "success": true
+    },
+    {
+      "version": "v0.2.0",
+      "name": "indexes_and_learning",
+      "timestamp": "2026-08-15T13:48:53.883458",
+      "errors": null,
+      "success": true
+    },
+    {
+      "version": "v0.2.1",
+      "name": "propagation_and_public_runtime",
+      "timestamp": "2026-08-15T13:48:53.988502",
+      "errors": null,
+      "success": true
+    }
+  ]
+}

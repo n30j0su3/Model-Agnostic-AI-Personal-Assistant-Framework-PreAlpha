@@ -317,8 +317,20 @@ def build_cli_command(cli: str, prompt: str, workdir: Path) -> tuple[list[str], 
     """
     # CLIs that support direct prompt injection
     if cli == "opencode":
-        # OpenCode supports --prompt flag for initial message
-        return [cli, "--prompt", prompt], True
+        # v0.5.0-alpha: forzar agente FreakingJSON (opencode default es "Build")
+        # y leer modelo desde .opencode/config.json si está configurado
+        cfg_file = REPO_ROOT / ".opencode" / "config.json"
+        model_flag = []
+        if cfg_file.exists():
+            import json
+            try:
+                cfg = json.loads(cfg_file.read_text(encoding="utf-8"))
+                model = cfg.get("model")
+                if model and model != "auto":
+                    model_flag = ["--model", model]
+            except:
+                pass
+        return [cli, "--agent", "FreakingJSON"] + model_flag + ["--prompt", prompt], True
     
     elif cli == "claude":
         # Claude Code: try with prompt via stdin or just launch
@@ -765,7 +777,29 @@ def submenu_memoria_wiki():
             pause()
 
 
-# --- SUBMENU: COMPORTAMIENTO AGENTE ---
+def _select_free_model():
+    """v0.5.0-alpha: Seleccionar modelo free disponible y guardar en config."""
+    print(c("\n  [MODELO] Seleccionar Modelo Free\n", f"{Colors.BOLD}{Colors.CYAN}"))
+    
+    # Ejecutar script de selección
+    script = SCRIPT_DIR / "select_free_model.py"
+    if not script.exists():
+        print_error("No se encontró select_free_model.py")
+        pause()
+        return
+    
+    result = subprocess.run(
+        [get_python(), str(script)],
+        cwd=REPO_ROOT, capture_output=True, text=True, timeout=30
+    )
+    
+    print(result.stdout)
+    if result.returncode != 0:
+        print_error("No se pudo obtener la lista de modelos.")
+        print_info("Asegúrate de que opencode serve esté corriendo en algún puerto (47017-47021).")
+    pause()
+
+
 def submenu_comportamiento_agente():
     """Option 3: Configure Agent Behavior (formerly Profile)."""
     print(c("\n  [CONFIG] Comportamiento del Agente\n", f"{Colors.BOLD}{Colors.CYAN}"))
@@ -778,27 +812,38 @@ def submenu_comportamiento_agente():
         print_error("No se encontró MASTER.md. Ejecuta 'Sincronizar Contexto' primero.")
         pause()
         return
-
+    
     content = master.read_text(encoding="utf-8")
-
+    
     # Extract current values
     def _extract(lines, prefix):
         for l in lines:
             if l.strip().startswith(prefix):
                 return l.split(":", 1)[1].strip() if ":" in l else ""
         return ""
-
+    
     lines = content.splitlines()
     cur_lang = _extract(lines, "- **Primary Language**") or config.get("language", "es")
     cur_style = _extract(lines, "- Response style")
     cur_cli = config.get("default_cli", get_default_cli())
-
+    
+    # Leer modelo actual de .opencode/config.json
+    oc_cfg = REPO_ROOT / ".opencode" / "config.json"
+    cur_model = "(no configurado)"
+    if oc_cfg.exists():
+        try:
+            import json
+            oc = json.loads(oc_cfg.read_text(encoding="utf-8"))
+            cur_model = oc.get("model", "(no configurado)")
+        except:
+            pass
+    
     print(f"  (Enter para mantener valor actual)\n")
-
+    
     lang = input(f"  Idioma principal [{cur_lang}]: ").strip() or cur_lang
     style = input(f"  Estilo de respuesta [{cur_style}]: ").strip() or cur_style
     focus = input(f"  Enfoque actual [libre]: ").strip()
-
+    
     # CLI default
     print(f"\n  CLI por defecto actual: {CLI_LABELS.get(cur_cli, cur_cli)}")
     available = detect_clis()
@@ -813,15 +858,30 @@ def submenu_comportamiento_agente():
             new_cli = cur_cli
     else:
         new_cli = cur_cli
-
+    
+    # Modelo
+    print(f"\n  Modelo actual: {cur_model}")
+    print(f"    {c('M', Colors.CYAN)}. Seleccionar modelo free disponible")
+    model_choice = input(f"  (M para seleccionar, Enter para mantener): ").strip()
+    if model_choice.lower() == "m":
+        _select_free_model()
+        # Recargar modelo
+        if oc_cfg.exists():
+            try:
+                import json
+                oc = json.loads(oc_cfg.read_text(encoding="utf-8"))
+                cur_model = oc.get("model", "(no configurado)")
+            except:
+                pass
+    
     # Update MASTER.md
     import re
-
+    
     content = re.sub(
         r"- \*\*Primary Language\*\*: .*", f"- **Primary Language**: {lang}", content
     )
     content = re.sub(r"- Response style: .*", f"- Response style: {style}", content)
-
+    
     if focus:
         lines = content.splitlines()
         for i, l in enumerate(lines):
@@ -831,9 +891,9 @@ def submenu_comportamiento_agente():
                     lines[i + 1] = focus
                 break
         content = "\n".join(lines)
-
+    
     master.write_text(content.rstrip() + "\n", encoding="utf-8")
-
+    
     # Save to config.json
     config["language"] = lang
     config["default_cli"] = new_cli

@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.5.0-alpha (2026-08-15)
+
+### Fixes Críticos
+- **opencode modo "FreakingJSON"**: ahora se pasa `--agent FreakingJSON` explícitamente (antes default era "Build")
+- **Selección de modelo free**: comando `M` en Configuración → Comportamiento del Agente permite seleccionar modelo free disponible
+- **Workspaces correctos**: agente FreakingJSON ahora debe crear entregables en `workspaces/content/projects/`
+
+### Nuevas Características
+- **select_free_model.py**: detecta modelos free de opencode serve y los guarda en `.opencode/config.json`
+- **uninstall.py**: desinstalador interactivo (preserva datos personales opcionalmente)
+- **check_mac_compat.py**: verifica compatibilidad macOS y paths críticos
+- **Persistencia de preferencias**: agente debe guardar preferencias del usuario en MASTER.md automáticamente
+
+### Cambios
+- `.opencode/config.json` ahora incluye campo `model` para seleccionar modelo default
+- `pa.py` lee modelo desde config y lo pasa a opencode via `--model`
+
+### Archivos Nuevos
+- `core/scripts/select_free_model.py`
+- `core/scripts/uninstall.py`
+- `core/scripts/check_mac_compat.py`
+
+
+
 ## [v0.4.0-beta] - 2026-08-15 (Fresh Install Impecable + Ecosistema)
 
 > Release consolidado del plan de mejora 2026-08 (4 fases). Sin breaking changes de API;
