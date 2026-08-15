@@ -1,6 +1,6 @@
 {
   "agent": "FreakingJSON",
-  "model": "opencode/hy3-free",
+  "model": "opencode/big-pickle",
   "models": {
     "free": [
       "minimax/minimax-m2.1-free",

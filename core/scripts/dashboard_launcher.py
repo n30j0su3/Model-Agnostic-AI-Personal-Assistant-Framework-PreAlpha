@@ -179,7 +179,7 @@ def show_instructions():
     print()
     log("🌐 Dashboard: http://127.0.0.1:8760", Colors.CYAN)
     log("💡 Tip: Mantén esta ventana abierta mientras usas el dashboard", Colors.YELLOW)
-    log()
+    print()
     log("Características:", Colors.BOLD)
     log("  • Chat con IA vía opencode", Colors.CYAN)
     log("  • Gestión de sesiones", Colors.CYAN)

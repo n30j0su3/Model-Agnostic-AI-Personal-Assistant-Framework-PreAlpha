@@ -252,23 +252,36 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(run_py("session_start.py", timeout=90))
         
         if path == "/api/models/free":
-            # Detectar modelos free desde opencode serve
+            # Detectar modelos free desde opencode serve (auto-inicia si es necesario)
+            # v0.5.0: usa /config/providers — models es un DICT por id,
+            # y "free" se detecta por cost.input==0 && cost.output==0 (o sufijo -free)
             if not opencode_serving():
-                return self._json([], 200)  # vacío si no hay serve
-            st, cfg = oc_call("/config")
-            if st != 200 or not isinstance(cfg, dict):
+                ensure = opencode_ensure()
+                if not ensure.get("ok"):
+                    return self._json([], 200)  # vacío si no se pudo iniciar
+            st, data = oc_call("/config/providers")
+            if st != 200 or not isinstance(data, dict):
                 return self._json([], 200)
-            providers = cfg.get("providers", [])
             free_models = []
-            for p in providers:
-                if isinstance(p, dict):
-                    name = p.get("name", p.get("id", ""))
-                    for m in p.get("models", []):
-                        if isinstance(m, dict):
-                            mid = m.get("id", "")
-                            if m.get("free", False) or "free" in mid.lower():
-                                free_models.append(f"{name}/{mid}" if name else mid)
-            return self._json(free_models)
+            for p in data.get("providers", []):
+                if not isinstance(p, dict):
+                    continue
+                pid = p.get("id", "")
+                models = p.get("models", {})
+                items = models.items() if isinstance(models, dict) else (
+                    [(m.get("id", ""), m) for m in models if isinstance(m, dict)]
+                )
+                for mid, m in items:
+                    if not isinstance(m, dict):
+                        continue
+                    cost = m.get("cost", {}) or {}
+                    is_free = (
+                        (cost.get("input") == 0 and cost.get("output") == 0)
+                        or "free" in str(mid).lower()
+                    )
+                    if is_free:
+                        free_models.append(f"{pid}/{mid}")
+            return self._json(sorted(set(free_models)))
 
         # estáticos: dashboard-data.js, knowledge indexes, assets
         rel = path.lstrip("/")
@@ -323,6 +336,26 @@ class Handler(BaseHTTPRequestHandler):
                 shutil.copy2(p, bak)
             p.write_text(content, encoding="utf-8")
             return self._json({"ok": True, "saved": str(p.relative_to(REPO_ROOT))})
+
+        if path == "/api/config/model":
+            # v0.5.0: guardar modelo predeterminado en .opencode/config.json (con backup)
+            model = (body.get("model") or "").strip()
+            if not model:
+                return self._json({"ok": False, "error": "model vacío"}, 400)
+            cfg_path = REPO_ROOT / ".opencode" / "config.json"
+            cfg_path.parent.mkdir(parents=True, exist_ok=True)
+            cfg = {}
+            if cfg_path.exists():
+                try:
+                    cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+                except Exception:
+                    cfg = {}
+            if cfg_path.exists():
+                bak = cfg_path.with_suffix(cfg_path.suffix + f".bak-{datetime.now():%Y%m%d-%H%M%S}")
+                shutil.copy2(cfg_path, bak)
+            cfg["model"] = model
+            cfg_path.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
+            return self._json({"ok": True, "model": model, "saved": ".opencode/config.json"})
 
         if path == "/api/launch/opencode-tui":
             # bootstrap del framework ANTES de abrir la TUI (flujo base completo)
