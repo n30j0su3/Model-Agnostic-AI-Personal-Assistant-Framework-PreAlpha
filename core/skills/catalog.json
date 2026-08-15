@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-02-11",
+  "last_updated": "2026-08-15",
   "skills": {
     "task-management": {
       "id": "task-management",
@@ -123,6 +123,70 @@
       "path": "core/skills/core/python-standards",
       "status": "active",
       "core": true
+    },
+    "content-optimizer": {
+      "id": "content-optimizer",
+      "name": "Content Optimizer",
+      "category": "Content",
+      "description": "Optimiza borradores de texto para SEO, legibilidad y engagement. Ajusta el tono de voz y la estructura del contenido. Us...",
+      "path": "core/skills/core/content-optimizer",
+      "status": "active"
+    },
+    "context-evaluator": {
+      "id": "context-evaluator",
+      "name": "Context Evaluator",
+      "category": "Core",
+      "description": "Framework para evaluar la calidad de las respuestas de los agentes mediante el patron \"LLM-as-a-Judge\". Permite comparac...",
+      "path": "core/skills/core/context-evaluator",
+      "status": "active"
+    },
+    "dashboard-pro": {
+      "id": "dashboard-pro",
+      "name": "Dashboard Pro",
+      "category": "Dev",
+      "description": "Genera dashboards profesionales con diseño consistente usando design tokens y component library. Genera Design Brief, có...",
+      "path": "core/skills/core/dashboard-pro",
+      "status": "active"
+    },
+    "decision-engine": {
+      "id": "decision-engine",
+      "name": "Decision Engine",
+      "category": "Core",
+      "description": "Evalua instrucciones con enfoque local-first y decide entre ejecucion local, delegacion a agentes o uso de LLM remoto. U...",
+      "path": "core/skills/core/decision-engine",
+      "status": "active"
+    },
+    "error-recovery": {
+      "id": "error-recovery",
+      "name": "Error Recovery",
+      "category": "Core",
+      "description": "Self-healing error handling with recovery playbooks. Log errors, analyze patterns, and generate actionable recovery stra...",
+      "path": "core/skills/core/error-recovery",
+      "status": "active"
+    },
+    "mcp-builder": {
+      "id": "mcp-builder",
+      "name": "Mcp Builder",
+      "category": "Core",
+      "description": "Guides creation of MCP servers with strong tool design, schemas, and evaluation practices.",
+      "path": "core/skills/core/mcp-builder",
+      "status": "active"
+    },
+    "paper-summarizer": {
+      "id": "paper-summarizer",
+      "name": "Paper Summarizer",
+      "category": "Research",
+      "description": "Analiza y resume documentos tecnicos, papers cientificos o articulos extensos. Extrae metodologia, hallazgos clave y con...",
+      "path": "core/skills/core/paper-summarizer",
+      "status": "active"
+    },
+    "skill-discovery": {
+      "id": "skill-discovery",
+      "name": "Skill Discovery",
+      "category": "Core",
+      "description": "Helper para identificar skills apropiadas para tareas comunes y evitar crear scripts innecesarios",
+      "path": "core/skills/core/skill-discovery",
+      "status": "active"
     }
   }
 }

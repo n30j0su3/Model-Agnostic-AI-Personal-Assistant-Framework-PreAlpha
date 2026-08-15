@@ -427,6 +427,19 @@ def auto_fix():
                     print_error(f"No se pudo crear {label}: {e}")
                     failed += 1
 
+    # 0.5 v0.3.9-alpha: seed del backlog (backlog_manager depende de él)
+    backlog = CONTEXT_DIR / "codebase" / "backlog.md"
+    seed = CONTEXT_DIR / "codebase" / "backlog.seed.md"
+    if not backlog.exists() and seed.exists():
+        try:
+            backlog.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(seed, backlog)
+            print(f"  [OK] Creado: backlog.md (desde seed)")
+            fixed += 1
+        except Exception as e:
+            print(f"  [!] No se pudo crear backlog.md: {e}")
+            failed += 1
+
     # 1. Crear directorios faltantes del framework
     dirs_to_create = [
         CONTEXT_DIR / "sessions",

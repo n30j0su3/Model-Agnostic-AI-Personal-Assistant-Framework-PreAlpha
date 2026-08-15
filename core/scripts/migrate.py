@@ -299,6 +299,21 @@ def apply_migration(version: str, force: bool = False) -> bool:
         else:
             safe_print(f"  [FILE] Creando: {path}")
             initial = {}
+            if path.endswith(".md"):
+                # v0.3.9-alpha: archivos .md nunca se crean como JSON.
+                # Usar seed si existe; si no, markdown vacío.
+                seed = full_path.with_suffix(".seed.md")
+                if not seed.exists():
+                    stem = full_path.stem
+                    seed = full_path.parent / f"{stem}.seed.md"
+                if seed.exists():
+                    full_path.parent.mkdir(parents=True, exist_ok=True)
+                    full_path.write_text(seed.read_text(encoding="utf-8"), encoding="utf-8")
+                    safe_print(c(f"  [OK] {path} creado desde seed", Colors.GREEN))
+                    continue
+                full_path.parent.mkdir(parents=True, exist_ok=True)
+                full_path.write_text("", encoding="utf-8")
+                continue
             if "sessions-index.json" in path:
                 initial = {"sessions": [], "total_sessions": 0, "last_updated": None}
             elif "skills-index.json" in path:

@@ -252,16 +252,15 @@ El usuario trabaja contigo y tú propones/validas.
 
 ### Modo Research (BL-104)
 Analizas el estado del framework vs mejores prácticas.
-Consulta `core/.context/knowledge/` (wiki, learning, backlog) para comparar
-skills locales con knowledge_base.json e identificar gaps.
+Ejecuta `python core/scripts/research_tool.py` para comparar skills locales contra la knowledge base.
 - Compara skills locales con knowledge_base.json
 - Identifica gaps y oportunidades
 - Propones mejoras priorizadas
 
 ## Herramientas de Soporte
 
-- `core/.context/codebase/backlog.md` — Backlog del framework (editar directo para CRUD de items BL-XXX)
-- `core/.context/knowledge/` — Knowledge base local (`wiki/`, `learning/`) para comparar skills vs knowledge base
+- `core/scripts/backlog_manager.py` — CRUD seguro del backlog (list/add/update)
+- `core/scripts/research_tool.py` — Comparar framework vs knowledge base (--topic, --json)
 - `@prd-generator` — Generar PRDs con historias de usuario
 
 ## Comandos de Productividad
