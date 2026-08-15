@@ -44,6 +44,11 @@ agents:
   auto_register: true
 
 sessions:
+  # v0.3.9-alpha — unified memory search: session_search.py indexes BOTH
+  # Markdown sessions (.context/sessions/*.md) AND SQLite captures
+  # (data/sessions.db from message_hook/SessionBridge). Set to false to
+  # roll back to Markdown-only search.
+  unified_search: true
   # Session end behavior
   error_recovery: true
   auto_summary: true

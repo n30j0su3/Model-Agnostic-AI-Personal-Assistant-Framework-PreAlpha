@@ -15,6 +15,9 @@ core/.context/codebase/
 core/.context/backups/
 core/.context/projects/
 core/.context/vitals/
+# Personal context (auto-created by system_check --fix) — never commit
+core/.context/MASTER.md
+core/.context/profile.md
 workspaces/
 
 # Generated dashboard data (regenerar con generate_dashboard_data.py)

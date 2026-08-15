@@ -399,6 +399,34 @@ def auto_fix():
     fixed = 0
     failed = 0
 
+    # 0. v0.3.9-alpha: crear MASTER.md y profile.md desde templates si faltan
+    template_fixes = [
+        (CONTEXT_DIR / "MASTER.template.md", CONTEXT_DIR / "MASTER.md", "MASTER.md (desde template)"),
+        (CONTEXT_DIR / "profile.template.md", CONTEXT_DIR / "profile.md", "profile.md (desde template)"),
+    ]
+    for tpl, target, label in template_fixes:
+        if not target.exists():
+            if tpl.exists():
+                try:
+                    target.write_text(tpl.read_text(encoding="utf-8"), encoding="utf-8")
+                    print_ok(f"Creado: {label}")
+                    fixed += 1
+                except Exception as e:
+                    print_error(f"No se pudo crear {label}: {e}")
+                    failed += 1
+            else:
+                try:
+                    target.write_text(
+                        "# Perfil de instalación\n\n"
+                        "(Personaliza este archivo con tus datos — no se sube al repo público.)\n",
+                        encoding="utf-8",
+                    )
+                    print_ok(f"Creado: {label} (mínimo)")
+                    fixed += 1
+                except Exception as e:
+                    print_error(f"No se pudo crear {label}: {e}")
+                    failed += 1
+
     # 1. Crear directorios faltantes del framework
     dirs_to_create = [
         CONTEXT_DIR / "sessions",

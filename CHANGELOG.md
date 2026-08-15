@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.3.9-alpha] - 2026-08-15 (Unified Memory)
+
+### Fixed
+
+- **Busqueda unificada MD + SQLite**: `session_search.py` ahora indexa TAMBIEN las sesiones capturadas via `message_hook`/`SessionBridge` en `data/sessions.db` (antes: solo leia `.context/sessions/*.md`, por lo que la memoria capturada era invisible para la busqueda). Feature-flag `sessions.unified_search` en `config/framework.yaml` para rollback.
+- **Knowledge extraction conectado a SQLite**: nuevo adapter `SQLiteSessionContent` + CLI en `knowledge_extractor.py`. Antes el script no tenia CLI y `memory_pipeline` lo invocaba sin efecto (false-green reportado como exito).
+- **Facts automaticos**: `message_hook.py` extrae "Recuerda que..." de mensajes de usuario y los persiste en `user_facts` (SQLite) via `SessionBridge.set_user_fact`.
+- **system_check --fix crea MASTER.md y profile.md**: desde `MASTER.template.md` / `profile.template.md`. Fresh install queda en 0 errores tras `--fix`.
+
+### Added
+
+- `core/.context/profile.template.md`: template de perfil personal (no se sube al repo).
+- `.gitignore`: `core/.context/MASTER.md` y `core/.context/profile.md` nunca se commitean (contexto personal del usuario).
+
 ---
 
 ## [v0.3.8-alpha] - 2026-04-28 (Production Audit + Sanitization)
