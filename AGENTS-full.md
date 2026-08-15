@@ -1,6 +1,6 @@
 # AGENTS-full — Framework Complete Documentation (Tier 3)
 
-> **Version: v0.3.8-alpha** | Documentación completa (Tier 4). Bootstrap canónico: `AGENTS-lite.md`; router operativo: `AGENTS.md`.
+> **Version: v0.4.0-beta** | Documentación completa (Tier 4). Bootstrap canónico: `AGENTS-lite.md`; router operativo: `AGENTS.md`.
 
 ---
 
@@ -112,9 +112,9 @@ python core/scripts/system_check.py --fix      # reparación automática
 
 ```
 [CORE-006] Version Governance
-  [✓] VERSION: 0.3.8-alpha
-  [✓] README.md: 0.3.8-alpha
-  [✓] AGENTS.md: 0.3.8-alpha
+  [✓] VERSION: 0.4.0-beta
+  [✓] README.md: 0.4.0-beta
+  [✓] AGENTS.md: 0.4.0-beta
   
 [CORE-007] Release Sanitization
   [✓] No credentials found
