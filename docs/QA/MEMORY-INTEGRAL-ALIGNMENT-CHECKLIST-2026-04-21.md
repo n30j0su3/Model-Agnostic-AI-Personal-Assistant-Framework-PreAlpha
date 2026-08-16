@@ -4,7 +4,7 @@
 
 | **Campo** | **Valor** |
 |---|---|
-| Objetivo | Validar alineación al modelo integral 4 capas de N30 |
+| Objetivo | Validar alineación al modelo integral 4 capas de el equipo |
 | Modelo objetivo | `.md` rápida + Memory intermedia + SQLite permanente + Wiki relacional |
 | Resultado global | ✅ **ALINEADO (con observación operativa)** |
 
@@ -34,5 +34,5 @@
 
 #### Conclusión
 
-El pipeline quedó **alineado al modelo integral/completo** solicitado por N30.
+El pipeline quedó **alineado al modelo integral/completo** solicitado por el equipo.
 No está limitado por tareas específicas: las 4 capas son complementarias, persistentes y sincronizadas con ciclo periódico + cierre robusto.

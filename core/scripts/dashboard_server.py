@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FreakingJSON PA Framework — Dashboard Server (v0.5.0-alpha)
+FreakingJSON PA Framework — Dashboard Server (v0.4.0-beta)
 
 Puente local entre dashboard.html y el framework + opencode.
 

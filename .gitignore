@@ -72,3 +72,5 @@ README-UPDATE-*.md
 TEST-INSTRUCTIONS-*.md
 VALIDATION-CHECKLIST.md
 Logo-*.png
+.atl/
+.pytest_cache/

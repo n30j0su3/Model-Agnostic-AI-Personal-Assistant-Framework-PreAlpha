@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.5.0-alpha (2026-08-15)
+## v0.4.0-beta (2026-08-15)
 
 ### Fixes Críticos
 - **opencode modo "FreakingJSON"**: ahora se pasa `--agent FreakingJSON` explícitamente (antes default era "Build")

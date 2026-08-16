@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FreakingJSON PA Framework — Skill Creator Automático (v0.5.0-alpha)
+FreakingJSON PA Framework — Skill Creator Automático (v0.4.0-beta)
 
 Genera skills automáticamente desde:
 1. Ejemplos de código existentes

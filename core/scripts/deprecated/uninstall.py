@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""v0.5.0-alpha: Desinstalador del PA Framework + dependencias opencode."""
+"""v0.4.0-beta: Desinstalador del PA Framework + dependencias opencode."""
 import os, sys, shutil, subprocess, json
 from pathlib import Path
 
@@ -14,7 +14,7 @@ def confirm(msg):
 def main():
     REPO_ROOT = Path(__file__).resolve().parent.parent
     print("=" * 60)
-    print("PA Framework - Desinstalador v0.5.0-alpha")
+    print("PA Framework - Desinstalador v0.4.0-beta")
     print("=" * 60)
     
     # 1) Datos personales (opcional preservar)

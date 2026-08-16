@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-v0.5.0-alpha: Seleccionar modelo free disponible desde opencode serve.
+v0.4.0-beta: Seleccionar modelo free disponible desde opencode serve.
 
 Descubre el puerto del serve (o lo arranca), consulta
 /config/providers, filtra modelos gratuitos (cost 0 / sufijo -free)

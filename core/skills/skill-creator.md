@@ -1,6 +1,6 @@
 # Skill Creator Automático
 
-> **Versión**: v0.5.0-alpha  
+> **Versión**: v0.4.0-beta  
 > **Propósito**: Generar skills automáticamente desde ejemplos o descripciones en lenguaje natural  
 > **Principios**: YAGNI, Impeccable, DRY, Local-First
 
@@ -281,4 +281,4 @@ python -c "import tomllib; tomllib.load(open('core/skills/mi-skill.toml', 'rb'))
 
 ---
 
-*Skill Creator v0.5.0-alpha — "De la idea a la skill en segundos"*
+*Skill Creator v0.4.0-beta — "De la idea a la skill en segundos"*

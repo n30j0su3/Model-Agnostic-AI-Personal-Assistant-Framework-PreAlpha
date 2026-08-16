@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FreakingJSON PA Framework — Dashboard Launcher (v0.5.0-alpha)
+FreakingJSON PA Framework — Dashboard Launcher (v0.4.0-beta)
 
 Launcher inteligente para usuarios no-tech:
 - Detecta SO (Windows/macOS/Linux)
@@ -195,7 +195,7 @@ def main():
     print()
     log("=" * 60, Colors.CYAN, bold=True)
     log("FreakingJSON PA Framework — Dashboard Launcher", Colors.BOLD)
-    log(f"v0.5.0-alpha | {platform.system()} {platform.release()} ({platform.machine()})", Colors.DIM)
+    log(f"v0.4.0-beta | {platform.system()} {platform.release()} ({platform.machine()})", Colors.DIM)
     log("=" * 60, Colors.CYAN)
     print()
     

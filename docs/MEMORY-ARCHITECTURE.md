@@ -18,7 +18,7 @@
 
 ---
 
-#### Definición Oficial de Capas (N30)
+#### Definición Oficial de Capas (el equipo)
 
 | **Capa** | **Rol** | **Naturaleza** | **Persistencia** |
 |---|---|---|---|

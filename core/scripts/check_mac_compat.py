@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""v0.5.0-alpha: Verificar compatibilidad macOS y ajustar paths."""
+"""v0.4.0-beta: Verificar compatibilidad macOS y ajustar paths."""
 import sys, os, platform, subprocess
 from pathlib import Path
 

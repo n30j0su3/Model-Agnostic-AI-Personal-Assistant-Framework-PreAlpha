@@ -5,7 +5,7 @@
 | **Campo** | **Valor** |
 |---|---|
 | **Versión** | `v0.3.7-alpha` |
-| **Aprobación** | ✅ Aprobado por **N30** |
+| **Aprobación** | ✅ Aprobado por **el equipo** |
 | **Fecha de aprobación** | `2026-04-21` |
 | **Estado release** | `READY FOR PUBLIC REPO` *(pendiente confirmación explícita para push)* |
 | **Artefacto final** | `PA-Framework-v0.3.7-alpha-FINAL-20260421.zip` |
@@ -26,9 +26,9 @@
 
 | **Regla** | **Estado** |
 |---|---|
-| **No publicar sin confirmación final de N30** | ✅ Activa |
+| **No publicar sin confirmación final de el equipo** | ✅ Activa |
 | **No cambios de alcance post-aprobación sin revalidación** | ✅ Activa |
 
 #### Siguiente paso operativo
 
-Esperando confirmación final de N30 para ejecutar publicación al repo público.
+Esperando confirmación final de el equipo para ejecutar publicación al repo público.

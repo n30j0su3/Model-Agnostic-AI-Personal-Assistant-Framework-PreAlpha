@@ -85,7 +85,7 @@ python core/scripts/session_end.py
 ## 📖 EXTENDED DOCUMENTATION
 
 - **Full docs**: `AGENTS-full.md` — Complete initialization protocol, CORE processes, enforcement system
-- **Quick menu**: `python core/scripts/pa.py` — Interactive menu (N30 spec)
+- **Quick menu**: `python core/scripts/pa.py` — Interactive menu (el equipo spec)
 
 ---
 
