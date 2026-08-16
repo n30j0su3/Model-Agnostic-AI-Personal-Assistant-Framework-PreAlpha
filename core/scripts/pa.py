@@ -355,6 +355,8 @@ def _framework_bootstrap() -> bool:
     """v0.4.0-beta: validación + inicialización REAL del framework antes de
     lanzar el CLI. Ejecuta session_start.py (auto-heal + migraciones + carga
     de contexto). Si falla algo crítico, avisa pero no bloquea el chat."""
+    _run_skills_indexer()  # v0.4.0-beta: índice de skills siempre fresco en el arranque
+    _rebuild_interactions_index()  # v0.4.0-beta: métricas de uso siempre reales
     script = SCRIPT_DIR / "session_start.py"
     if not script.exists():
         return True  # nada que ejecutar; no bloquear
@@ -369,6 +371,43 @@ def _framework_bootstrap() -> bool:
     except Exception as e:
         print_warn(f"Bootstrap del framework omitido: {e}")
         return True
+
+
+def _run_skills_indexer() -> bool:
+    """v0.4.0-beta: regenera core/.context/knowledge/skills-index.json en cada
+    arranque (pa.bat / pa.sh). Best-effort: nunca bloquea el menú principal.
+    Así el dashboard siempre muestra el inventario real de skills sin pasos
+    manuales."""
+    script = SCRIPT_DIR / "skills_indexer.py"
+    if not script.exists():
+        return False
+    try:
+        result = subprocess.run(
+            [get_python(), str(script)],
+            cwd=REPO_ROOT, capture_output=True, text=True, timeout=60,
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
+
+
+def _rebuild_interactions_index() -> bool:
+    """v0.4.0-beta: regenera interactions-index.json desde los logs reales
+    (knowledge/interactions/*.log) para que las métricas del dashboard
+    reflejen uso real, nunca datos demo. Best-effort, nunca bloquea."""
+    script = SCRIPT_DIR / "interaction_logger.py"
+    if not script.exists():
+        return False
+    try:
+        result = subprocess.run(
+            [get_python(), "-c",
+             "import sys; sys.path.insert(0, %r); from interaction_logger import "
+             "InteractionLogger; InteractionLogger().rebuild_interactions_index()" % str(SCRIPT_DIR)],
+            cwd=REPO_ROOT, capture_output=True, text=True, timeout=60,
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
 
 
 def try_auto_launch_cli(cli: str, prompt: str, workdir: Path) -> bool:

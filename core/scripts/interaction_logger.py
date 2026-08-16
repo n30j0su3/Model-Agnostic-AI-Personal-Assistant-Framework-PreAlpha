@@ -391,6 +391,45 @@ class InteractionLogger:
         
         return stats
 
+    def rebuild_interactions_index(self) -> Path:
+        """v0.4.0-beta: regenera knowledge/interactions-index.json contando
+        eventos REALES desde interactions/*.log (JSONL). Sin datos → índice
+        honestamente vacío. Nunca lanza: el índice queda como esté si falla."""
+        from datetime import datetime as _dt
+        by_tool: Dict[str, int] = {}
+        total = 0
+        out = KNOWLEDGE_DIR / 'interactions-index.json'
+        try:
+            for log_file in sorted(INTERACTIONS_DIR.glob('interactions-*.log')) + \
+                             sorted(INTERACTIONS_DIR.glob('archive/interactions-*.log')):
+                for line in log_file.read_text(encoding='utf-8', errors='replace').splitlines():
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        d = json.loads(line)
+                    except Exception:
+                        continue
+                    total += 1
+                    t = d.get('event') or d.get('event_type') or d.get('tool') or 'other'
+                    by_tool[t] = by_tool.get(t, 0) + 1
+            index = {
+                'version': '1.0',
+                'description': 'Índice de interacciones reales del framework '
+                               '(contadas desde knowledge/interactions/*.log)',
+                'last_updated': _dt.now().isoformat(),
+                'total_events': total,
+                'interactions': [
+                    {'tool': t, 'count': c}
+                    for t, c in sorted(by_tool.items(), key=lambda x: -x[1])
+                ],
+            }
+            out.write_text(json.dumps(index, indent=2, ensure_ascii=False),
+                           encoding='utf-8')
+            return out
+        except Exception:
+            return out
+
 
 def print_stats(stats: Dict[str, Any], date: str):
     """Imprimir estadísticas en formato legible."""

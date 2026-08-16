@@ -299,6 +299,28 @@ Bienvenida. Este framework actúa como asistente personal para tareas diarias, i
             [sys.executable, str(kb_init_script), "--force"], cwd=REPO_ROOT, check=False
         )
 
+    # v0.4.0-beta: generar índice de skills automáticamente al instalar
+    # (el dashboard lo lee en core/.context/knowledge/skills-index.json)
+    skills_idx = SCRIPT_DIR / "skills_indexer.py"
+    if skills_idx.exists():
+        print_info("Generando índice de skills...")
+        r = subprocess.run(
+            [sys.executable, str(skills_idx)], cwd=REPO_ROOT, check=False,
+            capture_output=True, text=True,
+        )
+        if r.returncode == 0:
+            idx = REPO_ROOT / "core" / ".context" / "knowledge" / "skills-index.json"
+            n = "?"
+            try:
+                import json as _json
+                data = _json.loads(idx.read_text(encoding="utf-8"))
+                n = len(data.get("skills", []))
+            except Exception:
+                pass
+            print_ok(f"Índice de skills generado ({n} skills)")
+        else:
+            print_warn("skills_indexer falló — el arranque de pa.bat lo reintentará")
+
     # Done - Mensaje según sistema operativo
     system_name = platform.system()
     if system_name == "Windows":

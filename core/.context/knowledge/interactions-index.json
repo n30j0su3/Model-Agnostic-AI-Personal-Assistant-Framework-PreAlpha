@@ -1,28 +1,7 @@
 {
-  "interactions": [
-    {
-      "tool": "terminal",
-      "count": 320
-    },
-    {
-      "tool": "read_file",
-      "count": 280
-    },
-    {
-      "tool": "patch",
-      "count": 190
-    },
-    {
-      "tool": "delegate_task",
-      "count": 110
-    },
-    {
-      "tool": "search_files",
-      "count": 160
-    },
-    {
-      "tool": "write_file",
-      "count": 65
-    }
-  ]
+  "version": "1.0",
+  "description": "Índice de interacciones reales del framework (contadas desde knowledge/interactions/*.log)",
+  "last_updated": "2026-08-16T12:11:42.740386",
+  "total_events": 0,
+  "interactions": []
 }

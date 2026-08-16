@@ -391,7 +391,8 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
                             </svg>
                         </button>
-                        <button onclick="router.navigate('console')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="console" title="Consola">
+                        <!-- v0.4.0-beta: Consola (puente local) oculta hasta v0.5 — no desarrollada/completa -->
+                        <button onclick="router.navigate('console')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors hidden" data-page="console" title="Consola" aria-hidden="true">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 3h3M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/>
                             </svg>
@@ -560,7 +561,23 @@
                 modelo_save: 'Guardar selección',
                 modelo_saved: '✓ Modelo guardado en .opencode/config.json',
                 modelo_error: '✗ Error: no se pudo conectar con opencode serve',
-                modelo_help: 'Ejecuta `python core/scripts/select_free_model.py` o usa el menú de pa.py → Comportamiento Agente → M'
+                modelo_help: 'Ejecuta `python core/scripts/select_free_model.py` o usa el menú de pa.py → Comportamiento Agente → M',
+                modelo_no_bridge: '(requiere el puente local: python core/scripts/dashboard_server.py)',
+                modelo_no_free: 'No se encontraron modelos free',
+                modelo_detect_err: 'Error: no se pudo conectar con opencode serve. Ejecuta dashboard_server.py primero.',
+                modelo_pick_first: 'Selecciona un modelo primero',
+                modelo_detecting: 'Detectando…',
+                docs_title: 'Documentación',
+                docs_subtitle: 'Guía completa del framework — incluida, funciona sin internet.',
+                docs_pick: 'Selecciona un documento…',
+                kpi_sessions: 'Sesiones',
+                kpi_registered: 'registradas en el índice',
+                kpi_skills: 'Skills',
+                kpi_indexed: 'indexadas (core)',
+                kpi_interactions: 'Interacciones',
+                kpi_tools: 'uso acumulado de herramientas',
+                kpi_quality: 'Calidad',
+                kpi_errors_unit: 'errores registrados'
             },
             en: {
                 hero_title: 'Your Personal AI Assistant.',
@@ -598,7 +615,23 @@
                 modelo_save: 'Save selection',
                 modelo_saved: '✓ Model saved to .opencode/config.json',
                 modelo_error: '✗ Error: could not connect to opencode serve',
-                modelo_help: 'Run `python core/scripts/select_free_model.py` or use pa.py menu → Agent Behavior → M'
+                modelo_help: 'Run `python core/scripts/select_free_model.py` or use pa.py menu → Agent Behavior → M',
+                modelo_no_bridge: '(local bridge required: python core/scripts/dashboard_server.py)',
+                modelo_no_free: 'No free models found',
+                modelo_detect_err: 'Error: could not connect to opencode serve. Run dashboard_server.py first.',
+                modelo_pick_first: 'Select a model first',
+                modelo_detecting: 'Detecting…',
+                docs_title: 'Documentation',
+                docs_subtitle: 'Complete framework guide — included, works offline.',
+                docs_pick: 'Pick a document…',
+                kpi_sessions: 'Sessions',
+                kpi_registered: 'registered in index',
+                kpi_skills: 'Skills',
+                kpi_indexed: 'indexed (core)',
+                kpi_interactions: 'Interactions',
+                kpi_tools: 'cumulative tool usage',
+                kpi_quality: 'Quality',
+                kpi_errors_unit: 'logged errors'
             }
         };
         let currentLang = localStorage.getItem('pa-dashboard-lang') || 'es';
@@ -715,15 +748,9 @@
                 } catch (e) {
                     console.warn('[Interactions] Fetch failed, using fallback');
                 }
-                store.interactions = [
-                    { tool: 'terminal', count: 320 },
-                    { tool: 'read_file', count: 280 },
-                    { tool: 'patch', count: 190 },
-                    { tool: 'search_files', count: 160 },
-                    { tool: 'delegate_task', count: 110 },
-                    { tool: 'write_file', count: 65 }
-                ];
-                store.stats.totalInteractions = store.interactions.reduce((a,b) => a + (b.count||0), 0);
+                // v0.4.0-beta: sin datos falsos — 0 interacciones hasta que existan logs reales
+                store.interactions = [];
+                store.stats.totalInteractions = 0;
             },
 
             async loadSkills() {
@@ -764,9 +791,16 @@
             },
 
             async loadLPSErrors() {
-                store.lspErrors = [
-                    { file: 'session-start.py', line: 283, severity: 'warning', message: 'Type hint mismatch' }
-                ];
+                // v0.4.0-beta: errores reales desde knowledge/errors/index.json (0 si no hay)
+                try {
+                    const response = await fetch('core/.context/knowledge/errors/index.json');
+                    if (response.ok) {
+                        const data = await response.json();
+                        store.lspErrors = data.errors || [];
+                        return;
+                    }
+                } catch (e) { /* file:// o índice inexistente */ }
+                store.lspErrors = [];
             },
 
             calculateStats() {
@@ -779,12 +813,13 @@
             },
 
             loadDemoData() {
-                store.sessions = [
-                    { id: '2026-03-04', title: 'Release v0.4.0-beta + Knowledge Base', summary: 'Release oficial con implementación completa', topics: ['release', 'knowledge-base'], type: 'release', stats: { interactions: 85, files_modified: 15, decisions: 5 } },
-                    { id: '2026-03-03', title: 'Fix README técnico', summary: 'Corrección de documentación en PROD', topics: ['fix', 'docs'], type: 'bugfix', stats: { interactions: 25, files_modified: 3, decisions: 2 } },
-                    { id: '2026-02-28', title: 'Investigación MCP', summary: 'Research sobre Model Context Protocol', topics: ['research', 'mcp'], type: 'research', stats: { interactions: 45, files_modified: 2, decisions: 3 } }
-                ];
-                store.stats.totalSessions = 7;
+                // v0.4.0-beta: SIN datos demo falsos. Si no hay índices reales,
+                // el dashboard muestra estados vacíos reales (empty states).
+                store.sessions = [];
+                store.interactions = [];
+                store.lspErrors = [];
+                store.stats.totalSessions = 0;
+                store.stats.totalInteractions = 0;
             }
         };
 
@@ -796,6 +831,7 @@
         // ============================================
         const docsPage = {
             current: null,
+            lang: localStorage.getItem('pa-docs-lang') || 'es',
             show(id) {
                 this.current = id;
                 document.querySelectorAll('.doc-tab').forEach(b => {
@@ -803,7 +839,9 @@
                     b.classList.toggle('bg-lime-400/10', active);
                     b.classList.toggle('text-lime-300', active);
                 });
-                const src = document.getElementById('docsrc-' + id);
+                // v0.4.0-beta: fuente según idioma activo — docsrc-<id> (es) o docsrc-<id>__en
+                let src = document.getElementById('docsrc-' + id + (this.lang === 'en' ? '__en' : ''));
+                if (!src) src = document.getElementById('docsrc-' + id); // fallback al original
                 const out = document.getElementById('docs-content');
                 if (!src || !out) return;
                 out.innerHTML = '<p class="text-slate-500 text-sm">Cargando…</p>';
@@ -811,10 +849,31 @@
                     out.innerHTML = mdToHtml(src.textContent);
                     out.scrollTop = 0;
                 });
+            },
+            setLang(lang) {
+                this.lang = lang;
+                localStorage.setItem('pa-docs-lang', lang);
+                this.updateLangButtons();
+                if (this.current) this.show(this.current); // re-render con el nuevo idioma
+            },
+            updateLangButtons() {
+                const es = document.getElementById('doc-lang-es');
+                const en = document.getElementById('doc-lang-en');
+                if (es) {
+                    es.classList.toggle('bg-lime-400/15', this.lang === 'es');
+                    es.classList.toggle('text-lime-300', this.lang === 'es');
+                }
+                if (en) {
+                    en.classList.toggle('bg-lime-400/15', this.lang === 'en');
+                    en.classList.toggle('text-lime-300', this.lang === 'en');
+                }
             }
         };
 
         function mdToHtml(md) {
+            // Seguridad: el contenido proviene de <script type="text/markdown"> embebidos
+            // en este mismo archivo (autores del framework, no input externo) y pasa por
+            // esc() antes de cualquier transformación inline.
             const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
             const inline = s => {
                 return esc(s)
@@ -825,35 +884,67 @@
             };
             const lines = md.split('\n');
             const out = [];
-            let inCode = false, inList = false;
+            let inCode = false, inList = false, inOList = false, inTable = false;
+            const closeList = () => { if (inList) { out.push('</ul>'); inList = false; } if (inOList) { out.push('</ol>'); inOList = false; } };
+            const closeTable = () => { if (inTable) { out.push('</tbody></table></div>'); inTable = false; } };
+            // v0.4.0-beta: fila de tabla GFM: | celda | celda |
+            const isTableRow = l => /^\|.*\|$/.test(l.trim());
+            const splitRow = l => l.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+            const isSeparator = l => /^\|[\s:|-]+\|$/.test(l.trim());
             for (let line of lines) {
                 if (line.trim().startsWith('\u0060\u0060\u0060')) {
                     if (inCode) { out.push('</code></pre>'); inCode = false; }
-                    else { out.push("<pre class='bg-slate-950/80 border border-slate-700 rounded-lg p-4 my-3 overflow-x-auto text-xs text-slate-300'><code>"); inCode = true; }
+                    else { closeList(); closeTable(); out.push("<pre class='bg-slate-950/80 border border-slate-700 rounded-lg p-4 my-3 overflow-x-auto text-xs text-slate-300'><code>"); inCode = true; }
                     continue;
                 }
                 if (inCode) { out.push(esc(line)); continue; }
                 const s = line.trim();
-                if (!s) { if (inList) { out.push('</ul>'); inList = false; } continue; }
+                if (!s) { closeList(); closeTable(); continue; }
+                // --- tablas GFM ---
+                if (isTableRow(s)) {
+                    if (isSeparator(s)) continue; // fila separadora header/body
+                    const cells = splitRow(s);
+                    if (!inTable) {
+                        closeList();
+                        out.push("<div class='overflow-x-auto my-3'><table class='w-full text-sm border-collapse'><thead><tr class='border-b border-slate-700 text-left text-lime-300'>" +
+                            cells.map(c => `<th class='px-3 py-2 font-semibold'>${inline(c)}</th>`).join('') + '</tr></thead><tbody>');
+                        inTable = true;
+                        continue;
+                    }
+                    out.push("<tr class='border-b border-slate-800/60 text-slate-300'>" +
+                        cells.map(c => `<td class='px-3 py-2'>${inline(c)}</td>`).join('') + '</tr>');
+                    continue;
+                } else {
+                    closeTable();
+                }
                 let m = s.match(/^(#{1,4})\s+(.*)/);
                 if (m) {
-                    if (inList) { out.push('</ul>'); inList = false; }
+                    closeList();
                     const lvl = Math.min(m[1].length + 1, 5);
                     const cls = {2:'text-xl font-bold text-white mt-6 mb-2',3:'text-lg font-semibold text-lime-300 mt-5 mb-2',4:'text-base font-semibold text-white mt-4 mb-1',5:'text-sm font-semibold text-slate-200 mt-3 mb-1'}[lvl];
                     out.push(`<h${lvl} class='${cls}'>${inline(m[2])}</h${lvl}>`);
                     continue;
                 }
+                // v0.4.0-beta: listas numeradas (1. item)
+                m = s.match(/^\d+[.)]\s+(.*)/);
+                if (m) {
+                    if (inList) { out.push('</ul>'); inList = false; }
+                    if (!inOList) { out.push("<ol class='list-decimal list-inside space-y-1 text-slate-300 text-sm my-2'>"); inOList = true; }
+                    out.push(`<li>${inline(m[1])}</li>`);
+                    continue;
+                }
                 m = s.match(/^[-*]\s+(.*)/);
                 if (m) {
+                    if (inOList) { out.push('</ol>'); inOList = false; }
                     if (!inList) { out.push("<ul class='list-disc list-inside space-y-1 text-slate-300 text-sm my-2'>"); inList = true; }
                     out.push(`<li>${inline(m[1])}</li>`);
                     continue;
                 }
-                if (s.startsWith('>')) { out.push(`<blockquote class='border-l-2 border-lime-400/50 pl-3 text-slate-400 italic text-sm my-2'>${inline(s.slice(1).trim())}</blockquote>`); continue; }
-                if (inList) { out.push('</ul>'); inList = false; }
+                if (s.startsWith('>')) { closeList(); out.push(`<blockquote class='border-l-2 border-lime-400/50 pl-3 text-slate-400 italic text-sm my-2'>${inline(s.slice(1).trim())}</blockquote>`); continue; }
+                closeList();
                 out.push(`<p class='text-slate-300 text-sm leading-relaxed my-2'>${inline(s)}</p>`);
             }
-            if (inList) out.push('</ul>');
+            closeList(); closeTable();
             if (inCode) out.push('</code></pre>');
             return out.join('\n');
         }
@@ -862,6 +953,8 @@
             currentPage: 'home',
             
             navigate(page) {
+                // v0.4.0-beta: Consola deshabilitada (puente local incompleto) — redirigir a home
+                if (page === 'console') page = 'home';
                 this.currentPage = page;
                 this.updateNavState();
                 this.render();
@@ -1087,10 +1180,10 @@
                             <h2 class="text-3xl font-bold text-center mb-12">Framework Internals</h2>
                             
                             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
-                                ${components.kpiCard(store.stats.totalSessions, 'Sesiones', '+3 esta semana', 'blue')}
-                                ${components.kpiCard(store.stats.totalSkills, 'Skills', '+2 nuevas', 'purple')}
-                                ${components.kpiCard(store.stats.totalInteractions, 'Interacciones', '+156 hoy', 'green')}
-                                ${components.kpiCard(store.stats.codeQuality + '%', 'Calidad', '3 errores', 'amber')}
+                                ${components.kpiCard(store.stats.totalSessions, t('kpi_sessions'), t('kpi_registered'), 'blue')}
+                                ${components.kpiCard(store.stats.totalSkills, t('kpi_skills'), t('kpi_indexed'), 'purple')}
+                                ${components.kpiCard(store.stats.totalInteractions, t('kpi_interactions'), t('kpi_tools'), 'green')}
+                                ${components.kpiCard(store.stats.codeQuality + '%', t('kpi_quality'), store.lspErrors.length + ' ' + t('kpi_errors_unit'), 'amber')}
                             </div>
                             
                             <div class="text-center">
@@ -1241,10 +1334,10 @@
                         <div id="fw-tab-overview" class="fw-tab-content">
                             <!-- KPIs -->
                             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                                ${components.kpiCard(store.stats.totalSessions, 'Sesiones Totales', '+12% vs mes anterior', 'blue')}
-                                ${components.kpiCard(store.stats.totalSkills, 'Skills Disponibles', '+2 este mes', 'purple')}
-                                ${components.kpiCard(store.stats.totalInteractions, 'Interacciones', '+156 esta semana', 'green')}
-                                ${components.kpiCard(store.stats.codeQuality + '%', 'Calidad Código', '3 errores LSP', 'amber')}
+                                ${components.kpiCard(store.stats.totalSessions, t('kpi_sessions'), t('kpi_registered'), 'blue')}
+                                ${components.kpiCard(store.stats.totalSkills, t('kpi_skills'), t('kpi_indexed'), 'purple')}
+                                ${components.kpiCard(store.stats.totalInteractions, t('kpi_interactions'), t('kpi_tools'), 'green')}
+                                ${components.kpiCard(store.stats.codeQuality + '%', t('kpi_quality'), store.lspErrors.length + ' ' + t('kpi_errors_unit'), 'amber')}
                             </div>
 
                             <!-- Charts -->
@@ -1601,14 +1694,21 @@
         docs() {
             const tabs = window.__DOCS_META__ || [];
             return `
+            <div class="h-full overflow-y-auto page-transition">
             <div class="max-w-7xl mx-auto px-4 py-8 fade-in">
-                <div class="mb-6">
-                    <h1 class="text-3xl font-bold text-white">📚 Documentación</h1>
-                    <p class="text-slate-400 mt-1">Guía completa del framework — incluida, funciona sin internet.</p>
+                <div class="mb-6 flex items-start justify-between gap-4 flex-wrap">
+                    <div>
+                        <h1 class="text-3xl font-bold text-white">📚 ${t('docs_title')}</h1>
+                        <p class="text-slate-400 mt-1">${t('docs_subtitle')}</p>
+                    </div>
+                    <div class="flex gap-1 bg-slate-900/60 border border-slate-800 rounded-lg p-1 shrink-0" role="tablist" aria-label="Idioma documentación">
+                        <button id="doc-lang-es" onclick="docsPage.setLang('es')" class="px-3 py-1.5 rounded text-xs font-medium transition-colors">ES</button>
+                        <button id="doc-lang-en" onclick="docsPage.setLang('en')" class="px-3 py-1.5 rounded text-xs font-medium transition-colors">EN</button>
+                    </div>
                 </div>
                 <div class="flex flex-col lg:flex-row gap-6">
                     <aside class="lg:w-64 shrink-0">
-                        <div class="bg-slate-900/60 rounded-2xl border border-slate-800 p-3 space-y-1 lg:sticky lg:top-20">
+                        <div class="bg-slate-900/60 rounded-2xl border border-slate-800 p-3 space-y-1 lg:sticky lg:top-4">
                             ${tabs.map(d => `
                             <button onclick="docsPage.show('${d.id}')" data-doc="${d.id}"
                                 class="doc-tab w-full text-left px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors">
@@ -1618,10 +1718,11 @@
                     </aside>
                     <main class="flex-1 min-w-0">
                         <div id="docs-content" class="bg-slate-900/40 rounded-2xl border border-slate-800 p-6 lg:p-8 max-w-4xl">
-                            <p class="text-slate-500 text-sm">Selecciona un documento…</p>
+                            <p class="text-slate-500 text-sm">${t('docs_pick')}</p>
                         </div>
                     </main>
                 </div>
+            </div>
             </div>`;
         },
 
@@ -2595,8 +2696,10 @@
             },
             
             runIndexer() {
-                app.showHowTo('🗂️ Indexar Skills', 'Para regenerar el índice de skills, ejecuta en la terminal:', {
-                    'Comando': 'python core/scripts/generate_skills_index.py'
+                // v0.4.0-beta: el índice se genera automáticamente al arrancar pa.bat/pa.sh.
+                // Regeneración manual = skills_indexer.py (script real que existe).
+                app.showHowTo('🗂️ Indexar Skills', 'El índice se regenera solo en cada arranque (pa.bat / pa.sh). Manual:', {
+                    'Comando': 'python core/scripts/skills_indexer.py'
                 });
             },
 
@@ -2859,26 +2962,21 @@
             },
             
             async loadCurrentModel() {
+                // v0.4.0-beta: GET /api/config/model (server bridge) — lee .opencode/config.json
+                // En file:// o sin bridge → estado "sin puente" honesto.
+                const el = document.getElementById('modelo-current');
                 try {
-                    const resp = await fetch('/config');
+                    const resp = await fetch('/api/config/model');
                     if (resp.ok) {
                         const cfg = await resp.json();
-                        this.currentModel = cfg.model || '(no configurado)';
+                        this.currentModel = cfg.model || '';
+                        if (el) el.textContent = this.currentModel || '(sin modelo configurado)';
+                        if (cfg.agent && el) el.title = 'Agente: ' + cfg.agent;
+                        return;
                     }
-                } catch(e) {
-                    // fallback: leer de .opencode/config.json
-                    try {
-                        const resp = await fetch('.opencode/config.json');
-                        if (resp.ok) {
-                            const cfg = await resp.json();
-                            this.currentModel = cfg.model || '(no configurado)';
-                        }
-                    } catch(e2) {
-                        this.currentModel = '(no configurado)';
-                    }
-                }
-                const el = document.getElementById('modelo-current');
-                if (el) el.textContent = this.currentModel;
+                } catch(e) { /* sin bridge */ }
+                this.currentModel = '';
+                if (el) el.textContent = t('modelo_no_bridge');
             },
             
             async detect() {
@@ -2888,7 +2986,7 @@
                 
                 if (btn) {
                     btn.disabled = true;
-                    btn.innerHTML = 'Detectando…';
+                    btn.innerHTML = t('modelo_detecting');
                 }
                 
                 try {
@@ -2897,7 +2995,7 @@
                     const models = await resp.json();
                     
                     if (models && models.length > 0) {
-                        select.innerHTML = '<option value="">Selecciona un modelo…</option>';
+                        select.innerHTML = `<option value="">${t('modelo_select_ph')}</option>`;
                         models.forEach(m => {
                             const opt = document.createElement('option');
                             opt.value = m;
@@ -2906,15 +3004,15 @@
                         });
                         if (results) results.classList.remove('hidden');
                     } else {
-                        this.showFeedback('No se encontraron modelos free', 'error');
+                        this.showFeedback(t('modelo_no_free'), 'error');
                     }
                 } catch(e) {
-                    this.showFeedback('Error: no se pudo conectar con opencode serve. Ejecuta dashboard_server.py primero.', 'error');
+                    this.showFeedback(t('modelo_detect_err'), 'error');
                 }
                 
                 if (btn) {
                     btn.disabled = false;
-                    btn.innerHTML = 'Detectar modelos free';
+                    btn.innerHTML = t('modelo_detecting') === 'Detectando…' ? 'Detectar modelos free' : 'Detect free models';
                 }
             },
             
@@ -2924,7 +3022,7 @@
                 const feedback = document.getElementById('modelo-feedback');
                 
                 if (!model) {
-                    this.showFeedback('Selecciona un modelo primero', 'error');
+                    this.showFeedback(t('modelo_pick_first'), 'error');
                     return;
                 }
                 
@@ -3428,9 +3526,690 @@ Hecho con ❤️ por **FreakingJSON**.
 > *"I own my context. I am FreakingJSON."*
 > 
 > **"El conocimiento verdadero trasciende a lo público."**
+</script>
+<script type="text/markdown" id="docsrc-overview__en">
+# Model-Agnostic AI Personal Assistant Framework v0.4.0-beta
+<!-- ================================================================ -->
+<!-- ARE YOU A NEW USER OR DON'T KNOW HOW TO CODE?                    -->
+<!-- Read README-simple.md — it's the guide designed for you.         -->
+<!-- ================================================================ -->
 
+> 💡 **First time using the framework?**  
+> **Read [README-simple.md](./README-simple.md)** — it's the guide designed for users without technical experience.  
+> This file (README.md) contains detailed documentation for advanced users.
+
+---
+
+> "Your Personal AI Assistant. Your Knowledge. Your Control."
+
+[![Release](https://img.shields.io/badge/release-v0.4.0-beta)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.4.0-beta)
+[![Instagram](https://img.shields.io/badge/Instagram-%40freakingjson-E4405F?logo=instagram&logoColor=white)](https://instagram.com/freakingjson)
+[![Linktree](https://img.shields.io/badge/Linktree-@freakingjson-43E55C?logo=linktree&logoColor=white)](https://linktr.ee/freakingjson)
+[![Blog](https://img.shields.io/badge/Blog-freakingjson.com-FFA500?logo=firefoxbrowser&logoColor=white)](https://freakingjson.com)
+[![Changelog](https://img.shields.io/badge/changelog-keep%20a%20changelog-green)](./CHANGELOG.md)
+![Stage](https://img.shields.io/badge/stage-alpha-red)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+[🇪🇸 Versión en Español](./README.md)
+
+> **"True knowledge transcends the public."**
+
+---
+
+## 📢 Latest Version
+
+**v0.4.0-beta** - Memory Pipeline + Core Stabilization
+- Memory Pipeline system for cross-session persistence (CLI + automodes)
+- Release sanitization for public distribution
+- Public agent by default for OpenCode
+- Strengthened validations for references
+- Safe update with context and workspaces preservation
+- Optimized session management
+
+📄 [View Changelog](./CHANGELOG.md) | 🏷️ [View Releases](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases)
+> 
+> — *FreakingJSON*
+
+---
+
+## 🎯 Goal and Philosophy
+
+**What is this?**
+
+An artificial intelligence assistant that lives on **your computer**, not on third-party servers. Your conversations, documents, and knowledge stay in local files that **you fully control**.
+
+**The philosophy is simple:**
+
+- 📍 **Local-first**: Everything runs on your PC, without constant internet dependency
+- 🔐 **Your control**: Your information is never sold or used to train other people's models
+- 🔄 **No vendor lock-in**: Works with OpenAI, Claude, Gemini, or local models. You choose.
+
+> *"True knowledge transcends the public, but must remain under your control."*
+
+---
+
+## ✨ Main Features
+
+| Feature | Description |
+|---------|-------------|
+| 🤖 **Multi-AI** | Compatible with OpenCode, Claude Code, Gemini CLI, and more |
+| 📁 **Your files** | All your knowledge in `.md` files that you can edit, move, or back up |
+| 🛠️ **22 Skills included** | Work with Excel, PDF, Word, Markdown, Dashboards, tasks, and more |
+| 🌍 **Bilingual** | Interface and documentation in Spanish and English |
+| 📅 **Daily sessions** | The assistant remembers context across conversations |
+| ⚡ **Easy to use** | Install in 3 steps, no complex configurations |
+| 🎛️ **SPA Dashboard** | Visualize the framework status in your browser |
+| 📊 **Structured Task Flow** | Guided execution for complex tasks with traceability |
+
+---
+
+## ⚡ Quick Start (Windows)
+
+> 💡 **Also available for Mac and Linux** - see notes at the end.
+
+### Step 1: Download
+```powershell
+# Option A: With Git (recommended for updates)
+git clone https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha.git
+
+# Option B: Download ZIP from the Releases page above ↑
+```
+
+### Step 2: Run
+```powershell
+# Enter the folder and run:
+cd Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha
+pa.bat
+```
+
+### Step 3: Configure
+The installer will ask you 3 simple questions:
+1. What language do you prefer? (Español/English)
+2. What AI tool will you primarily use? (OpenCode, Claude, etc.)
+3. What is your name? (to personalize the assistant)
+
+### Done! 🎉
+
+Your assistant is configured. Now you can:
+- Type `pa.bat` to start a session
+- Ask for help with documents, data, or daily tasks
+- Use the SPA Dashboard to visualize the framework status
+
+---
+
+## 🔄 How to Update Without Losing Your Information
+
+Use the official updater:
+
+```powershell
+python core/scripts/update.py --check
+python core/scripts/update.py
+```
+
+The official process:
+- creates a preservation backup before updating
+- integrates framework improvements
+- restores your user files
+- runs migrations to maintain compatibility
+
+Automatically preserved, among others:
+- `workspaces/`
+- `core/.context/sessions/`
+- `core/.context/codebase/`
+- Mutable KB in `core/.context/knowledge/`
+- `config/mcp.json`, `config/quotas.json`, `opencode.jsonc`
+
+Complete guide: `docs/UPDATE-GUIDE.md`
+
+---
+
+## 📋 Prerequisites
+
+### Hardware
+| Minimum | Recommended |
+|---------|-------------|
+| 4 CPU cores | 8 CPU cores |
+| 8 GB RAM | 16 GB RAM |
+| 2 GB free space | 5 GB free space |
+
+### Software
+- **Windows 10/11** (also available for macOS 12+ and modern Linux)
+- **Python 3.11+** *(installed automatically if missing)*
+- **Git** *(optional, only for updates)*
+
+### Optional: AI Accounts
+To use advanced models (GPT-4, Claude, etc.) you'll need:
+- A free account with the provider of your choice
+- API key (we explain how to get it in the full documentation)
+
+> 💡 **It also works without an API key** - you can use free local models like Ollama.
+
+---
+
+## ❓ Basic FAQ
+
+**Do I need to know how to code?**
+→ **No.** This guide is designed for anyone. If you know how to use a basic terminal, that's enough.
+
+**Is it free?**
+→ **The framework is 100% free** (MIT license). Some AI providers (OpenAI, etc.) may charge for intensive usage, but free options are available.
+
+**Is my data mine?**
+→ **Yes, completely.** Everything stays on your computer in text files. We don't send your information to external servers without your explicit permission.
+
+**Can I use it without internet?**
+→ **Partially.** The framework works offline, but you'll need internet to consult cloud AI models. You can also install local models (like Ollama) for 100% offline work.
+**How do I update the framework?**
+→ Use the official updater:
+
+```bash
+python core/scripts/update.py --check
+python core/scripts/update.py
+```
+
+This way your sessions, context, KB, and workspaces are automatically preserved.
+
+**Can updates overwrite my data?**
+→ **No, if you use the framework's official flow.** The updater creates a backup, restores user state, and applies migrations to integrate new features without losing personal information.
+**What if something doesn't work?**
+→ Check our complete documentation or open an issue on GitHub. The community helps you.
+
+---
+
+## 🔗 Complete Documentation
+
+**Are you a developer or need detailed technical information?**
+
+👉 [View complete technical documentation in the development repository](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework/tree/main/docs/technical)
+
+Includes:
+- Safe update guide and data preservation
+- Advanced installation by operating system
+- Configuration of multiple AI models
+- Custom skills development guide
+- Framework technical architecture
+- Detailed troubleshooting
+
+---
+
+## 🍎 🐧 Note for Mac and Linux users
+
+This framework also works on **macOS 12+** and **modern Linux** (Ubuntu 20.04+, Fedora, etc.).
+
+**Equivalent commands:**
+```bash
+# Instead of pa.bat, use:
+./pa.sh
+
+# Installation:
+python3 core/scripts/install.py
+```
+
+The structure and behavior are identical. Only the script file extensions change.
+
+---
+
+## 🙏 Acknowledgments
+
+Thanks to God for the Grace, Revelation, and Discernment necessary to build this framework.
+
+Thanks to my family for their love and patience, and to all my loved ones (they know who they are).
+
+A special thanks to **[NetworkChuck](https://www.youtube.com/@NetworkChuck)** for inspiring the core philosophy of this project:
+
+> *"I own my context. Nothing annoys me more than when AI tries to fence me in, give me vendor lock-in. No, I reject that."*
+
+Their approach to data sovereignty and accessible learning was fundamental to the design of this framework.
+
+---
+
+Made with ❤️ by **FreakingJSON**.
+
+### 🔗 Connect with FreakingJSON
+
+- 📸 **Instagram**: [@freakingjson](https://instagram.com/freakingjson)
+- 🌐 **All networks**: [linktr.ee/freakingjson](https://linktr.ee/freakingjson)
+- 📝 **Tech & Homelab Blog**: [freakingjson.com](https://freakingjson.com)
+- ☕ **Support the project**: [buymeacoffee.com/freakingjson](https://buymeacoffee.com/freakingjson)
+
+> *"I own my context. I am FreakingJSON."*
+> 
+> **"True knowledge transcends the public."**
 </script>
 <script type="text/markdown" id="docsrc-getting_started">
+# 🚀 Primeros pasos con PA Framework
+
+> **Tutorial visual de 5 minutos para nuevos usuarios**
+> 
+> *Versión: v0.3.8-alpha | Actualizado: abril de 2026*
+
+---
+
+## 📖 Lo que vas a aprender
+
+En solo 5 minutos vas a saber cómo:
+1. ✅ Instalar el framework en tu computadora
+2. ✅ Iniciar tu primera sesión
+3. ✅ Entender los conceptos clave
+4. ✅ Hacer tus primeras preguntas
+5. ✅ Acceder al panel visual
+
+---
+
+## 🎯 ¿Qué es PA Framework?
+
+PA Framework es tu **asistente personal de IA** que vive en tu computadora. 
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    TU COMPUTADORA                       │
+│  �───────────────────────────────────────────────────┐  │
+│  │              PA Framework                         │  │
+│  │  �─────────┐ ┌─────────┐ ┌─────────────────────┐ │  │
+│  │  │ Sesiones│ │ Skills  │ │   Base de Conocim.  │ │  │
+│  │  │(Memoria)│ │(Herram.)│ │   (Tus archivos)    │ │  │
+│  │  └─────────┘ └─────────┘ └─────────────────────┘ │  │
+│  └───────────────────────────────────────────────────┘  │
+│                          ↑                              │
+│                    TU CONTROLAS                         │
+│                     TODO                               │
+└─────────────────────────────────────────────────────────┘
+```
+
+### ¿Por qué PA Framework?
+
+| Apps tradicionales de IA | PA Framework |
+|---------------------|--------------|
+| � Los datos se guardan en servidores de la empresa | ✅ Los datos se quedan en TU computadora |
+| ❌ No recuerdan conversaciones pasadas | ✅ Recuerda todas tus sesiones |
+| ❌ Limitado a un único proveedor de IA | ✅ Funciona con OpenAI, Claude, Gemini o IA local |
+| ❌ No se puede personalizar | ✅ Puedes editar todo |
+
+---
+
+## ⚡ Paso 1: Instalación rápida (2 minutos)
+
+### Usuarios de Windows
+
+```powershell
+# 1️⃣ Descarga el framework
+git clone https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha.git
+
+# 2️⃣ Entra a la carpeta
+cd Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha
+
+# 3️⃣ Ejecuta el instalador
+pa.bat
+```
+
+> **¿No tienes Git?** Descarga el ZIP desde la [página de Releases](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases) y extráelo.
+
+### Usuarios de Mac y Linux
+
+```bash
+# 1️⃣ Descarga el framework
+git clone https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha.git
+
+# 2️⃣ Entra a la carpeta
+cd Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha
+
+# 3️⃣ Ejecuta el instalador
+./pa.sh
+```
+
+---
+
+## 🎨 Paso 2: Asistente de configuración (1 minuto)
+
+Cuando ejecutes `pa.bat` (Windows) o `pa.sh` (Mac/Linux) por primera vez, verás:
+
+```
+�════════════════════════════════════════════════════════════╗
+║           🎉 BIENVENIDO A LA CONFIGURACIÓN DE PA FRAMEWORK ║
+╠════════════════════════════════════════════════════════════╣
+║                                                            ║
+║  Pregunta 1: ¿Qué idioma prefieres?                      ║
+║  → [E] Inglés  |  [S] Español                              ║
+║                                                            ║
+║  Pregunta 2: ¿Qué herramienta de IA vas a usar?           ║
+║  → [O] OpenCode | [C] Claude Code | [G] Gemini CLI        ║
+║    | [L] Local (Ollama)                                    ║
+║                                                            ║
+�  Pregunta 3: ¿Cómo te llamas?                             ║
+║  → (Escribe tu nombre para respuestas personalizadas)     ║
+║                                                            ║
+╚════════════════════════════════════════════════════════════╝
+```
+
+**¡Listo! Tu asistente está preparado.** 🎉
+
+---
+
+## 🔑 Conceptos clave explicados
+
+### 📅 Sesiones = Tu memoria
+
+Piensa en las **Sesiones** como diarios. El asistente recuerda de qué hablaron cada día.
+
+```
+Día 1 (lunes)              Día 2 (martes)            Día 3 (miércoles)
+┌────────────────┐         ┌────────────────┐         ┌────────────────�
+│ "Ayúdame con   │ ───→    │ "Recuerda el   │ ───→    │ "Según lo que  │
+│  mi currículum"│         │  currículum    │         │  hablamos el   │
+│                │         │  de ayer..."   │         │  lunes..."     │
+└────────────────┘         └────────────────┘         └────────────────┘
+     ↓                          ↓                          ↓
+sesion-2026-04-17.md       sesion-2026-04-18.md       sesion-2026-04-19.md
+```
+
+**Qué se guarda en cada sesión:**
+- Tus preguntas y las respuestas de la IA
+- Archivos en los que trabajaste
+- Decisiones tomadas
+- Tareas creadas
+
+---
+
+### 🛠️ Skills = Tus herramientas
+
+Las **Skills** son herramientas especializadas que el asistente puede usar. Piénsalas como apps en tu teléfono.
+
+| Icono de Skill | Nombre de Skill | Qué hace |
+|------------|------------|--------------|
+| 📄 | `@pdf` | Lee, extrae y analiza archivos PDF |
+| 📊 | `@xlsx` | Trabaja con hojas de cálculo de Excel |
+| � | `@docx` | Crea y edita documentos de Word |
+| 📈 | `@data-viz` | Crea gráficos y visualizaciones |
+| 📋 | `@task-management` | Administra tus listas de tareas |
+| 🎨 | `@pptx` | Crea presentaciones de PowerPoint |
+| 📉 | `@dashboard-pro` | Construye paneles profesionales |
+| 💻 | `@skill-creator` | Crea tus propias skills personalizadas |
+
+**¡22 skills disponibles!**
+
+#### Cómo usar una skill
+
+Solo menciona el nombre de la skill con `@`:
+
+```
+Tú: "Usa @pdf para extraer el texto de mi reporte.pdf"
+Tú: "Usa @xlsx para analizar los datos de presupuesto.xlsx"
+Tú: "Usa @task-management para crear una nueva tarea"
+```
+
+---
+
+### 🤖 Agentes = Tus ayudantes
+
+Los **Agentes** son asistentes especializados para distintas tareas. Puedes cambiar entre ellos como cambias de canal en la TV.
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    AGENTES                              │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  🎯 FreakingJSON-PA ─────── Asistente principal        │
+│     Tu ayudante principal para tareas diarias           │
+│                                                         │
+│  🔍 @context-scout ─────── Ayudante de investigación   │
+│     Encuentra información en tus archivos               │
+│                                                         │
+│  📝 @doc-writer ─────────── Creador de documentos      │
+│     Ayuda a redactar y dar formato a documentos         │
+│                                                         │
+│  📋 @session-manager ────── Organizador de sesiones     │
+│     Administra tus sesiones diarias                     │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📋 Diagrama de flujo de la primera sesión
+
+Esto es lo que pasa cuando inicias una sesión:
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                      FLUJO DE LA PRIMERA SESIÓN                      │
+└──────────────────────────────────────────────────────────────────────┘
+
+    ┌─────────┐
+    │ INICIO  │  Escribe: pa.bat (Windows) o ./pa.sh (Mac/Linux)
+    └─────────┘
+         │
+         ↓
+    ┌─────────────────┐
+    │ Carga contexto  │  El framework carga tus sesiones anteriores
+    │  (~4 segundos)  │  y la base de conocimiento
+    └─────────────────┘
+         │
+         ↓
+    ┌─────────────────┐
+    │  ¡Bienvenida! 🎉│  Muestra la fecha de hoy, las skills activas
+    │                 │  y el resumen de la sesión anterior
+    └─────────────────┘
+         │
+         ↓
+    ┌─────────────────┐
+    │  Listo para     │  ¡El asistente está escuchando!
+    │   tu entrada    │  Escribe tu primera pregunta...
+    └─────────────────┘
+         │
+         ↓
+    ┌─────────────────────────────────────────────────────────────────┐
+    │                    TU CONVERSACIÓN                              │
+    │                                                                 │
+    │  Tú: "¿En qué me puedes ayudar hoy?"                           │
+    │  ───────────────────────────────────────────────────────────── │
+    │  Asistente: "Puedo ayudarte con documentos, análisis de datos, │
+    │              gestión de tareas y mucho más. Aquí tienes         │
+    │              algunas cosas que puedes pedirme..."               │
+    │                                                                 │
+    └─────────────────────────────────────────────────────────────────┘
+         │
+         ↓
+    ┌─────────────────┐
+    │      FIN        │  Cuando terminas, la sesión se guarda
+    │    Sesión       │  automáticamente en tu historial
+    └─────────────────┘
+```
+
+---
+
+## 💬 Ejemplos de primeras preguntas
+
+Prueba estas para empezar:
+
+### 📄 Preguntas sobre documentos
+```
+"¿Puedes ayudarme a redactar un correo profesional?"
+"Usa @pdf para resumir este artículo de investigación que tengo."
+"Crea una agenda de reunión para mi equipo."
+```
+
+### � Preguntas sobre datos
+```
+"Usa @xlsx para analizar mis gastos mensuales."
+"Crea un gráfico que muestre el avance de mi proyecto."
+"Ayúdame a organizar este archivo CSV con datos de clientes."
+```
+
+### 📋 Preguntas sobre tareas
+```
+"Crea una lista de pendientes para las fechas límite de mi proyecto."
+"¿Qué tareas tengo pendientes desde la semana pasada?"
+"Recuérdame de qué hablamos ayer."
+```
+
+### 🎓 Preguntas de aprendizaje
+```
+"Explícame la diferencia entre sesiones y skills."
+"¿Cómo creo mi propia skill?"
+"¿Qué archivos guarda el framework?"
+```
+
+---
+
+## 🎛️ Acceso al panel
+
+El **Dashboard SPA** es una interfaz visual para ver el estado de tu framework.
+
+### Cómo abrir el panel
+
+```
+Opción 1: Abrir el archivo directamente
+━━━━━━━━━━━━━━━━━━━━━━
+Ábrelo en tu navegador:
+  → dashboard.html
+
+Opción 2: Desde la línea de comandos
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+python -m http.server 8000   # luego abre http://localhost:8000/dashboard.html
+```
+
+### Qué vas a ver
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                       INICIO DEL PANEL                               │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│   ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐            │
+│   │ Sesiones │  │  Skills  │ │ Proyectos │ │Interaccs │            │
+│   │    17    │  │    22    │  │    0     │  │  Activas │            │
+│   └──────────┘  └──────────┘  └──────────┘  └──────────┘            │
+│                                                                      │
+│   ┌───────────────────────────────────────────────────────────────┐ │
+│   │                    Sesiones recientes                          │ │
+│   ├───────────────────────────────────────────────────────────────┤ │
+│   │ • 2026-04-17 - Registro de sesión                             │ │
+│   │ • 2026-03-20 - Lanzamiento v0.2.2-prealpha                    │ │
+│   │ • 2026-03-12 - Diagnóstico multi-entorno                      │ │
+│   │ • 2026-02-24 - Creación de la skill @dashboard-pro            │ │
+│   └───────────────────────────────────────────────────────────────┘ │
+│                                                                      │
+│   📍 Navegación: Inicio | Sesiones | Framework | Acerca de          │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📁 Dónde viven tus archivos
+
+Todos tus datos se guardan en archivos de texto plano que puedes editar:
+
+```
+Carpeta de PA Framework
+│
+├── core/.context/
+│   ├── sessions/           ← Registros diarios de tus sesiones (archivos .md)
+│   ├── codebase/           ← Tus notas de proyectos y recordatorios
+│   ├── knowledge/          ← Conocimiento e ideas extraídas
+│   └── MASTER.md           ← Tu archivo principal de configuración
+│
+├── workspaces/
+│   ├── personal/           ← Proyectos personales
+│   ├── professional/       ← Archivos relacionados con trabajo
+│   ├── research/           ← Investigación y aprendizaje
+│   └── content/            ← Creación de contenido
+│
+├── core/skills/
+│   └── core/               ← Aquí viven las 22 skills
+│
+└── dashboard.html          ← Panel visual
+```
+
+---
+
+## ⚠️ Preguntas frecuentes la primera vez
+
+### "¿Necesito una API key?"
+
+> **¡No!** Puedes usar modelos de IA locales (como Ollama) gratis.
+> 
+> Para IA en la nube (OpenAI, Claude), necesitas una cuenta gratuita y una API key.
+
+### "¿Dónde están mis datos?"
+
+> **En tu computadora.** Busca en `core/.context/sessions/` tu historial de conversaciones.
+
+### "¿Puedo usarlo sin conexión?"
+
+> **Parcialmente.** El framework funciona sin conexión, pero la IA en la nube necesita internet. Usa IA local (Ollama) para trabajar 100% sin conexión.
+
+### "¿Cómo actualizo?"
+
+```powershell
+python core/scripts/update.py --check   # Comprobar actualizaciones
+python core/scripts/update.py           # Aplicar actualizaciones
+```
+
+Tus datos personales **se conservan automáticamente** durante las actualizaciones.
+
+---
+
+## 🎯 Tarjeta de referencia rápida
+
+| Lo que quieres hacer | Cómo hacerlo |
+|---------------|--------------|
+| Iniciar una sesión | `pa.bat` (Windows) o `./pa.sh` (Mac/Linux) |
+| Usar una skill | Menciónala: `"Usa @pdf para..."` |
+| Ver el panel | Abre `dashboard.html` en el navegador |
+| Comprobar actualizaciones | `python core/scripts/update.py --check` |
+| Encontrar mis archivos | Busca en `core/.context/sessions/` |
+| Cambiar idioma | Configúralo durante la instalación o edita `MASTER.md` |
+
+---
+
+## � Próximos pasos
+
+1. **Prueba tu primera sesión** - ¡Solo haz una pregunta sencilla!
+2. **Explora las skills** - Escribe `"¿Qué skills están disponibles?"`
+3. **Abre el panel** - Mira el estado de tu framework
+4. **Crea un workspace** - Organiza tus proyectos
+
+---
+
+## 🆘 ¿Necesitas ayuda?
+
+| Recurso | Enlace |
+|----------|------|
+| 📖 Documentación completa | [docs/README.md](./README.md) |
+| 🔄 Guía de actualización | [docs/UPDATE-GUIDE.md](./UPDATE-GUIDE.md) |
+| 🛠️ Documentación técnica | [docs/README-TECNICO.md](./README-TECNICO.md) |
+| 💬 Issues en GitHub | [Reportar un problema](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/issues) |
+
+---
+
+## 🎉 ¡Estás listo!
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║   🎊 ¡FELICIDADES! ¡Completaste el tutorial de 5 minutos!    ║
+║                                                              ║
+║   Tu asistente personal de IA está listo para ayudarte con: ║
+║   • Documentos (PDF, Word, Excel)                            ║
+�   • Análisis de datos y visualización                        ║
+║   • Gestión de tareas                                        ║
+║   • ¡Y mucho más!                                            ║
+║                                                              ║
+║   Empieza ya: pa.bat (Windows) o ./pa.sh (Mac/Linux)        ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+---
+
+*Hecho con ❤️ por FreakingJSON*
+
+> *"Yo soy dueño de mi contexto. Soy FreakingJSON."*
+> 
+> *"El conocimiento verdadero trasciende a lo público."*
+</script>
+<script type="text/markdown" id="docsrc-getting_started__en">
 # 🚀 Getting Started with PA Framework
 
 > **5-Minute Visual Tutorial for New Users**
@@ -3864,6 +4643,416 @@ Your personal data is **automatically preserved** during updates.
 > *"True knowledge transcends to the public."*
 </script>
 <script type="text/markdown" id="docsrc-tutorial">
+# Documento de planificación del tutorial de incorporación
+
+> **Ítem del backlog:** BL-101  
+> **Versión:** 1.0  
+> **Creado:** abril de 2026  
+> **Estado:** Planificación  
+> **Prerrequisito:** [GETTING-STARTED.md](./GETTING-STARTED.md) (inicio rápido de 5 minutos)
+
+---
+
+## 1. Objetivos de aprendizaje
+
+### Objetivos principales
+Al completar este tutorial, los usuarios podrán:
+
+| # | Objetivo | Criterio de éxito | Tiempo objetivo |
+|---|-----------|------------------|-------------|
+| 1 | Navegar por la interfaz del framework | Acceder al panel, iniciar sesiones, localizar archivos | <1 min |
+| 2 | Usar las skills principales con eficacia | Invocar 3+ skills correctamente con la sintaxis `@skill-name` | <2 min |
+| 3 | Entender la memoria de sesión | Referenciar el contenido de sesiones anteriores en la sesión actual | <1 min |
+| 4 | Crear flujos de trabajo básicos | Encadenar 2+ skills para completar una tarea | <1 min |
+| 5 | Acceder a recursos de ayuda | Localizar documentación, catálogo de skills, solución de problemas | <30 seg |
+
+### Objetivos secundarios
+- Personalizar ajustes personales (idioma, proveedor de IA)
+- Crear un nuevo workspace para proyectos
+- Exportar/respaldar datos personales
+
+### Definición de éxito
+**El usuario es "productivo" cuando puede:**
+- Iniciar una sesión y hacer su primera pregunta invocando una skill
+- Entender dónde viven sus datos
+- Saber cómo obtener ayuda por su cuenta
+
+**Objetivo: tiempo hasta la productividad < 5 minutos**
+
+---
+
+## 2. Estructura del tutorial (5 secciones según las categorías de skills)
+
+### Sección 1: Skills de procesamiento de documentos
+**Duración:** 3-5 minutos (lectura + ejercicio)
+
+| Skill | Caso de uso | Complejidad |
+|-------|----------|------------|
+| `@pdf` | Leer, extraer y analizar archivos PDF | ⭐ Principiante |
+| `@docx` | Crear/editar documentos de Word | ⭐ Principiante |
+| `@xlsx` | Operaciones con hojas de cálculo | ⭐⭐ Intermedio |
+| `@pptx` | Presentaciones de PowerPoint | ⭐⭐ Intermedio |
+| `@csv-processor` | Manipulación de CSV | ⭐ Principiante |
+| `@markdown-writer` | Documentos markdown consistentes | ⭐ Principiante |
+| `@paper-summarizer` | Análisis de artículos científicos | ⭐⭐⭐ Avanzado |
+
+**Aprendizaje clave:** cómo invocar skills con la sintaxis `@skill-name`
+
+---
+
+### Sección 2: Skills de datos y visualización
+**Duración:** 3-5 minutos (lectura + ejercicio)
+
+| Skill | Caso de uso | Complejidad |
+|-------|----------|------------|
+| `@data-viz` | Gráficos, tablas y visualizaciones | ⭐⭐ Intermedio |
+| `@etl` | Operaciones de extracción, transformación y carga | ⭐⭐⭐ Avanzado |
+| `@dashboard-pro` | Creación de paneles profesionales | ⭐⭐⭐ Avanzado |
+
+**Aprendizaje clave:** conectar fuentes de datos con salidas visuales
+
+---
+
+### Sección 3: Skills de gestión de tareas y flujos de trabajo
+**Duración:** 2-3 minutos (lectura + ejercicio)
+
+| Skill | Caso de uso | Complejidad |
+|-------|----------|------------|
+| `@task-management` | Listas de tareas y seguimiento | ⭐ Principiante |
+| `@decision-engine` | Decisiones de ejecución local vs remota | ⭐⭐⭐ Avanzado |
+| `@error-recovery` | Manejo de errores con auto-recuperación | ⭐⭐ Intermedio |
+
+**Aprendizaje clave:** gestionar tareas de varios pasos y recuperarse de errores
+
+---
+
+### Sección 4: Skills de creación y optimización de contenido
+**Duración:** 3-4 minutos (lectura + ejercicio)
+
+| Skill | Caso de uso | Complejidad |
+|-------|----------|------------|
+| `@prompt-improvement` | Optimizar prompts para IA | ⭐ Principiante |
+| `@content-optimizer` | SEO, legibilidad y engagement | ⭐ Principiante |
+| `@prd-generator` | Documentos de requisitos de producto | �⭐ Intermedio |
+| `@json-prompt-generator` | Prompts JSON estructurados | �⭐ Intermedio |
+| `@ui-ux-pro-max` | Guía de diseño UI/UX | �⭐⭐ Avanzado |
+
+**Aprendizaje clave:** crear contenido de alta calidad con ayuda de IA
+
+---
+
+### Sección 5: Skills avanzadas y personalización
+**Duración:** 4-5 minutos (lectura + ejercicio)
+
+| Skill | Caso de uso | Complejidad |
+|-------|----------|------------|
+| `@skill-discovery` | Encontrar la skill adecuada para tu tarea | ⭐ Principiante |
+| `@skill-creator` | Crear skills personalizadas | ⭐⭐⭐ Avanzado |
+| `@mcp-builder` | Crear servidores MCP | ⭐⭐⭐ Avanzado |
+| `@context-evaluator` | Evaluar la calidad de las respuestas | ⭐⭐ Intermedio |
+| `@python-standards` | Scripts Python multiplataforma | ⭐⭐ Intermedio |
+
+**Aprendizaje clave:** extender el framework con capacidades personalizadas
+
+---
+
+## 3. Ideas de ejercicios interactivos
+
+### Ejercicio 1: Primera invocación de una skill (Sección 1)
+**Escenario:** "Extraer texto de un reporte en PDF"
+```
+1. El usuario tiene un PDF de muestra en su workspace
+2. El tutorial guía: "Escribe: Usa @pdf para resumir este documento"
+3. Éxito: el usuario ve el contenido extraído
+4. Siguiente: "Ahora prueba @docx para crear un documento resumen"
+```
+
+**Elemento interactivo:** prompt guiado con texto de marcador de posición
+
+---
+
+### Ejercicio 2: Pipeline de datos (Sección 2)
+**Escenario:** "Crear una visualización a partir de datos de una hoja de cálculo"
+```
+1. El usuario tiene data.csv de muestra en el workspace
+2. El tutorial guía:
+   - "Escribe: Usa @csv-processor para analizar los datos"
+   - "Luego: Usa @data-viz para crear un gráfico"
+3. Éxito: el usuario ve el gráfico generado
+```
+
+**Elemento interactivo:** archivos de datos de muestra precargados
+
+---
+
+### Ejercicio 3: Seguimiento de tareas (Sección 3)
+**Escenario:** "Crear una lista de tareas para un proyecto"
+```
+1. El tutorial guía: "Escribe: Usa @task-management para crear una tarea llamada 'Completar tutorial'"
+2. Éxito: la tarea aparece en el sistema de seguimiento
+3. Seguimiento: "Marca la tarea como completada"
+```
+
+**Elemento interactivo:** tablero de tareas visual que se actualiza en tiempo real
+
+---
+
+### Ejercicio 4: Optimización de contenido (Sección 4)
+**Escenario:** "Mejorar un borrador de correo"
+```
+1. El usuario proporciona un borrador en texto sin formato
+2. El tutorial guía: "Escribe: Usa @content-optimizer para mejorar este correo"
+3. Éxito: versión optimizada con explicaciones
+```
+
+**Elemento interactivo:** comparación lado a lado (antes/después)
+
+---
+
+### Ejercicio 5: Descubrimiento de skills (Sección 5)
+**Escenario:** "Encontrar la skill adecuada para una tarea"
+```
+1. El tutorial plantea el escenario: "Necesito procesar un archivo JSON"
+2. El usuario escribe: "Usa @skill-discovery para encontrar la skill correcta para procesar JSON"
+3. Éxito: el sistema recomienda las skills apropiadas
+```
+
+**Elemento interactivo:** quiz de recomendación de skills
+
+---
+
+### Ejercicio bonus: encadenamiento de skills
+**Escenario:** flujo completo combinando varias skills
+```
+Encadenamiento: @pdf → @task-management → @docx
+1. Extraer tareas de notas de reunión en PDF
+2. Crear tareas con seguimiento
+3. Generar un documento resumen
+```
+
+---
+
+## 4. Métricas de éxito
+
+### Métricas cuantitativas
+
+| Métrica | Objetivo | Método de medición |
+|--------|--------|-------------------|
+| Tiempo hasta la primera skill | <2 minutos | Análisis de marcas de tiempo de la sesión |
+| Tiempo hasta la productividad | <5 minutos | El usuario completa 3+ invocaciones de skills |
+| Tasa de finalización del tutorial | >80% | Se alcanza el checkpoint de salida |
+| Precisión en la invocación de skills | >90% | Sintaxis correcta de `@skill-name` |
+| Tasa de recuperación de errores | >75% | Los usuarios se recuperan de errores sin ayuda |
+
+### Métricas cualitativas
+
+| Métrica | Objetivo | Método de medición |
+|--------|--------|-------------------|
+| Confianza del usuario | Alta | Encuesta postutorial (escala 1-5, promedio >4) |
+| Descubrimiento de funciones | Bueno | El usuario conoce 5+ skills |
+| Conocimiento de la documentación | Bueno | El usuario sabe dónde encontrar ayuda |
+| Nivel de frustración | Bajo | Sin intentos fallidos repetidos |
+
+### Implementación de analítica
+
+```python
+# Eventos de seguimiento sugeridos
+events = [
+    "tutorial_started",
+    "section_completed",
+    "skill_invoked",
+    "skill_invoked_correctly",
+    "exercise_completed",
+    "help_requested",
+    "tutorial_completed",
+    "time_spent_per_section"
+]
+```
+
+### Panel de éxito
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                     ANALÍTICAS DE INCORPORACIÓN                      │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│   Tiempo hasta la productividad: [████████░░] 3.2 min (obj: <5 min) ✅ │
+│   Tasa de finalización:          [████████░] 85% (obj: >80%) ✅       │
+│   Precisión de skills:           [█████████] 92% (obj: >90%) ✅       │
+│   Confianza del usuario:         ⭐⭐⭐⭐☆ 4.2/5 (obj: >4) ✅          │
+│                                                                      │
+│   Secciones más completadas:                                          │
+│   1. Procesamiento de documentos ████████████████████ 95%             │
+│   2. Gestión de tareas          ██████████████████   88%             │
+│   3. Datos y visualización      ███████████████      82%             │
+│   4. Creación de contenido      █████████████        78%             │
+│   5. Skills avanzadas           ████████████         65%             │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────�
+```
+
+---
+
+## 5. Recursos necesarios
+
+### Recursos de documentación
+
+| Recurso | Estado | Responsable | Prioridad |
+|----------|--------|-------|----------|
+| GETTING-STARTED.md | ✅ Completo | Equipo del framework | Prerrequisito |
+| ONBOARDING-TUTORIAL.md (este doc) | 📝 Planificación | Por asignar | Alta |
+| Contenido del tutorial (5 secciones) | ❌ No iniciado | Por asignar | Alta |
+| Plantillas de ejercicios interactivos | � No iniciado | Por asignar | Media |
+| Guiones de video walkthrough | ❌ No iniciado | Por asignar | Baja |
+| Expansión del FAQ | ❌ No iniciado | Por asignar | Media |
+
+### Recursos técnicos
+
+| Recurso | Estado | Responsable | Prioridad |
+|----------|--------|-------|----------|
+| PDF de muestra para ejercicios | ❌ No creado | Por asignar | Alta |
+| CSV/Excel de muestra para ejercicios | ❌ No creado | Por asignar | Alta |
+| Borrador markdown de muestra para ejercicios | ❌ No creado | Por asignar | Media |
+| Seguimiento de progreso del tutorial | ❌ No implementado | Por asignar | Baja |
+| Sistema de prompts interactivos | ❌ No implementado | Por asignar | Baja |
+| Seguimiento de eventos analíticos | ❌ No implementado | Por asignar | Media |
+
+### Requisitos de infraestructura
+
+| Requisito | Estado | Notas |
+|-------------|--------|-------|
+| Directororio `/docs/onboarding/` | ❌ Crear | Nuevo directorio para assets del tutorial |
+| `/docs/onboarding/samples/` | ❌ Crear | Archivos de muestra para ejercicios |
+| Script lanzador del tutorial | ❌ Crear | `core/scripts/tutorial.py` |
+| Sistema de checkpoints de progreso | ❌ Diseñar | Seguimiento del progreso del usuario |
+| Certificado de finalización | ❌ Opcional | Generar al completar |
+
+### Recursos humanos
+
+| Rol | Tiempo estimado | Responsabilidades |
+|------|---------------|-----------------|
+| Redactor técnico | 8-12 horas | Escribir las 5 secciones del tutorial |
+| Diseñador UX | 4-6 horas | Diseñar los ejercicios interactivos |
+| Desarrollador | 6-8 horas | Implementar el seguimiento de progreso |
+| Tester de QA | 4 horas | Probar el flujo del tutorial |
+| Project manager | 2 horas | Coordinar entregables |
+
+**Esfuerzo total estimado:** 24-32 horas
+
+---
+
+### Dependencias
+
+```
+GETTING-STARTED.md (prerrequisito)
+    │
+    └──► ONBOARDING-TUTORIAL.md (este documento de planificación)
+              │
+              ├──► Contenido del tutorial (5 secciones)
+              │         │
+              │         └──► Ejercicios interactivos
+              │
+              ├──► Archivos de muestra
+              │         │
+              │         ├── sample.pdf
+              │         ├── sample.csv
+              │         └── sample-draft.md
+              │
+              └──► Seguimiento de progreso (opcional)
+                        │
+                        └──► Panel de analíticas
+```
+
+---
+
+## 6. Fases de implementación
+
+### Fase 1: Fundación (Sprint 1)
+- [ ] Crear la estructura del directorio `/docs/onboarding/`
+- [ ] Escribir la Sección 1 (procesamiento de documentos)
+- [ ] Crear archivos PDF y CSV de muestra
+- [ ] Implementar el lanzador básico del tutorial
+
+### Fase 2: Contenido principal (Sprint 2)
+- [ ] Escribir las Secciones 2-4 (datos, tareas, contenido)
+- [ ] Crear plantillas de ejercicios interactivos
+- [ ] Agregar checkpoints de progreso
+
+### Fase 3: Avanzado + pulido (Sprint 3)
+- [ ] Escribir la Sección 5 (skills avanzadas)
+- [ ] Agregar el ejercicio de encadenamiento de skills
+- [ ] Implementar el seguimiento de finalización
+- [ ] Pruebas de usuario y recopilación de feedback
+
+### Fase 4: Analíticas (opcional)
+- [ ] Agregar seguimiento de eventos
+- [ ] Crear el panel de analíticas
+- [ ] Marco de pruebas A/B
+
+---
+
+## 7. Criterios de aceptación
+
+### Definición de hecho
+
+- [ ] Las 5 secciones escritas y revisadas
+- [ ] Al menos 3 ejercicios interactivos por sección
+- [ ] Archivos de muestra disponibles para todos los ejercicios
+- [ ] El tutorial se puede completar en <5 minutos
+- [ ] Panel de métricas de éxito diseñado
+- [ ] Documentación enlazada desde el README principal
+- [ ] GETTING-STARTED.md referenciado como prerrequisito
+- [ ] Pruebas de usuario completadas con >80% de satisfacción
+
+---
+
+## 8. Documentos relacionados
+
+| Documento | Relación | Ubicación |
+|----------|--------------|----------|
+| GETTING-STARTED.md | Prerrequisito (inicio rápido) | `docs/GETTING-STARTED.md` |
+| SKILLS.md | Referencia de skills | `core/skills/SKILLS.md` |
+| README.md | Documentación principal | `README.md` |
+| UPDATE-GUIDE.md | Procedimientos de actualización | `docs/UPDATE-GUIDE.md` |
+| ROADMAP.md | Planes futuros | `ROADMAP.md` |
+
+---
+
+## 9. Notas y consideraciones
+
+### Personas de usuario
+1. **Principiante total:** nunca ha usado asistentes de IA, necesita guía paso a paso
+2. **Familiarizado con IA:** ha usado ChatGPT/Claude, nuevo en frameworks locales
+3. **Desarrollador:** quiere detalles técnicos, leerá por encima
+
+### Accesibilidad
+- Proveer alternativas de texto para todos los diagramas
+- Garantizar alto contraste en los elementos visuales
+- Soportar lectores de pantalla para los elementos interactivos
+
+### Localización
+- Diseñar para inglés y español (el framework es bilingüe)
+- Mantener el texto modular para facilitar la traducción
+- Evitar modismos que no se traduzcan bien
+
+### Mantenimiento
+- Actualizar cuando se agreguen nuevas skills
+- Versionar el tutorial junto con los lanzamientos del framework
+- Recopilar feedback de los usuarios de forma continua
+
+---
+
+*Estado del documento: Planificación | Próximo paso: reunión de planificación de implementación*
+
+---
+
+**Ítem del backlog BL-101: Tutorial de incorporación**
+
+> *"El conocimiento verdadero trasciende a lo público."*
+>
+> — FreakingJSON
+</script>
+<script type="text/markdown" id="docsrc-tutorial__en">
 # Onboarding Tutorial Planning Document
 
 > **Backlog Item:** BL-101  
@@ -4280,6 +5469,623 @@ GETTING-STARTED.md (prerequisite)
 > — FreakingJSON
 </script>
 <script type="text/markdown" id="docsrc-install">
+# Guía de Instalación de CLI para PA Framework
+
+> **¿No tienes un CLI instalado? ¡Esta guía te ayuda a comenzar!**
+> 
+> *Versión: v0.3.8-alpha | Actualizado: abril de 2026*
+
+---
+
+## Tabla de Contenidos
+
+1. [Visión General](#-visión-general)
+2. [OpenCode CLI](#-opencode-cli)
+3. [Claude CLI](#-claude-cli)
+4. [Gemini CLI](#-gemini-cli)
+5. [Instrucciones Específicas por Plataforma](#-instrucciones-específicas-por-plataforma)
+6. [Comandos de Verificación](#-comandos-de-verificación)
+7. [Alternativa: Método Manual con Magic Prompt](#-alternativa-método-manual-con-magic-prompt)
+8. [Solución de Problemas](#-solución-de-problemas)
+
+---
+
+## Visión General
+
+PA Framework trabaja con CLIs de IA (Interfaces de Línea de Comandos) para ofrecer una experiencia potente de asistente personal. Esta guía cubre cómo instalar y configurar cada CLI soportado.
+
+### CLIs Soportados
+
+| CLI | Proveedor | Dificultad de Instalación | Características |
+|-----|----------|------------------------|----------|
+| **OpenCode** | Código Abierto | Fácil | Gratuito, soporta auto-inyección |
+| **Claude Code** | Anthropic | Media | Modelos Claude, razonamiento avanzado |
+| **Gemini CLI** | Google | Media | Modelos Gemini, integración con gcloud |
+
+---
+
+## OpenCode CLI
+
+OpenCode es un CLI gratuito y de código abierto que soporta auto-inyección de prompts con PA Framework.
+
+### Instalación
+
+#### macOS (vía Homebrew)
+
+```bash
+brew install opencode
+```
+
+#### macOS (vía npm)
+
+```bash
+npm install -g opencode
+```
+
+#### Linux (vía npm)
+
+```bash
+# Requiere Node.js 18+ primero
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+npm install -g opencode
+```
+
+#### Windows (vía npm)
+
+```powershell
+# Requiere Node.js 18+ primero
+# Descarga desde: https://nodejs.org/
+
+npm install -g opencode
+```
+
+#### Windows (vía Chocolatey)
+
+```powershell
+choco install opencode
+```
+
+### Verificación
+
+```bash
+opencode --version
+opencode --help
+```
+
+---
+
+## Claude CLI
+
+Claude Code es el CLI oficial de Anthropic para los modelos de IA Claude.
+
+### Requisitos Previos
+
+- Node.js 18 o superior
+- Una API key de Anthropic (obtén una en [console.anthropic.com](https://console.anthropic.com))
+
+### Instalación
+
+#### macOS / Linux
+
+```bash
+# Usando npm
+npm install -g @anthropic-ai/claude-code
+
+# O usando el instalador oficial
+curl -fsSL https://claude.ai/install.sh | sh
+```
+
+#### Windows
+
+```powershell
+# Usando npm (recomendado)
+npm install -g @anthropic-ai/claude-code
+```
+
+### Configuración
+
+Después de la instalación, configura tu API key:
+
+```bash
+# El CLI te pedirá tu API key en el primer uso
+claude
+
+# O configúrala mediante variable de entorno
+export ANTHROPIC_API_KEY="your-api-key-here"
+```
+
+### Verificación
+
+```bash
+claude --version
+claude auth status
+```
+
+---
+
+## Gemini CLI
+
+Gemini CLI es la interfaz de línea de comandos de Google para los modelos Gemini a través de Google Cloud.
+
+### Requisitos Previos
+
+- Una cuenta de Google Cloud
+- Un proyecto de Google Cloud con la API de Gemini habilitada
+- gcloud CLI instalado
+
+### Paso 1: Instalar Google Cloud SDK
+
+#### macOS (vía Homebrew)
+
+```bash
+brew install --cask google-cloud-sdk
+```
+
+#### macOS (vía instalador)
+
+1. Descarga desde: https://cloud.google.com/sdk/docs/install
+2. Ejecuta el instalador
+3. Inicializa: `./google-cloud-sdk/bin/gcloud init`
+
+#### Linux (Debian/Ubuntu)
+
+```bash
+# Agregar el repositorio de Google Cloud SDK
+echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+
+# Importar la llave
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+
+# Instalar
+sudo apt-get update && sudo apt-get install google-cloud-sdk
+```
+
+#### Linux (Fedora/RHEL)
+
+```bash
+# Agregar el repositorio de Google Cloud SDK
+sudo tee -a /etc/yum.repos.d/google-cloud-sdk.repo << EOM
+[google-cloud-sdk]
+name=Google Cloud SDK
+baseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el7-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
+       https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOM
+
+# Instalar
+sudo yum install google-cloud-sdk
+```
+
+#### Windows
+
+1. Descarga el instalador desde: https://cloud.google.com/sdk/docs/install
+2. Ejecuta el instalador y sigue las instrucciones
+3. O vía Chocolatey: `choco install gcloudsdk`
+
+### Paso 2: Instalar el Componente Gemini CLI
+
+```bash
+# Instalar el componente Gemini CLI
+gcloud components install gemini-cli
+
+# Actualizar todos los componentes
+gcloud components update
+```
+
+### Paso 3: Autenticación
+
+```bash
+# Inicializar gcloud (si no lo has hecho)
+gcloud init
+
+# Autenticarte
+gcloud auth login
+
+# Configurar tu proyecto
+gcloud config set project YOUR_PROJECT_ID
+
+# Habilitar la API de Gemini
+gcloud services enable aiplatform.googleapis.com
+```
+
+### Verificación
+
+```bash
+gcloud --version
+gemini --help
+# o
+gcloud ai gemini --help
+```
+
+---
+
+## Instrucciones Específicas por Plataforma
+
+### macOS
+
+#### Requisitos Previos
+
+```bash
+# Instala Homebrew si no está presente
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Instala Node.js (necesario para CLIs basados en npm)
+brew install node
+```
+
+#### Configuración Recomendada
+
+```bash
+# Instala todos los CLIs a la vez
+brew install opencode node
+npm install -g @anthropic-ai/claude-code
+brew install --cask google-cloud-sdk
+```
+
+### Windows
+
+#### Requisitos Previos
+
+1. **Instala PowerShell 7+** (recomendado): https://github.com/PowerShell/PowerShell/releases
+2. **Instala Node.js**: https://nodejs.org/ (versión LTS)
+3. **Opcional**: Instala Chocolatey: https://chocolatey.org/install
+
+#### Configuración Recomendada (PowerShell)
+
+```powershell
+# Usando Chocolatey (recomendado)
+choco install nodejs opencode gcloudsdk
+
+# O usando npm
+npm install -g opencode
+npm install -g @anthropic-ai/claude-code
+```
+
+#### Problemas de PATH en Windows
+
+Si los comandos no se encuentran después de instalar:
+
+```powershell
+# Refresca las variables de entorno
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+
+# O reinicia tu terminal/PowerShell
+```
+
+### Linux
+
+#### Requisitos Previos (Debian/Ubuntu)
+
+```bash
+# Actualizar listas de paquetes
+sudo apt update && sudo apt upgrade -y
+
+# Instalar Node.js
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# Instalar build tools (suele ser necesario para paquetes npm)
+sudo apt install -y build-essential
+```
+
+#### Configuración Recomendada
+
+```bash
+# Instalar OpenCode
+npm install -g opencode
+
+# Instalar Claude CLI
+npm install -g @anthropic-ai/claude-code
+
+# Instalar Google Cloud SDK
+curl https://sdk.cloud.google.com | bash
+exec -l $SHELL
+gcloud init
+```
+
+---
+
+## Comandos de Verificación
+
+Después de instalar tu(s) CLI(s), ejecuta estos comandos de verificación:
+
+### Script de Verificación Rápida
+
+```bash
+#!/bin/bash
+# guardar como verify-cli.sh
+
+echo "=== CLI Verification ==="
+echo ""
+
+# Verificar Node.js (necesario para la mayoría de CLIs)
+if command -v node &> /dev/null; then
+    echo "✅ Node.js: $(node --version)"
+else
+    echo "❌ Node.js: Not installed"
+fi
+
+# Verificar npm
+if command -v npm &> /dev/null; then
+    echo "✅ npm: $(npm --version)"
+else
+    echo "❌ npm: Not installed"
+fi
+
+echo ""
+
+# Verificar OpenCode
+if command -v opencode &> /dev/null; then
+    echo "✅ OpenCode: $(opencode --version 2>&1 | head -1)"
+else
+    echo "⚠️  OpenCode: Not installed"
+fi
+
+# Verificar Claude CLI
+if command -v claude &> /dev/null; then
+    echo "✅ Claude CLI: $(claude --version 2>&1 | head -1)"
+else
+    echo "⚠️  Claude CLI: Not installed"
+fi
+
+# Verificar Gemini/gcloud
+if command -v gcloud &> /dev/null; then
+    echo "✅ Google Cloud SDK: $(gcloud --version 2>&1 | head -1)"
+else
+    echo "⚠️  Google Cloud SDK: Not installed"
+fi
+
+echo ""
+echo "=== Verification Complete ==="
+```
+
+### Script de Verificación para PowerShell
+
+```powershell
+# guardar como verify-cli.ps1
+
+Write-Host "=== CLI Verification ===" -ForegroundColor Cyan
+Write-Host ""
+
+# Verificar Node.js
+if (Get-Command node -ErrorAction SilentlyContinue) {
+    Write-Host "✅ Node.js: $(node --version)" -ForegroundColor Green
+} else {
+    Write-Host "❌ Node.js: Not installed" -ForegroundColor Red
+}
+
+# Verificar npm
+if (Get-Command npm -ErrorAction SilentlyContinue) {
+    Write-Host "✅ npm: $(npm --version)" -ForegroundColor Green
+} else {
+    Write-Host "❌ npm: Not installed" -ForegroundColor Red
+}
+
+Write-Host ""
+
+# Verificar OpenCode
+if (Get-Command opencode -ErrorAction SilentlyContinue) {
+    Write-Host "✅ OpenCode: installed" -ForegroundColor Green
+} else {
+    Write-Host "⚠️ OpenCode: Not installed" -ForegroundColor Yellow
+}
+
+# Verificar Claude CLI
+if (Get-Command claude -ErrorAction SilentlyContinue) {
+    Write-Host "✅ Claude CLI: installed" -ForegroundColor Green
+} else {
+    Write-Host "⚠️ Claude CLI: Not installed" -ForegroundColor Yellow
+}
+
+# Verificar gcloud
+if (Get-Command gcloud -ErrorAction SilentlyContinue) {
+    Write-Host "✅ Google Cloud SDK: installed" -ForegroundColor Green
+} else {
+    Write-Host "⚠️ Google Cloud SDK: Not installed" -ForegroundColor Yellow
+}
+
+Write-Host ""
+Write-Host "=== Verification Complete ===" -ForegroundColor Cyan
+```
+
+---
+
+## Alternativa: Método Manual con Magic Prompt
+
+Si no puedes instalar ningún CLI, aún puedes usar PA Framework copiando manualmente el magic prompt a cualquier interfaz de chat de IA.
+
+### ¿Qué es el Magic Prompt?
+
+El magic prompt es una cadena especial de inicialización que le indica a la IA que lea los archivos de contexto de PA Framework y siga las reglas del framework.
+
+### Cómo Usarlo
+
+#### Paso 1: Obtener el Magic Prompt
+
+Ejecuta el launcher de PA Framework y selecciona tu escenario:
+
+```bash
+# Desde el directorio raíz de PA Framework
+python core/scripts/pa.py
+
+# O en Windows
+pa.bat
+
+# O en Mac/Linux
+./pa.sh
+```
+
+Cuando se te solicite, selecciona **"Start Session"**. Se mostrará el magic prompt:
+
+```
+╔══ MAGIC PROMPT ════════════════════════════════════╗
+║ Lee 'core/.context/quick-start.md' para iniciar. Este archivo contiene todo lo necesario para comenzar.
+╚════════════════════════════════════════════════════╝
+```
+
+#### Paso 2: Copia el Prompt
+
+Copia el texto del magic prompt desde el recuadro.
+
+#### Paso 3: Pégalo en Cualquier Interfaz de IA
+
+Usa el magic prompt en cualquiera de estas interfaces:
+
+- **Web de ChatGPT**: https://chat.openai.com
+- **Web de Claude**: https://claude.ai
+- **Web de Gemini**: https://gemini.google.com
+- **Cualquier otra interfaz de chat de IA**
+
+#### Paso 4: Proporciona los Archivos de Contexto
+
+La IA te pedirá que proporciones los archivos de contexto. Puedes:
+
+1. **Subir los archivos directamente** (si la interfaz lo soporta)
+2. **Copiar y pegar el contenido** de los archivos clave:
+
+```
+core/.context/profile.md      # Tu perfil y preferencias
+core/.context/navigation.md   # Navegación y estructura de archivos
+AGENTS.md                     # Definiciones y reglas de agentes
+```
+
+### Archivos de Sesión Manual
+
+Para sesiones manuales, puedes crear archivos de sesión en:
+
+```
+core/.context/sessions/YYYY-MM-DD.md
+```
+
+Usa esta plantilla:
+
+```markdown
+# Session YYYY-MM-DD
+
+## Start
+- **Time**: HH:MM
+- **CLI**: Manual (Web Interface)
+- **AI**: [ChatGPT/Claude/Gemini/Other]
+
+## Topics Covered
+- Topic 1
+- Topic 2
+
+## Decisions Made
+- DEC-001: Description
+
+## Notes
+- Important notes here
+
+## Next Steps
+- [ ] Action item 1
+- [ ] Action item 2
+```
+
+---
+
+## Solución de Problemas
+
+### "Command not found" después de la instalación
+
+**macOS/Linux:**
+```bash
+# Recargar configuración del shell
+source ~/.bashrc   # o ~/.zshrc
+
+# O reinicia tu terminal
+```
+
+**Windows:**
+```powershell
+# Refrescar PATH
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+
+# O reinicia PowerShell
+```
+
+### Errores de permisos con npm (Linux/macOS)
+
+```bash
+# Opción 1: Usa nvm (recomendado)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+nvm install 18
+nvm use 18
+
+# Opción 2: Corregir permisos de npm
+mkdir ~/.npm-global
+npm config set prefix '~/.npm-global'
+echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### Problemas de autenticación con gcloud
+
+```bash
+# Re-autenticarte
+gcloud auth login
+
+# Revocar y volver a iniciar sesión
+gcloud auth revoke
+gcloud auth login
+
+# Verificar cuenta actual
+gcloud auth list
+```
+
+### Problemas con la API key de Claude CLI
+
+```bash
+# Verificar si la API key está configurada
+claude auth status
+
+# Re-autenticarte
+claude auth login
+
+# O configurarla vía variable de entorno (agrega a ~/.bashrc o ~/.zshrc)
+export ANTHROPIC_API_KEY="your-key-here"
+```
+
+### Problemas de conexión con OpenCode
+
+```bash
+# Verificar configuración
+opencode config list
+
+# Resetear configuración
+opencode config reset
+
+# Reconfigurar
+opencode setup
+```
+
+---
+
+## Referencia Rápida
+
+| CLI | Comando de Instalación | Comando de Verificación | Configuración de Auth |
+|-----|-----------------|----------------|------------|
+| OpenCode | `npm install -g opencode` | `opencode --version` | Auto-configurado |
+| Claude | `npm install -g @anthropic-ai/claude-code` | `claude --version` | `claude auth login` |
+| Gemini | Ver sección [Gemini CLI](#-gemini-cli) | `gcloud --version` | `gcloud auth login` |
+
+---
+
+## ¿Necesitas Ayuda?
+
+1. **Consulta la documentación**: `docs/GETTING-STARTED.md`
+2. **Revisa la solución de problemas**: Ver sección [Solución de Problemas](#-solución-de-problemas)
+3. **Usa el método manual**: Ver [Alternativa: Método Manual con Magic Prompt](#-alternativa-método-manual-con-magic-prompt)
+
+---
+
+*PA Framework v0.3.8-alpha | Para más información, consulta la [documentación principal](./GETTING-STARTED.md)*
+</script>
+<script type="text/markdown" id="docsrc-install__en">
 # CLI Installation Guide for PA Framework
 
 > **Don't have a CLI installed? This guide will help you get started!**
@@ -4897,6 +6703,166 @@ opencode setup
 *PA Framework v0.3.8-alpha | For more information, see the [main documentation](./GETTING-STARTED.md)*
 </script>
 <script type="text/markdown" id="docsrc-setup">
+# PA Framework — Guía de Instalación Independiente
+
+> Para usuarios que ejecutan PA Framework **sin Hermes** (vía OpenCode, Gemini CLI o Python directo)
+
+## Inicio Rápido (3 Pasos)
+
+### Paso 1: Clonar e Instalar
+
+```bash
+git clone https://github.com/freakingjson/Model-Agnostic-AI-Personal-Assistant-Framework.git
+cd Model-Agnostic-AI-Personal-Assistant-Framework/Model-Agnostic-AI-Personal-Assistant-Framework
+```
+
+**Dependencias**: Python 3.11+ (solo stdlib, no requiere pip install)
+
+Opcional para configuración YAML:
+```bash
+pip install pyyaml  # Solo si usas providers.yaml
+```
+
+### Paso 2: Configurar Proveedores (JSON)
+
+Crea `~/.pa-framework/providers.json`:
+
+```json
+{
+  "providers": [
+    {
+      "name": "local",
+      "type": "ollama",
+      "base_url": "http://localhost:11434"
+    },
+    {
+      "name": "opencode",
+      "type": "openai_compat",
+      "api_key": "${OPENCODE_API_KEY}",
+      "base_url": "https://api.nanogpt.com/v1",
+      "models": ["qwopus-9b-q4", "qwopus-9b-q8"]
+    },
+    {
+      "name": "gemini",
+      "type": "openai_compat",
+      "api_key": "${GEMINI_API_KEY}",
+      "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+      "models": ["gemini-2.0-flash", "gemini-2.5-pro-preview"]
+    }
+  ],
+  "fallback_order": ["local", "opencode", "gemini", "mock"]
+}
+```
+
+Configura las API keys como variables de entorno:
+```bash
+export OPENCODE_API_KEY="your-key-here"
+export GEMINI_API_KEY="your-key-here"
+```
+
+### Paso 3: Inicializar Sesión
+
+```bash
+python core/scripts/session_start.py
+```
+
+Salida esperada:
+- Tiempo de init del framework: ~4.5s en frío, <2s en caliente
+- Coordinación multi-CLI: Activa
+- Carga de contexto: Tier 0-1 cargado, Tier 2-4 lazy
+
+---
+
+## Arquitectura (Modo Independiente)
+
+| Componente | Ruta | Independiente | Notas |
+|-----------|------|------------|-------|
+| SessionStore | `core/memory/session_memory.py` | ✅ Sí | SQLite `data/sessions.db` |
+| SkillExecutor | `core/skills/skill_executor.py` | ✅ Sí | Skills en TOML en `skills/*.toml` |
+| MultiEngine | `core/providers/multi_engine.py` | ✅ Sí | Configuración JSON/YAML |
+| ContextLoader | `core/scripts/context_loader.py` | ✅ Sí | Carga lazy por tiers |
+| SessionStart | `core/scripts/session_start.py` | ✅ Sí | Script de bootstrap |
+
+---
+
+## Uso con OpenCode CLI
+
+```bash
+# OpenCode con skills de PA Framework
+opencode chat --skill-dir skills/ --skill greet_user.toml
+
+# O cargar el contexto de PA Framework
+opencode chat --context core/.context/
+```
+
+---
+
+## Uso con Gemini CLI
+
+```bash
+# Gemini con memoria de PA Framework
+gemini chat --memory ~/.pa-framework/memory/sessions.db
+```
+
+---
+
+## Compatibilidad Multiplataforma
+
+| Plataforma | Estado | Notas |
+|----------|--------|-------|
+| Linux | ✅ Verificado | Plataforma principal de desarrollo |
+| macOS | ✅ Verificado | `Path.home()` funciona, SQLite estándar |
+| Windows | ✅ Verificado | Manejo de UTF-8, `pathlib.Path` nativo |
+
+---
+
+## Pruebas en Modo Independiente
+
+```bash
+# Suite completa de tests
+pytest tests/ core/scripts/tests/ --ignore=obsolete --ignore=docs/archive
+
+# Esperado: 285 passed, 1 skipped
+```
+
+---
+
+## Solución de Problemas
+
+### Problema: "No module named 'yaml'"
+**Solución**: Usa configuración JSON (`providers.json`) o instala pyyaml:
+```bash
+pip install pyyaml
+```
+
+### Problema: "Permission denied ~/.pa-framework/"
+**Solución**: Asegúrate de que el directorio exista:
+```bash
+mkdir -p ~/.pa-framework/memory
+mkdir -p ~/.pa-framework/sessions
+```
+
+### Problema: "API key not found"
+**Solución**: Exporta las variables de entorno:
+```bash
+export NANOGPT_API_KEY="..."
+export GEMINI_API_KEY="..."
+```
+
+---
+
+## Información de Versión
+
+- **Framework**: v0.2.2-prealpha
+- **Fase**: 3 (integración wiki-cron)
+- **Tests**: 285 passed, 1 skipped
+- **Autor**: FreakingJSON (instagram.com/freakingjson)
+
+---
+
+*"Calidad sobre velocidad. Estabilidad primero."*
+</script>
+<script type="text/markdown" id="docsrc-setup__en">
 # PA Framework — Standalone Setup Guide
 
 > For users running PA Framework **without Hermes** (via OpenCode, Gemini CLI, or direct Python)
@@ -5147,9 +7113,227 @@ python core/scripts/memory_pipeline.py --full-cycle
 - `core/INIT-PROTOCOL.md`
 - `docs/memory-pipeline/README.md`
 - `config/framework.yaml`
+</script>
+<script type="text/markdown" id="docsrc-memory__en">
+# Memory Architecture — Integral 4-Layer Persistence
 
+> **Version**: v0.3.7-alpha (HOTFIX4 candidate)  
+> **Status**: Active  
+> **Model**: Integral persistence (not task-specific)
+
+---
+
+#### Executive Summary
+
+| **Field** | **Value** |
+|---|---|
+| Goal | Don't lose details, patterns, or relational context during the entire operation |
+| Primary source | `core/.context/sessions/YYYY-MM-DD.md` |
+| Model | 4 persistent and synchronized layers (not exclusive) |
+| Guarantee | Continuous capture + periodic consolidation + robust closure |
+| Core scripts | `session_start.py`, `message_hook.py`, `session_bridge.py`, `memory_pipeline.py`, `session_end.py` |
+
+---
+
+#### Official Layer Definition (the team)
+
+| **Layer** | **Role** | **Nature** | **Persistence** |
+|---|---|---|---|
+| `.md (Sessions)` | Simple/fast memory | Universal chronological log | Always |
+| `Memory MD` | Intermediate memory | Operational synthesis + reusable patterns | Always |
+| `SQLite` | Permanent memory | Complete sessions, TODOs, messages and structured metadata, unlimited | Always |
+| `Wiki` | Relational second brain | Related knowledge, semantic navigation, and graph-like relationships | Always |
+
+> Important: the layers **are not alternatives**; they are complementary within an integral system.
+
+---
+
+#### Integral Flow (Lossless)
+
+| **Stage** | **Action** | **Layers impacted** |
+|---|---|---|
+| Real-time capture | Message hook + session bridge | Sessions `.md` + SQLite |
+| Periodic consolidation | Mining, extraction, autopopulation, KB update, structural sync | Memory MD + Wiki (+ consistency validation) |
+| Closure consolidation | Full persistence cycle + final indexing | All 4 layers |
+| Recovery | Context rehydration for continuity | SQLite + Memory MD + Sessions + Wiki |
+
+---
+
+#### Pipeline Guarantees
+
+| **Guarantee** | **Implementation** |
+|---|---|
+| No loss of detail | Session capture + structured messages in SQLite |
+| No loss of patterns | `knowledge_miner.py` + `knowledge_extractor.py` |
+| No loss of contextual relation | `wiki_autopopulate.py` + `kb_updater.py` |
+| Continuity between sessions | `memory_pipeline.py --load-context` + session indexing |
+| Structural health | `memory_sync.py` periodic and at closure |
+
+---
+
+#### Alignment Status
+
+| **Component** | **Status** | **Note** |
+|---|---|---|
+| `session_start.py` + `SessionBridge` | Aligned | Initializes persistent session in SQLite |
+| `message_hook.py` | Aligned | Continuous message capture (if CLI hooks are active) |
+| `memory_pipeline.py` | Adjusted | Integral cycle interval + closure including wiki/kb/sync |
+| `framework.yaml` | Adjusted | Declared `mode: integral_4layer` and always-persistent layers |
+
+---
+
+#### Operational Commands
+
+```bash
+# Integral memory status (4 layers)
+python core/scripts/memory_pipeline.py --status
+
+# Context injection on startup
+python core/scripts/memory_pipeline.py --load-context
+
+# Continuous integral cycle
+python core/scripts/memory_pipeline.py --watch --interval 15
+
+# Integral consolidation at closure
+python core/scripts/memory_pipeline.py --full-cycle
+```
+
+---
+
+#### References
+
+- `core/INIT-PROTOCOL.md`
+- `docs/memory-pipeline/README.md`
+- `config/framework.yaml`
 </script>
 <script type="text/markdown" id="docsrc-windows">
+# Checklist de Validación Multiplataforma para Windows
+
+**Prioridad**: Windows > macOS > Linux
+**Usuarios objetivo**: usuarios finales probablemente en Windows/Mac
+
+---
+
+## Validación de Archivos Principales
+
+### ✅ session_memory.py
+- Usa `Path(__file__).parent.parent` para la raíz del framework
+- Soporte para override vía `PA_FRAMEWORK_DATA`
+- Crea `data/` relativo al directorio del framework
+- **ESTADO**: PASS — multiplataforma OK
+
+### ✅ cron_setup.py
+- Se agregó `import tempfile` (línea 31)
+- Usa `tempfile.gettempdir()` para logs
+- Reemplaza `/tmp` hardcodeado por `os.path.join(temp_dir, ...)`
+- **ESTADO**: PASS — Corregido en commit 788f708
+
+### ✅ phase4_metrics_test.py
+- Las rutas de tests usan `tempfile.gettempdir()`
+- **ESTADO**: PASS — Corregido en commit 788f708
+
+---
+
+## Verificaciones Específicas de Windows
+
+### Rutas
+| Verificación | Estado | Notas |
+|-------|--------|-------|
+| Sin `/tmp` hardcodeado | ✅ | Todo usa `tempfile.gettempdir()` |
+| Sin `/home` hardcodeado | ✅ | session_memory usa `Path(__file__)` |
+| Sin `~/.local` o `~/.config` | ✅ | Datos en `data/` del framework |
+| Usa `os.path.join` o `Path` | ✅ | Construcción de rutas usa Path/os.path |
+
+### Compatibilidad Python
+| Verificación | Estado | Notas |
+|-------|--------|-------|
+| Compatible con Python 3.8+ | ✅ | Sin features de Python 3.10+ |
+| Sin imports Unix-only | ✅ | Sin `fcntl`, `syslog`, etc. |
+| Llamadas subprocess multiplataforma | ✅ | Usa `subprocess.run()` |
+| SQLite funciona en Windows | ✅ | sqlite3 es librería estándar |
+
+### Operaciones de Archivos
+| Verificación | Estado | Notas |
+|-------|--------|-------|
+| `Path.write_text()` | ✅ | Multiplataforma |
+| `Path.read_text()` | ✅ | Multiplataforma |
+| `Path.mkdir(parents=True, exist_ok=True)` | ✅ | Multiplataforma |
+| Sin llamadas Unix a `chmod` | ⚠️ | NECESITA REVISIÓN |
+
+---
+
+## Checks Pendientes
+
+### ⚠️ message_hook.py
+- Verificar rutas de shell hooks en Windows
+- Buscar supuestos de shell Unix-only
+- Probar con PowerShell vs bash
+
+### ⚠️ Windows Task Scheduler
+- Implementación Windows en `cron_setup.py` (clase `_WindowsCronSetup`)
+- Verificar generación de XML para Task Scheduler
+- Probar ejecución de `schtasks`
+
+### ⚠️ macOS launchd
+- Generación de plist probada solo en Linux
+- `launchctl` necesita pruebas en macOS
+
+---
+
+## Plan de Pruebas
+
+### Fase 1: Validación de Arquitectura ✅
+- [x] Sin rutas Unix hardcodeadas
+- [x] SQLite multiplataforma
+- [x] Temp files usan `tempfile.gettempdir()`
+- [x] Data storage relativo al framework
+
+### Fase 2: Pruebas en Windows (PENDIENTE)
+- [ ] Ejecutar en una máquina Windows
+- [ ] Probar inicialización de `session-start.py`
+- [ ] Probar ops SQLite de `session_memory.py`
+- [ ] Probar `cron_setup.py --setup` en Windows
+- [ ] Verificar directorio temporal correcto (AppData/Local/Temp)
+
+### Fase 3: Pruebas en macOS (PENDIENTE)
+- [ ] Ejecutar en una máquina macOS
+- [ ] Probar generación de plist para launchd
+- [ ] Verificar que `launchctl` funcione
+- [ ] Probar rutas de Python de Homebrew
+
+---
+
+## Integración con CLI (Windows)
+
+Los CLIs objetivo deben funcionar en Windows:
+| CLI | Soporte Windows | Notas |
+|-----|-----------------|-------|
+| OpenCode | ✅ | Binario Windows disponible |
+| Claude Code | ✅ | Basado en Node.js |
+| Gemini CLI | ✅ | Python, multiplataforma |
+| Qwen Code | ✅ | Python, multiplataforma |
+| Codex | ✅ | CLI de OpenAI funciona en Windows |
+
+Los shell hooks necesitan equivalente PowerShell:
+```powershell
+# Equivalente en PowerShell del hook en bash
+$env:PA_HOOK_OUTPUT = "C:\path\to\framework\data\hooks\output.json"
+```
+
+---
+
+## Recomendaciones
+
+1. **Probar en Windows real** — VM o físico
+2. **Agregar CI Windows** — GitHub Actions con `windows-latest`
+3. **Crear hook para PowerShell** — `message_hook.ps1`
+4. **Documentar setup Windows** — Agregar al README
+
+---
+
+**Actualizado**: 2026-04-18 (commit 788f708)
+</script>
+<script type="text/markdown" id="docsrc-windows__en">
 # Windows Cross-Platform Validation Checklist
 
 **Priority**: Windows > macOS > Linux
@@ -5277,6 +7461,206 @@ $env:PA_HOOK_OUTPUT = "C:\path\to\framework\data\hooks\output.json"
 **Last Updated**: 2026-04-18 (commit 788f708)
 </script>
 <script type="text/markdown" id="docsrc-macos">
+# Lista de Validación Multiplataforma para macOS
+
+**Prioridad**: Windows > macOS > Linux
+**Usuarios objetivo**: Usuarios finales probablemente en Windows/Mac
+
+---
+
+## Validación de Archivos Centrales
+
+### ✅ session_memory.py
+- Usa `Path(__file__).parent.parent` para la raíz del framework
+- Soporta el override por variable de entorno `PA_FRAMEWORK_DATA`
+- Crea `data/` relativo al directorio del framework
+- **ESTADO**: APROBADO — Listo multiplataforma (funciona en macOS)
+
+### ✅ cron_setup.py
+- Usa `tempfile.gettempdir()` para rutas de logs (devuelve `/tmp` en macOS)
+- Generación de plist para `launchd` de macOS para tareas programadas
+- **ESTADO**: APROBADO — Existe implementación de macOS launchd
+
+### ✅ message_hook.py
+- Las rutas del shell hook usan `Path(__file__).parent`
+- Funciona con zsh (shell por defecto en macOS) y bash
+- **ESTADO**: APROBADO — Compatible con shells de macOS
+
+---
+
+## Verificaciones Específicas de macOS
+
+### Rutas de Python
+
+| Arquitectura | Ruta | Estado |
+|--------------|------|--------|
+| Apple Silicon (M1/M2/M3) | `/opt/homebrew/bin/python3` | ✅ Estándar |
+| Macs Intel | `/usr/local/bin/python3` | ✅ Estándar |
+| Python del sistema | `/usr/bin/python3` | ⚠️ Obsoleto en macOS 12+ |
+
+**Recomendación**: El framework NO debe hardcodear la ruta de Python. Usar:
+```python
+import sys
+python_path = sys.executable  # Resuelto dinámicamente
+```
+
+### Sistema de Archivos
+
+| Verificación | Estado | Notas |
+|-------|--------|-------|
+| APFS sin sensibilidad a mayúsculas | ✅ | Sistema de archivos por defecto en macOS |
+| APFS con sensibilidad a mayúsculas | ⚠️ | Caso edge, el framework lo maneja |
+| Operaciones con archivos SQLite | ✅ | Biblioteca estándar, funciona |
+| Directorio temporal `/tmp` | ✅ | Directorio temporal de macOS, `tempfile.gettempdir()` devuelve esto |
+
+### Permisos
+
+| Verificación | Estado | Notas |
+|-------|--------|-------|
+| Directorio de datos a nivel de usuario | ✅ | `data/` en el directorio del framework |
+| Lectura/escritura de SQLite | ✅ | No requiere permisos especiales |
+| Ubicación del plist de launchd | ✅ | `~/Library/LaunchAgents/` |
+| No requiere sudo | ✅ | Todas las operaciones a nivel de usuario |
+
+### Compatibilidad de Shells
+
+| Verificación | Estado | Notas |
+|-------|--------|-------|
+| zsh (shell por defecto) | ✅ | Shell por defecto en macOS desde Catalina |
+| bash | ✅ | Aún disponible vía Homebrew |
+| Expansión de ruta `~` | ✅ | Ambos shells lo soportan |
+| Variables de entorno | ✅ | Ambos shells soportan `$VAR` |
+
+---
+
+## Integración con launchd
+
+### Estructura del plist (Generado por cron_setup.py)
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "...">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.freakingjson.pa-framework.{job_name}</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>{python_path}</string>
+        <string>{script_path}</string>
+    </array>
+    <key>StartInterval</key>
+    <integer>{interval_seconds}</integer>
+    <key>StandardOutPath</key>
+    <string>{log_file}</string>
+    <key>StandardErrorPath</key>
+    <string>{error_file}</string>
+</dict>
+</plist>
+```
+
+### Comandos launchctl
+
+| Comando | Propósito | Estado |
+|---------|---------|--------|
+| `launchctl load ~/Library/LaunchAgents/{plist}` | Cargar job | ✅ Estándar |
+| `launchctl unload ~/Library/LaunchAgents/{plist}` | Descargar job | ✅ Estándar |
+| `launchctl list | grep pa-framework` | Listar jobs | ✅ Estándar |
+
+### Ubicación del plist
+
+| Ubicación | Caso de uso | Permisos |
+|----------|----------|-------------|
+| `~/Library/LaunchAgents/` | Cron a nivel de usuario | ✅ Sin sudo |
+| `/Library/LaunchAgents/` | A nivel de sistema | ⚠️ Requiere sudo |
+| `/Library/LaunchDaemons/` | A nivel de root | ❌ No necesario |
+
+**El framework usa**: `~/Library/LaunchAgents/` (a nivel de usuario, sin sudo)
+
+---
+
+## Plan de Pruebas
+
+### Fase 1: Validación de Arquitectura ✅
+- [x] No hay rutas hardcodeadas incompatibles con macOS
+- [x] Almacenamiento SQLite multiplataforma
+- [x] Archivos temporales usan `tempfile.gettempdir()` (devuelve `/tmp`)
+- [x] Almacenamiento de datos relativo al framework
+- [x] Generación de plist para launchd implementada
+
+### Fase 2: Pruebas en macOS (PENDIENTE)
+- [ ] Ejecutar en una máquina macOS (Apple Silicon o Intel)
+- [ ] Probar la inicialización de `session-start.py`
+- [ ] Probar operaciones SQLite de `session_memory.py`
+- [ ] Probar `cron_setup.py --setup` en macOS
+- [ ] Verificar que `launchctl load` funcione
+- [ ] Verificar la ubicación del plist `~/Library/LaunchAgents/`
+- [ ] Probar con Python de Homebrew
+
+### Fase 3: Pruebas de CLI (PENDIENTE)
+- [ ] Probar OpenCode en macOS
+- [ ] Probar Claude Code en macOS (Node.js)
+- [ ] Probar Gemini CLI en macOS
+- [ ] Probar Qwen Code en macOS
+- [ ] Probar Codex en macOS
+
+---
+
+## Integración de CLI (macOS)
+
+| CLI | Soporte macOS | Notas |
+|-----|---------------|-------|
+| OpenCode | ✅ | Binario para macOS disponible |
+| Claude Code | ✅ | Basado en Node.js, funciona en macOS |
+| Gemini CLI | ✅ | Python, multiplataforma |
+| Qwen Code | ✅ | Python, multiplataforma |
+| Codex | ✅ | CLI de OpenAI funciona en macOS |
+
+Integración de shell hook:
+```bash
+# zsh/bash hook para macOS
+export PA_HOOK_OUTPUT="$HOME/path/to/framework/data/hooks/output.json"
+```
+
+---
+
+## Casos Edge Conocidos de macOS
+
+1. **Python del sistema obsoleto** — macOS 12+ eliminó el Python del sistema. Los usuarios necesitan Python de Homebrew.
+2. **APFS con sensibilidad a mayúsculas** — Raro pero posible. El framework lo maneja mediante operaciones con `Path`.
+3. **Restricciones del sandbox** — No relevante para herramientas CLI ejecutadas desde Terminal.
+4. **launchd requiere inicio de sesión** — Los jobs solo se ejecutan cuando el usuario ha iniciado sesión (a diferencia de cron, que podía correr siempre).
+
+---
+
+## Recomendaciones
+
+1. **Probar en una máquina macOS real** — M1/M2 preferido (Apple Silicon es el más común ahora)
+2. **Agregar CI para macOS** — GitHub Actions con `macos-latest`
+3. **Documentar la configuración de Python con Homebrew** — Agregar al README
+4. **Probar la generación de plist para launchd** — Verificar que el XML sea válido
+5. **Manejar la ruta de Python dinámicamente** — No hardcodear `/usr/local/bin/python3`
+
+---
+
+## Resumen Multiplataforma
+
+| Plataforma | Dir Temporal | Dir de Datos | Scheduler | Estado |
+|----------|----------|----------|-----------|--------|
+| Windows | `AppData\Local\Temp` | Framework `data\` | Task Scheduler | ✅ Listo |
+| macOS | `/tmp` | Framework `data/` | launchd | ✅ Listo |
+| Linux | `/tmp` | Framework `data/` | cron | ✅ Nativo |
+
+Todas las plataformas usan `tempfile.gettempdir()` para archivos temporales.
+Todas las plataformas usan `data/` relativo al framework para persistencia.
+
+---
+
+**Última actualización**: 2026-04-18
+**Validación de Arquitectura**: ✅ APROBADO
+**Pruebas de Runtime**: ⚠️ PENDIENTE (requiere máquina macOS)
+</script>
+<script type="text/markdown" id="docsrc-macos__en">
 # macOS Cross-Platform Validation Checklist
 
 **Priority**: Windows > macOS > Linux

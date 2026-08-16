@@ -283,6 +283,21 @@ class Handler(BaseHTTPRequestHandler):
                         free_models.append(f"{pid}/{mid}")
             return self._json(sorted(set(free_models)))
 
+        if path == "/api/config/model":
+            # v0.4.0-beta: modelo ACTUAL desde .opencode/config.json (sin exponer el archivo crudo)
+            cfg_path = REPO_ROOT / ".opencode" / "config.json"
+            cfg = {}
+            if cfg_path.exists():
+                try:
+                    cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+                except Exception:
+                    cfg = {}
+            return self._json({
+                "ok": True,
+                "model": cfg.get("model") or "",
+                "agent": cfg.get("agent") or "",
+            })
+
         # estáticos: dashboard-data.js, knowledge indexes, assets
         rel = path.lstrip("/")
         if rel.startswith(("dashboard-data.js", "core/", "assets/", "docs/")):

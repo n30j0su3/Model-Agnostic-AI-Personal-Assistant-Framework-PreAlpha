@@ -44,8 +44,22 @@ class SkillsIndexer:
         if INDEX_FILE.exists():
             try:
                 with open(INDEX_FILE, "r", encoding="utf-8") as f:
-                    return json.load(f)
-            except json.JSONDecodeError:
+                    data = json.load(f)
+                # v0.4.0-beta: normalizar índices previos con shape distinto
+                # (entries sin "id" rompían el merge). Descartar entries corruptos.
+                if not isinstance(data, dict):
+                    data = {}
+                skills = data.get("skills")
+                if not isinstance(skills, list):
+                    skills = []
+                skills = [s for s in skills if isinstance(s, dict) and s.get("id")]
+                data["skills"] = skills
+                data.setdefault("last_updated", datetime.now().isoformat())
+                data.setdefault("total_skills", len(skills))
+                data.setdefault("categories", {})
+                data.setdefault("version", "1.0")
+                return data
+            except (json.JSONDecodeError, OSError):
                 pass
 
         return {
