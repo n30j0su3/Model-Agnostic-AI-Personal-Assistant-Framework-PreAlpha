@@ -554,8 +554,15 @@ def check_agent():
 
 
 def show_agent_warning(agent: str):
-    """Mostrar warning si no está usando FreakingJSON-PA."""
-    if agent != "FreakingJSON-PA":
+    """Mostrar warning si no está usando FreakingJSON-PA.
+
+    v0.4.1-beta: nota interna — el agente instalado en .opencode/agent/ tiene
+    id "FreakingJSON" (no "FreakingJSON-PA"). check_agent() lee el campo
+    `agent` de .opencode/config.json; este repo lo escribe como "FreakingJSON",
+    por lo que el warning legacy dispara siempre. Aceptamos ambos ids para
+    dejar de mostrar un aviso stale.
+    """
+    if agent not in ("FreakingJSON-PA", "FreakingJSON"):
         print(c("\n  [TIP] ", Colors.YELLOW), end="")
         print(c(f"Presiona TAB para cambiar a modo 'FreakingJSON-PA'", Colors.CYAN))
         print(c(f"     Agente actual: {agent or 'default'}\n", Colors.DIM))

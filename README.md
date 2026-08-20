@@ -81,7 +81,7 @@ pa-framework/
 - Este README + `docs/` (fuente de la documentación)
 
 ## Versiones
-Ver `CHANGELOG.md`. Versión actual: **v0.4.0-beta**.
+Ver `CHANGELOG.md`. Versión actual: **v0.4.1-beta**.
 
 ## Licencia
 MIT — ver `LICENSE`.

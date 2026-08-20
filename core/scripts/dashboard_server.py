@@ -40,6 +40,9 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 CORE_DIR = SCRIPT_DIR.parent
 REPO_ROOT = CORE_DIR.parent
 
+sys.path.insert(0, str(SCRIPT_DIR))
+import oc_auth  # noqa: E402  (v0.4.1-beta: detección auth-aware de credenciales)
+
 OPENCODE_PORT = 47371          # puerto fijo del opencode serve gestionado
 SERVER_PORT_DEFAULT = 8760     # puerto del dashboard bridge
 EDITABLE_FILES = {             # archivos .md editables desde el dashboard
@@ -162,14 +165,35 @@ def run_py(script: str, *args: str, timeout: int = 90) -> dict:
 
 
 def launch_opencode_tui() -> dict:
-    """Abre el TUI de opencode en una terminal nueva del SO (best effort)."""
+    """Abre el TUI de opencode en una terminal nueva del SO (best effort).
+
+    v0.4.1-beta: lanza con el AGENTE y MODELO asignados por el framework
+    (leídos de .opencode/config.json). Antes lanzaba opencode pelado →
+    el TUI arrancaba con el default global de la máquina, ignorando la
+    asignación del framework (bug N30 2026-08-19).
+    """
     exe = opencode_installed()
     if not exe:
         return {"ok": False, "error": "opencode no está instalado"}
+    # flags de agente/modelo desde la asignación del framework
+    agent_flags = []
+    cfg_path = REPO_ROOT / ".opencode" / "config.json"
+    if cfg_path.exists():
+        try:
+            cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+            agent = cfg.get("agent")
+            if agent:
+                agent_flags += ["--agent", str(agent)]
+            model = cfg.get("model")
+            if model and model != "auto":
+                agent_flags += ["--model", str(model)]
+        except Exception:
+            pass
     try:
         if sys.platform == "win32":
             # 'start' abre consola nueva; /k la mantiene viva
-            subprocess.Popen(f'start "FreakingJSON PA — opencode" /D "{REPO_ROOT}" "{exe}"',
+            flags = " ".join(_win_quote(a) for a in agent_flags)
+            subprocess.Popen(f'start "FreakingJSON PA — opencode" /D "{REPO_ROOT}" "{exe}" {flags}',
                              shell=True, cwd=str(REPO_ROOT))
         elif sys.platform == "darwin":
             subprocess.Popen(["open", "-a", "Terminal", exe], cwd=str(REPO_ROOT))
@@ -178,15 +202,23 @@ def launch_opencode_tui() -> dict:
                          if shutil.which(t)), None)
             if not term:
                 return {"ok": False, "error": "ninguna terminal conocida (x-terminal-emulator/gnome-terminal/konsole/xterm)"}
-            subprocess.Popen([term, "-e", f'cd "{REPO_ROOT}" && "{exe}"'])
-        return {"ok": True, "hint": "TUI lanzada en terminal externa"}
+            subprocess.Popen([term, "-e", f'cd "{REPO_ROOT}" && "{exe}" {" ".join(agent_flags)}'])
+        hint = "TUI lanzada en terminal externa"
+        if agent_flags:
+            hint += " con " + " ".join(agent_flags)
+        return {"ok": True, "hint": hint}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
 
+def _win_quote(s: str) -> str:
+    """Comilla un argumento para cmd.exe (solo si contiene espacios)."""
+    return f'"{s}"' if (" " in s or "\t" in s) else s
+
+
 # ---------------------------------------------------------------- handler ---
 class Handler(BaseHTTPRequestHandler):
-    server_version = "PA-Dashboard/0.5.0-alpha"
+    server_version = "PA-Dashboard/0.4.1-beta"
 
     # ---- plumbing ----
     def _json(self, obj: object, status: int = 200) -> None:
@@ -253,8 +285,10 @@ class Handler(BaseHTTPRequestHandler):
         
         if path == "/api/models/free":
             # Detectar modelos free desde opencode serve (auto-inicia si es necesario)
-            # v0.5.0: usa /config/providers — models es un DICT por id,
-            # y "free" se detecta por cost.input==0 && cost.output==0 (o sufijo -free)
+            # v0.4.1-beta: AUTH-AWARE — cada modelo incluye el estado de credenciales
+            # del proveedor (env | auth.json | anon | sin-creds). El catálogo de
+            # opencode lista modelos SIN importar si hay creds: detectar != poder
+            # usar (bug N30 2026-08-19). Ahora la UI lo distingue.
             if not opencode_serving():
                 ensure = opencode_ensure()
                 if not ensure.get("ok"):
@@ -263,10 +297,13 @@ class Handler(BaseHTTPRequestHandler):
             if st != 200 or not isinstance(data, dict):
                 return self._json([], 200)
             free_models = []
+            auth_data = oc_auth.load_auth_json()
             for p in data.get("providers", []):
                 if not isinstance(p, dict):
                     continue
                 pid = p.get("id", "")
+                status = oc_auth.provider_auth_status(p, auth_data)
+                badge = oc_auth.provider_auth_badge(status)
                 models = p.get("models", {})
                 items = models.items() if isinstance(models, dict) else (
                     [(m.get("id", ""), m) for m in models if isinstance(m, dict)]
@@ -280,8 +317,53 @@ class Handler(BaseHTTPRequestHandler):
                         or "free" in str(mid).lower()
                     )
                     if is_free:
-                        free_models.append(f"{pid}/{mid}")
-            return self._json(sorted(set(free_models)))
+                        free_models.append({
+                            "id": f"{pid}/{mid}",
+                            "status": status,
+                            "badge": badge,
+                        })
+            # cred-first: autenticados primero, sin-creds al final
+            rank = {"authed_env": 0, "authed_file": 1, "anon": 2, "missing": 3}
+            free_models.sort(key=lambda x: (rank.get(x["status"], 9), x["id"]))
+            return self._json(free_models)
+
+        if path == "/api/models/test":
+            # v0.4.1-beta: ping REAL del modelo seleccionado — verifica que la
+            # credencial FUNCIONA (no solo que existe). Un modelo "detectado"
+            # sin creds que funcione es exactamente el bug reportado.
+            q = path  # solo GET
+            model_id = (self.path.split("?", 1)[1] if "?" in self.path else "")
+            from urllib.parse import parse_qs
+            params = parse_qs(model_id)
+            mid_param = (params.get("model", [""])[0] or "").strip()
+            if not mid_param:
+                return self._json({"ok": False, "error": "parámetro model requerido"}, 400)
+            ensure = opencode_ensure()
+            if not ensure.get("ok"):
+                return self._json({"ok": False, "error": ensure.get("error")}, 503)
+            provider_id, _, model_name = mid_param.partition("/")
+            if not model_name:
+                return self._json({"ok": False, "error": "formato provider/model"}, 400)
+            st, sess = oc_call("/session", "POST", {"title": "PA model test"})
+            if st != 200 or not isinstance(sess, dict):
+                return self._json({"ok": False, "error": f"crear sesión: {sess}"}, 502)
+            sid = sess.get("id")
+            st, resp = oc_call(
+                f"/session/{sid}/message", "POST",
+                {"parts": [{"type": "text", "text": "ping"}],
+                 "model": {"providerID": provider_id, "modelID": model_name}},
+                timeout=60,
+            )
+            info = resp.get("info", {}) if isinstance(resp, dict) else {}
+            used = f"{info.get('providerID')}/{info.get('modelID')}"
+            ok = st == 200 and info.get("modelID") == model_name
+            return self._json({
+                "ok": ok,
+                "status": st,
+                "used_model": used,
+                "requested": mid_param,
+                "error": None if ok else (resp if not isinstance(resp, dict) else resp.get("error")),
+            })
 
         if path == "/api/config/model":
             # v0.4.0-beta: modelo ACTUAL desde .opencode/config.json (sin exponer el archivo crudo)
@@ -325,19 +407,46 @@ class Handler(BaseHTTPRequestHandler):
                 if st != 200 or not isinstance(sess, dict):
                     return self._json({"ok": False, "error": f"crear sesión: {sess}"}, 502)
                 sid = sess.get("id")
-            model = body.get("model")  # opcional {providerID, modelID}
-            payload = {"parts": [{"type": "text", "text": msg}]}
+            # v0.4.1-beta (fix bug N30 2026-08-19): el chat debe usar el MODELO
+            # ASIGNADO por el framework, no el default global de opencode.
+            # Antes: send() del dashboard no enviaba model y este endpoint lo
+            # ignoraba → el chat respondía con el default de la máquina
+            # (ej. glm-4.7 global) aunque el usuario hubiera "asignado" otro.
+            # Además la API serve de opencode EXIGE objeto {providerID, modelID}
+            # (string crudo → HTTP 400), y "agentID" NO está soportado en serve
+            # 1.4.6 (se ignora). El agente FreakingJSON solo puede forzarse
+            # vía CLI (--agent), no vía serve.
+            model = body.get("model")
+            if not model:
+                # fallback: modelo guardado en .opencode/config.json (asignación del framework)
+                cfg_path = REPO_ROOT / ".opencode" / "config.json"
+                if cfg_path.exists():
+                    try:
+                        cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+                        model = cfg.get("model") or None
+                    except Exception:
+                        model = None
+            payload: dict = {"parts": [{"type": "text", "text": msg}]}
             if model:
-                payload["model"] = model
+                # normalizar a objeto — la API serve rechaza strings (400)
+                if isinstance(model, str):
+                    pid, _, mid = model.partition("/")
+                    model = {"providerID": pid, "modelID": mid} if mid else None
+                if model:
+                    payload["model"] = model
             st, resp = oc_call(f"/session/{sid}/message", "POST", payload, timeout=180)
             if st != 200:
                 return self._json({"ok": False, "error": f"opencode: {resp}", "session": sid}, 502)
             # extraer texto de la respuesta
             texts = []
+            info = {}
             if isinstance(resp, dict):
+                info = resp.get("info", {}) or {}
                 texts = [p.get("text", "") for p in resp.get("parts", []) if p.get("type") == "text"]
+            used = f"{info.get('providerID')}/{info.get('modelID')}" if info.get("modelID") else ""
             return self._json({"ok": True, "session": sid,
-                               "reply": "\n".join(t for t in texts if t).strip()})
+                               "reply": "\n".join(t for t in texts if t).strip(),
+                               "model_used": used})
 
         if path == "/api/files/config":
             key = body.get("file")

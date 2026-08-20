@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PA Framework Command Center v0.4.0-beta</title>
+    <title>PA Framework Command Center v0.4.1-beta</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a3e635' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M13 10V3L4 14h7v7l9-11h-7z'/%3E%3C/svg%3E">
     <meta name="description" content="Dashboard profesional del FreakingJSON Personal Assistant Framework">
     
@@ -359,7 +359,7 @@
                 </div>
                         <div class="hidden sm:block">
                             <h1 class="font-semibold text-sm">FreakingJSON</h1>
-                            <p class="text-xs text-slate-400">v0.4.0-beta <span id="build-id" class="text-slate-600"></span></p>
+                            <p class="text-xs text-slate-400">v0.4.1-beta <span id="build-id" class="text-slate-600"></span></p>
                         </div>
                     </div>
                 </div>
@@ -426,7 +426,7 @@
                     <!-- Badge de versión -->
                     <div class="inline-flex items-center gap-2 px-5 py-2.5 bg-lime-400/10 border border-lime-400/30 rounded-full text-lime-300 text-sm mb-8 neon-glow animate-fade-in">
                         <span class="w-2.5 h-2.5 bg-lime-400 rounded-full animate-pulse"></span>
-                        Framework v0.4.0-beta — 100% Local, 100% Privado
+                        Framework v0.4.1-beta — 100% Local, 100% Privado
                     </div>
                     
                     <!-- Título principal -->
@@ -567,6 +567,11 @@
                 modelo_detect_err: 'Error: no se pudo conectar con opencode serve. Ejecuta dashboard_server.py primero.',
                 modelo_pick_first: 'Selecciona un modelo primero',
                 modelo_detecting: 'Detectando…',
+                modelo_no_creds: 'sin credenciales (requiere opencode auth login)',
+                modelo_test_btn: 'Probar modelo',
+                modelo_testing: 'Probando modelo (ping real)…',
+                modelo_test_ok: '✓ El modelo respondió y la credencial funciona',
+                modelo_test_fail: '✗ El modelo no respondió',
                 docs_title: 'Documentación',
                 docs_subtitle: 'Guía completa del framework — incluida, funciona sin internet.',
                 docs_pick: 'Selecciona un documento…',
@@ -621,6 +626,11 @@
                 modelo_detect_err: 'Error: could not connect to opencode serve. Run dashboard_server.py first.',
                 modelo_pick_first: 'Select a model first',
                 modelo_detecting: 'Detecting…',
+                modelo_no_creds: 'no credentials (requires opencode auth login)',
+                modelo_test_btn: 'Test model',
+                modelo_testing: 'Testing model (real ping)…',
+                modelo_test_ok: '✓ Model responded and the credential works',
+                modelo_test_fail: '✗ Model did not respond',
                 docs_title: 'Documentation',
                 docs_subtitle: 'Complete framework guide — included, works offline.',
                 docs_pick: 'Pick a document…',
@@ -1680,6 +1690,12 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                         </svg>
                         ${t('modelo_save')}
+                    </button>
+                    <button id="modelo-test-btn" onclick="modeloPage.test()" class="px-6 py-3 ml-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        ${t('modelo_test_btn')}
                     </button>
                     <div id="modelo-feedback" class="mt-4 text-sm"></div>
                 </div>
@@ -2839,6 +2855,8 @@
                     const r = await this.api('/api/opencode/chat', 'POST', { message: msg, session: this.session });
                     if (r.ok) {
                         this.session = r.session || this.session;
+                        // v0.4.1-beta: evidencia del modelo realmente usado
+                        if (r.model_used) this.log('sys', `⚙ ${r.model_used}`);
                         this.log('assistant', r.reply || '(sin texto)');
                     } else {
                         this.log('sys', `⚠ ${r.error || 'error del puente'}`);
@@ -2998,8 +3016,13 @@
                         select.innerHTML = `<option value="">${t('modelo_select_ph')}</option>`;
                         models.forEach(m => {
                             const opt = document.createElement('option');
-                            opt.value = m;
-                            opt.textContent = m;
+                            // v0.4.1-beta: la API devuelve objetos {id, status, badge}
+                            const mid = (typeof m === 'string') ? m : m.id;
+                            const badge = (typeof m === 'object' && m.badge) ? ` — ${m.badge}` : '';
+                            const missing = (typeof m === 'object' && m.status === 'missing');
+                            if (missing) opt.style.color = '#f87171';
+                            opt.value = mid;
+                            opt.textContent = mid + (missing ? ` ⚠ ${t('modelo_no_creds')}` : badge);
                             select.appendChild(opt);
                         });
                         if (results) results.classList.remove('hidden');
@@ -3013,6 +3036,30 @@
                 if (btn) {
                     btn.disabled = false;
                     btn.innerHTML = t('modelo_detecting') === 'Detectando…' ? 'Detectar modelos free' : 'Detect free models';
+                }
+            },
+            
+            async test() {
+                // v0.4.1-beta: ping real del modelo seleccionado — verifica que
+                // la credencial FUNCIONA (detectar ≠ poder usar).
+                const select = document.getElementById('modelo-select');
+                const model = select.value;
+                if (!model) {
+                    this.showFeedback(t('modelo_pick_first'), 'error');
+                    return;
+                }
+                this.showFeedback(t('modelo_testing'), 'info');
+                try {
+                    const resp = await fetch('/api/models/test?model=' + encodeURIComponent(model));
+                    const r = await resp.json();
+                    if (r.ok) {
+                        this.showFeedback(t('modelo_test_ok') + (r.used_model ? ` (${r.used_model})` : ''), 'success');
+                    } else {
+                        const detail = r.error ? ` — ${typeof r.error === 'string' ? r.error : JSON.stringify(r.error).slice(0, 160)}` : '';
+                        this.showFeedback(t('modelo_test_fail') + detail, 'error');
+                    }
+                } catch (e) {
+                    this.showFeedback(t('modelo_detect_err'), 'error');
                 }
             },
             

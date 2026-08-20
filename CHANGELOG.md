@@ -1,5 +1,52 @@
 # Changelog
 
+## v0.4.1-beta (2026-08-19)
+
+### Fix crítico: credenciales opencode detectadas pero no usadas (bug N30)
+
+**Síntoma reportado**: en un Windows con opencode ya instalado y credenciales
+minimax configuradas, el framework detectaba las credenciales en el CLI de
+configuración y las "asignaba", pero luego NO podía usarlas.
+
+**Causa raíz (4 fugas encadenadas, verificadas en vivo contra opencode 1.4.6)**:
+1. La detección listaba el catálogo `/config/providers` de opencode, que lista
+   modelos CON o SIN credenciales por igual — detectar ≠ poder usar.
+2. `send()` del dashboard NO enviaba el modelo al chatear → el chat servía con
+   el default GLOBAL de la máquina (ej. glm-4.7), no el asignado.
+3. El bridge pasaba el modelo como string; la API serve de opencode exige
+   objeto `{providerID, modelID}` (string → HTTP 400).
+4. `launch_opencode_tui()` lanzaba opencode SIN `--model`/`--agent` → el TUI
+   arrancaba con el default global de nuevo.
+
+**Fixes**:
+- **Nuevo `core/scripts/oc_auth.py`**: detección auth-aware compartida
+  (env / auth.json / anon / sin-creds). Stdlib-only.
+- **`select_free_model.py`**: listado con estado de credenciales por modelo
+  (`[env]`, `[auth.json]`, `[anon]`, `[sin-creds]`), orden cred-first,
+  `--auto` prefiere autenticados; si ninguno tiene creds dice exactamente
+  cómo habilitarlas (`opencode auth login`).
+- **`dashboard_server.py`**: el chat inyecta el modelo asignado en cada
+  mensaje (con fallback a `.opencode/config.json` y normalización
+  string→objeto); nuevo endpoint `GET /api/models/test?model=...` con ping
+  REAL del modelo (verifica que la credencial FUNCIONA, no solo existe);
+  `/api/models/free` ahora retorna objetos `{id, status, badge}`; TUI lanza
+  con `--agent`/`--model` asignados; respuesta del chat incluye `model_used`.
+- **`dashboard.html`**: badges de credenciales en la lista de modelos,
+  modelos sin-creds en rojo con advertencia, botón **"Probar modelo"**
+  (ping real), línea `⚙ modelo` en el chat como evidencia del modelo usado,
+  i18n ES/EN completo.
+- **`pa.py`**: menú M muestra badges de credenciales y advierte al
+  seleccionar un modelo sin-creds.
+- **`session_start.py`**: warning de agente acepta "FreakingJSON" además de
+  "FreakingJSON-PA" (aviso stale eliminado).
+
+**Verificación E2E (en vivo, opencode 1.4.6)**: asignado
+`zai-coding-plan/glm-5-turbo` → chat sin model en body respondió con
+`model_used=zai-coding-plan/glm-5-turbo` (antes usaba el default global
+glm-4.7). Ping real OK. Tests: 15 nuevos (tests/test_model_auth_fix.py),
+suite total 68 passed / 1 preexistente fallando por fechas hardcodeadas
+(no relacionado).
+
 ## v0.4.0-beta (2026-08-15)
 
 ### Fixes Críticos

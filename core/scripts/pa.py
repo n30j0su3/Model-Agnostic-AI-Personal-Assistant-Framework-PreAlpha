@@ -857,7 +857,18 @@ def _select_free_model():
         return
 
     for i, m in enumerate(models, 1):
-        print(f"  {i}. {m}")
+        # v0.4.1-beta: models son dicts {id, provider, model, status} ordenados
+        # cred-first; el badge muestra SI el proveedor tiene credenciales
+        # (env / auth.json / anon / sin-creds) — detectar ≠ poder usar.
+        mid = m.get("id") if isinstance(m, dict) else m
+        badge = ""
+        if isinstance(m, dict):
+            try:
+                import oc_auth
+                badge = oc_auth.provider_auth_badge(m.get("status", ""))
+            except Exception:
+                badge = m.get("status", "")
+        print(f"  {i}. {mid}" + (f"  [{badge}]" if badge else ""))
 
     raw = input(f"\n  Selecciona un número [1-{len(models)}, Enter=1]: ").strip()
     idx = 0
@@ -871,6 +882,11 @@ def _select_free_model():
             pause()
             return
     selected = models[idx]
+    if isinstance(selected, dict):
+        if selected.get("status") == "missing":
+            print_warn("El proveedor de este modelo NO tiene credenciales en esta máquina.")
+            print_info("Habilita con: opencode auth login (o exporta la variable del proveedor)")
+        selected = selected.get("id", "")
     try:
         sfm.save_selection(selected)
         print_ok(f"Modelo configurado: {selected}")
