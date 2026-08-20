@@ -1,5 +1,31 @@
 # Changelog
 
+## v0.4.1-beta (2026-08-19) — r2: feedback N30
+
+### Cambio de enfoque: NADA se bloquea, todos los modelos utilizables
+
+**Feedback N30**: "la solución no es bloquear los otros modelos configurados,
+eso es lo que buscamos facilidad para los usuarios, lo que necesitamos es que
+el modelo/credencial detectados funcionen bien al lanzarse en la sesión de IA".
+
+**Cambios**:
+- **Listado COMPLETO**: `get_usable_models()` lista TODO el catálogo de
+  proveedores con credenciales (free + paid — ej. minimax configurado) + los
+  free del resto. En la máquina de pruebas: 16 → **605 modelos utilizables**.
+  Dashboard, menú M de pa.py y `--all` del selector usan este listado.
+  Etiqueta `(paid)` en los de costo > 0. Sin-creds siguen listados (al final,
+  en rojo) — nunca ocultos ni bloqueados.
+- **Preflight en el lanzamiento**: `pa.py` al iniciar sesión con opencode
+  ejecuta `select_free_model.py --verify <modelo>` (ping real). Si falla,
+  imprime la causa exacta (credencial inválida / sin creds / modelo
+  inexistente) pero **lanza igual** — informa, no bloquea.
+- **`--verify <model>`**: ping real del modelo (POST /session →
+  /session/{id}/message con model objeto → confirmar providerID+modelID en la
+  respuesta). Exit codes documentados: 0 OK / 2 sin serve / 3 no en catálogo
+  (distingue NO_CREDS vs NOT_IN_CATALOG) / 4 ping falló.
+- Labels del dashboard actualizados: "Todos los modelos utilizables —
+  proveedores con credenciales + free".
+
 ## v0.4.1-beta (2026-08-19)
 
 ### Fix crítico: credenciales opencode detectadas pero no usadas (bug N30)

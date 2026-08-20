@@ -553,10 +553,10 @@
                 console_save: 'Guardar',
                 console_bridge_off: 'Consola offline — ejecuta: python core/scripts/dashboard_server.py',
                 modelo_title: 'Modelo IA',
-                modelo_subtitle: 'Seleccionar modelo free disponible — opencode serve',
+                modelo_subtitle: 'Todos los modelos utilizables — proveedores con credenciales + free',
                 modelo_current: 'Modelo actual:',
-                modelo_select_btn: 'Detectar modelos free',
-                modelo_available: 'Modelos free disponibles:',
+                modelo_select_btn: 'Detectar modelos',
+                modelo_available: 'Modelos disponibles (con credenciales primero):',
                 modelo_select_ph: 'Selecciona un modelo…',
                 modelo_save: 'Guardar selección',
                 modelo_saved: '✓ Modelo guardado en .opencode/config.json',
@@ -612,10 +612,10 @@
                 console_save: 'Save',
                 console_bridge_off: 'Console offline — run: python core/scripts/dashboard_server.py',
                 modelo_title: 'AI Model',
-                modelo_subtitle: 'Select free model available — opencode serve',
+                modelo_subtitle: 'All usable models — credentialed providers + free',
                 modelo_current: 'Current model:',
-                modelo_select_btn: 'Detect free models',
-                modelo_available: 'Free models available:',
+                modelo_select_btn: 'Detect models',
+                modelo_available: 'Available models (credentialed first):',
                 modelo_select_ph: 'Select a model…',
                 modelo_save: 'Save selection',
                 modelo_saved: '✓ Model saved to .opencode/config.json',
@@ -3020,9 +3020,10 @@
                             const mid = (typeof m === 'string') ? m : m.id;
                             const badge = (typeof m === 'object' && m.badge) ? ` — ${m.badge}` : '';
                             const missing = (typeof m === 'object' && m.status === 'missing');
+                            const paid = (typeof m === 'object' && m.free === false);
                             if (missing) opt.style.color = '#f87171';
                             opt.value = mid;
-                            opt.textContent = mid + (missing ? ` ⚠ ${t('modelo_no_creds')}` : badge);
+                            opt.textContent = mid + (missing ? ` ⚠ ${t('modelo_no_creds')}` : badge) + (paid ? ' (paid)' : '');
                             select.appendChild(opt);
                         });
                         if (results) results.classList.remove('hidden');

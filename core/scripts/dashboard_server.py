@@ -42,6 +42,7 @@ REPO_ROOT = CORE_DIR.parent
 
 sys.path.insert(0, str(SCRIPT_DIR))
 import oc_auth  # noqa: E402  (v0.4.1-beta: detección auth-aware de credenciales)
+import select_free_model as sfm  # noqa: E402  (v0.4.1-beta: catálogo usable auth-aware)
 
 OPENCODE_PORT = 47371          # puerto fijo del opencode serve gestionado
 SERVER_PORT_DEFAULT = 8760     # puerto del dashboard bridge
@@ -284,48 +285,21 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(run_py("session_start.py", timeout=90))
         
         if path == "/api/models/free":
-            # Detectar modelos free desde opencode serve (auto-inicia si es necesario)
-            # v0.4.1-beta: AUTH-AWARE — cada modelo incluye el estado de credenciales
-            # del proveedor (env | auth.json | anon | sin-creds). El catálogo de
-            # opencode lista modelos SIN importar si hay creds: detectar != poder
-            # usar (bug N30 2026-08-19). Ahora la UI lo distingue.
-            if not opencode_serving():
-                ensure = opencode_ensure()
-                if not ensure.get("ok"):
-                    return self._json([], 200)  # vacío si no se pudo iniciar
-            st, data = oc_call("/config/providers")
-            if st != 200 or not isinstance(data, dict):
-                return self._json([], 200)
-            free_models = []
-            auth_data = oc_auth.load_auth_json()
-            for p in data.get("providers", []):
-                if not isinstance(p, dict):
-                    continue
-                pid = p.get("id", "")
-                status = oc_auth.provider_auth_status(p, auth_data)
-                badge = oc_auth.provider_auth_badge(status)
-                models = p.get("models", {})
-                items = models.items() if isinstance(models, dict) else (
-                    [(m.get("id", ""), m) for m in models if isinstance(m, dict)]
-                )
-                for mid, m in items:
-                    if not isinstance(m, dict):
-                        continue
-                    cost = m.get("cost", {}) or {}
-                    is_free = (
-                        (cost.get("input") == 0 and cost.get("output") == 0)
-                        or "free" in str(mid).lower()
-                    )
-                    if is_free:
-                        free_models.append({
-                            "id": f"{pid}/{mid}",
-                            "status": status,
-                            "badge": badge,
-                        })
-            # cred-first: autenticados primero, sin-creds al final
-            rank = {"authed_env": 0, "authed_file": 1, "anon": 2, "missing": 3}
-            free_models.sort(key=lambda x: (rank.get(x["status"], 9), x["id"]))
-            return self._json(free_models)
+            # Detectar modelos desde opencode serve (auto-inicia si es necesario)
+            # v0.4.1-beta (feedback N30): AUTH-AWARE y COMPLETO — lista TODO el
+            # catálogo de proveedores con credenciales (free + paid, ej. minimax
+            # configurado) + los free del resto. Nada bloqueado: sin-creds van
+            # al final con badge. Detectar != usar — para eso existe /test.
+            r = opencode_ensure()
+            if not r.get("ok"):
+                return self._json({"ok": False, "error": r.get("error", "opencode no disponible")}, 503)
+            models = sfm.get_usable_models(r["port"])
+            models_payload = [
+                {"id": m["id"], "status": m["status"], "badge": oc_auth.provider_auth_badge(m["status"]), "free": m.get("free", True)}
+                for m in models
+            ]
+            # cred-first ya garantizado por get_usable_models
+            return self._json(models_payload)
 
         if path == "/api/models/test":
             # v0.4.1-beta: ping REAL del modelo seleccionado — verifica que la

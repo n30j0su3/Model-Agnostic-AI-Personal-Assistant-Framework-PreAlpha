@@ -410,24 +410,70 @@ def _rebuild_interactions_index() -> bool:
         return False
 
 
+def _preflight_model_check():
+    """v0.4.1-beta (feedback N30): smoke-check del modelo asignado antes de
+    lanzar la sesión de IA.
+
+    Objetivo: que el modelo/credencial detectados FUNCIONEN al lanzarse.
+    NO bloquea: si el ping falla, imprime la causa exacta (credencial
+    inválida / proveedor sin creds / modelo inexistente) y deja lanzar
+    igual — el usuario corrige creds, relanza pa.py y reintenta.
+    Usa el mismo serve que ya corre (puerto del config o descubrimiento).
+    """
+    try:
+        import json
+        cfg_file = REPO_ROOT / ".opencode" / "config.json"
+        if not cfg_file.exists():
+            return  # sin asignación previa: nada que verificar
+        cfg = json.loads(cfg_file.read_text(encoding="utf-8"))
+        model = cfg.get("model")
+        if not model or model == "auto":
+            return  # modo auto: opencode decide con su default global
+        print_info(f"Verificando modelo asignado: {model}")
+        result = subprocess.run(
+            [get_python(), str(SCRIPT_DIR / "select_free_model.py"), "--verify", model],
+            cwd=REPO_ROOT, capture_output=True, text=True, timeout=60,
+        )
+        out = (result.stdout or "") + (result.stderr or "")
+        if "VERIFY_OK" in out:
+            print_ok(f"✓ Modelo y credencial verificados ({model})")
+        else:
+            # causa exacta del fallo, sin bloquear el lanzamiento
+            cause = next((l.strip() for l in out.splitlines()
+                          if l.strip() and not l.startswith("✓")), "")
+            print_warn(f"No se pudo verificar {model}: {cause or 'sin detalle'}")
+            print_info("La sesión se lanzará igual. Si falla el chat, ejecuta:")
+            print_info("  opencode auth login   (para (re)autenticar el proveedor)")
+    except Exception as e:
+        # best-effort: nunca bloquear el lanzamiento por un check interno
+        print_warn(f"Preflight omitido: {e}")
+
+
 def try_auto_launch_cli(cli: str, prompt: str, workdir: Path) -> bool:
     """
     Attempt to auto-launch CLI with prompt injected.
-    
+
     Returns:
         bool: True if auto-launch succeeded, False if fallback needed
     """
     command, can_auto_inject = build_cli_command(cli, prompt, workdir)
-    
+
     if not can_auto_inject:
         return False
-    
+
     # Verify CLI exists in PATH before attempting to run
     cli_path = shutil.which(cli)
     if not cli_path:
         print_warn(f"CLI '{CLI_LABELS.get(cli, cli)}' no está disponible en PATH.")
         print_info("Usando modo manual (fallback): se mostrará el prompt para copiar.")
         return False
+
+    # v0.4.1-beta (feedback N30): smoke-check del modelo asignado ANTES de
+    # lanzar la sesión. El objetivo es que el modelo/credencial detectados
+    # FUNCIONEN al lanzarse — no bloquear: si el ping falla, se avisa con la
+    # causa y se lanza igual (el usuario puede arreglar creds y reintentar).
+    if cli == "opencode":
+        _preflight_model_check()
 
     # v0.4.0-beta (Windows fix): resolver el ejecutable real con shutil.which.
     # En Windows npm instala 'opencode.cmd'; subprocess sin shell=True no lo
@@ -845,7 +891,7 @@ def _select_free_model():
 
     print_info(f"Consultando modelos free (serve en puerto {port})…")
     try:
-        models = sfm.get_free_models(port, timeout=25)
+        models = sfm.get_usable_models(port, timeout=25)
     except Exception as e:
         print_error(f"Error consultando modelos: {e}")
         models = []
@@ -857,18 +903,20 @@ def _select_free_model():
         return
 
     for i, m in enumerate(models, 1):
-        # v0.4.1-beta: models son dicts {id, provider, model, status} ordenados
-        # cred-first; el badge muestra SI el proveedor tiene credenciales
-        # (env / auth.json / anon / sin-creds) — detectar ≠ poder usar.
+        # v0.4.1-beta (feedback N30): catálogo COMPLETO utilizables (creds +
+        # free), orden cred-first, badges de credenciales. Nada bloqueado.
         mid = m.get("id") if isinstance(m, dict) else m
         badge = ""
+        extra = ""
         if isinstance(m, dict):
             try:
                 import oc_auth
                 badge = oc_auth.provider_auth_badge(m.get("status", ""))
             except Exception:
                 badge = m.get("status", "")
-        print(f"  {i}. {mid}" + (f"  [{badge}]" if badge else ""))
+            if not m.get("free", True):
+                extra = " (paid)"
+        print(f"  {i}. {mid}" + (f"  [{badge}]" if badge else "") + extra)
 
     raw = input(f"\n  Selecciona un número [1-{len(models)}, Enter=1]: ").strip()
     idx = 0
