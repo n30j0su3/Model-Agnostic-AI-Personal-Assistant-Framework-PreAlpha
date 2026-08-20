@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PA Framework Command Center v0.4.1-beta</title>
+    <title>PA Framework Command Center vv0.4.1-beta</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a3e635' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M13 10V3L4 14h7v7l9-11h-7z'/%3E%3C/svg%3E">
     <meta name="description" content="Dashboard profesional del FreakingJSON Personal Assistant Framework">
     
@@ -359,7 +359,7 @@
                 </div>
                         <div class="hidden sm:block">
                             <h1 class="font-semibold text-sm">FreakingJSON</h1>
-                            <p class="text-xs text-slate-400">v0.4.1-beta <span id="build-id" class="text-slate-600"></span></p>
+                            <p class="text-xs text-slate-400">vv0.4.1-beta <span id="build-id" class="text-slate-600"></span></p>
                         </div>
                     </div>
                 </div>
@@ -391,7 +391,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
                             </svg>
                         </button>
-                        <!-- v0.4.0-beta: Consola (puente local) oculta hasta v0.5 — no desarrollada/completa -->
+                        <!-- vv0.4.1-beta: Consola (puente local) oculta hasta v0.5 — no desarrollada/completa -->
                         <button onclick="router.navigate('console')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors hidden" data-page="console" title="Consola" aria-hidden="true">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 3h3M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/>
@@ -426,7 +426,7 @@
                     <!-- Badge de versión -->
                     <div class="inline-flex items-center gap-2 px-5 py-2.5 bg-lime-400/10 border border-lime-400/30 rounded-full text-lime-300 text-sm mb-8 neon-glow animate-fade-in">
                         <span class="w-2.5 h-2.5 bg-lime-400 rounded-full animate-pulse"></span>
-                        Framework v0.4.1-beta — 100% Local, 100% Privado
+                        Framework vv0.4.1-beta — 100% Local, 100% Privado
                     </div>
                     
                     <!-- Título principal -->
@@ -537,7 +537,7 @@
                 tab_skills: 'Skills',
                 tab_agents: 'Agents',
                 workflow_title: 'Workflow Real del Framework',
-                workflow_desc: 'Flujo operativo real usado por PA Framework v0.4.0-beta (sin placeholders).',
+                workflow_desc: 'Flujo operativo real usado por PA Framework vv0.4.1-beta (sin placeholders).',
                 skills_title: 'Skills Disponibles',
                 agents_title: 'Agentes del Sistema',
                 console_title: 'Consola',
@@ -596,7 +596,7 @@
                 tab_skills: 'Skills',
                 tab_agents: 'Agents',
                 workflow_title: 'Real Framework Workflow',
-                workflow_desc: 'Operational flow used by PA Framework v0.4.0-beta (no placeholders).',
+                workflow_desc: 'Operational flow used by PA Framework vv0.4.1-beta (no placeholders).',
                 skills_title: 'Available Skills',
                 agents_title: 'System Agents',
                 console_title: 'Console',
@@ -678,7 +678,7 @@
                 ['Referencias de implementación','Implementation references'],
                 ['Ver detalle','View detail'],
                 ['Cerrar','Close'],
-                ['Flujo operativo real usado por PA Framework v0.4.0-beta (sin placeholders).','Operational flow used by PA Framework v0.4.0-beta (no placeholders).'],
+                ['Flujo operativo real usado por PA Framework vv0.4.1-beta (sin placeholders).','Operational flow used by PA Framework vv0.4.1-beta (no placeholders).'],
                 ['Pipeline de Sesión','Session Pipeline'],
                 ['Sistema de Memoria (completo)','Memory System (complete)'],
                 ['Arquitectura de Persistencia','Persistence Architecture'],
@@ -758,7 +758,7 @@
                 } catch (e) {
                     console.warn('[Interactions] Fetch failed, using fallback');
                 }
-                // v0.4.0-beta: sin datos falsos — 0 interacciones hasta que existan logs reales
+                // vv0.4.1-beta: sin datos falsos — 0 interacciones hasta que existan logs reales
                 store.interactions = [];
                 store.stats.totalInteractions = 0;
             },
@@ -801,7 +801,7 @@
             },
 
             async loadLPSErrors() {
-                // v0.4.0-beta: errores reales desde knowledge/errors/index.json (0 si no hay)
+                // vv0.4.1-beta: errores reales desde knowledge/errors/index.json (0 si no hay)
                 try {
                     const response = await fetch('core/.context/knowledge/errors/index.json');
                     if (response.ok) {
@@ -823,7 +823,7 @@
             },
 
             loadDemoData() {
-                // v0.4.0-beta: SIN datos demo falsos. Si no hay índices reales,
+                // vv0.4.1-beta: SIN datos demo falsos. Si no hay índices reales,
                 // el dashboard muestra estados vacíos reales (empty states).
                 store.sessions = [];
                 store.interactions = [];
@@ -849,7 +849,7 @@
                     b.classList.toggle('bg-lime-400/10', active);
                     b.classList.toggle('text-lime-300', active);
                 });
-                // v0.4.0-beta: fuente según idioma activo — docsrc-<id> (es) o docsrc-<id>__en
+                // vv0.4.1-beta: fuente según idioma activo — docsrc-<id> (es) o docsrc-<id>__en
                 let src = document.getElementById('docsrc-' + id + (this.lang === 'en' ? '__en' : ''));
                 if (!src) src = document.getElementById('docsrc-' + id); // fallback al original
                 const out = document.getElementById('docs-content');
@@ -897,7 +897,7 @@
             let inCode = false, inList = false, inOList = false, inTable = false;
             const closeList = () => { if (inList) { out.push('</ul>'); inList = false; } if (inOList) { out.push('</ol>'); inOList = false; } };
             const closeTable = () => { if (inTable) { out.push('</tbody></table></div>'); inTable = false; } };
-            // v0.4.0-beta: fila de tabla GFM: | celda | celda |
+            // vv0.4.1-beta: fila de tabla GFM: | celda | celda |
             const isTableRow = l => /^\|.*\|$/.test(l.trim());
             const splitRow = l => l.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
             const isSeparator = l => /^\|[\s:|-]+\|$/.test(l.trim());
@@ -935,7 +935,7 @@
                     out.push(`<h${lvl} class='${cls}'>${inline(m[2])}</h${lvl}>`);
                     continue;
                 }
-                // v0.4.0-beta: listas numeradas (1. item)
+                // vv0.4.1-beta: listas numeradas (1. item)
                 m = s.match(/^\d+[.)]\s+(.*)/);
                 if (m) {
                     if (inList) { out.push('</ul>'); inList = false; }
@@ -963,7 +963,7 @@
             currentPage: 'home',
             
             navigate(page) {
-                // v0.4.0-beta: Consola deshabilitada (puente local incompleto) — redirigir a home
+                // vv0.4.1-beta: Consola deshabilitada (puente local incompleto) — redirigir a home
                 if (page === 'console') page = 'home';
                 this.currentPage = page;
                 this.updateNavState();
@@ -1010,7 +1010,7 @@
                         <div class="relative max-w-4xl mx-auto text-center">
                             <div class="inline-flex items-center gap-2 px-4 py-2 bg-lime-400/10 border border-lime-400/30 rounded-full text-lime-300 text-sm mb-8 neon-glow">
                                 <span class="w-2 h-2 bg-lime-400 rounded-full animate-pulse neon-glow"></span>
-                                Framework v0.4.0-beta
+                                Framework vv0.4.1-beta
                             </div>
                             
                             <h1 class="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
@@ -1206,7 +1206,7 @@
 
                     <!-- Footer -->
                     <footer class="py-12 px-4 border-t border-slate-800 text-center text-slate-500">
-                        <p>FreakingJSON Framework v0.4.0-beta · MIT License</p>
+                        <p>FreakingJSON Framework vv0.4.1-beta · MIT License</p>
                         <p class="mt-2 text-sm">"El conocimiento verdadero trasciende a lo público"</p>
                     </footer>
                 </div>
@@ -1585,7 +1585,7 @@
             },
 
             console() {
-                // v0.4.0-beta: Consola operativa — requiere dashboard_server.py
+                // vv0.4.1-beta: Consola operativa — requiere dashboard_server.py
                 // (python core/scripts/dashboard_server.py → http://127.0.0.1:8760)
                 return `
                 <div class="max-w-6xl mx-auto px-4 py-8 fade-in">
@@ -1660,7 +1660,7 @@
                 `;
             },
             modelo() {
-            // v0.4.0-beta: Página de selección de modelo IA
+            // vv0.4.1-beta: Página de selección de modelo IA
             return `
             <div class="max-w-4xl mx-auto px-4 py-8 fade-in">
                 <div class="mb-6">
@@ -1823,7 +1823,7 @@
                         </div>
 
                         <div class="mt-12 pt-8 border-t border-slate-800 text-slate-500 text-sm">
-                            <p>v0.4.0-beta · MIT License</p>
+                            <p>vv0.4.1-beta · MIT License</p>
                             <p class="mt-1">Agradecimientos a NetworkChuck y la comunidad open source</p>
                         </div>
                     </div>
@@ -2712,7 +2712,7 @@
             },
             
             runIndexer() {
-                // v0.4.0-beta: el índice se genera automáticamente al arrancar pa.bat/pa.sh.
+                // vv0.4.1-beta: el índice se genera automáticamente al arrancar pa.bat/pa.sh.
                 // Regeneración manual = skills_indexer.py (script real que existe).
                 app.showHowTo('🗂️ Indexar Skills', 'El índice se regenera solo en cada arranque (pa.bat / pa.sh). Manual:', {
                     'Comando': 'python core/scripts/skills_indexer.py'
@@ -2788,7 +2788,7 @@
         };
 
         // ============================================
-        // PA CONSOLE — puente con dashboard_server.py (v0.4.0-beta)
+        // PA CONSOLE — puente con dashboard_server.py (vv0.4.1-beta)
         // ============================================
         const paConsole = {
             session: null,
@@ -2855,7 +2855,7 @@
                     const r = await this.api('/api/opencode/chat', 'POST', { message: msg, session: this.session });
                     if (r.ok) {
                         this.session = r.session || this.session;
-                        // v0.4.1-beta: evidencia del modelo realmente usado
+                        // vv0.4.1-beta: evidencia del modelo realmente usado
                         if (r.model_used) this.log('sys', `⚙ ${r.model_used}`);
                         this.log('assistant', r.reply || '(sin texto)');
                     } else {
@@ -2980,7 +2980,7 @@
             },
             
             async loadCurrentModel() {
-                // v0.4.0-beta: GET /api/config/model (server bridge) — lee .opencode/config.json
+                // vv0.4.1-beta: GET /api/config/model (server bridge) — lee .opencode/config.json
                 // En file:// o sin bridge → estado "sin puente" honesto.
                 const el = document.getElementById('modelo-current');
                 try {
@@ -3016,7 +3016,7 @@
                         select.innerHTML = `<option value="">${t('modelo_select_ph')}</option>`;
                         models.forEach(m => {
                             const opt = document.createElement('option');
-                            // v0.4.1-beta: la API devuelve objetos {id, status, badge}
+                            // vv0.4.1-beta: la API devuelve objetos {id, status, badge}
                             const mid = (typeof m === 'string') ? m : m.id;
                             const badge = (typeof m === 'object' && m.badge) ? ` — ${m.badge}` : '';
                             const missing = (typeof m === 'object' && m.status === 'missing');
@@ -3041,7 +3041,7 @@
             },
             
             async test() {
-                // v0.4.1-beta: ping real del modelo seleccionado — verifica que
+                // vv0.4.1-beta: ping real del modelo seleccionado — verifica que
                 // la credencial FUNCIONA (detectar ≠ poder usar).
                 const select = document.getElementById('modelo-select');
                 const model = select.value;
@@ -3325,7 +3325,7 @@
 window.__DOCS_META__ = [{"id": "overview", "label": "📘 Visión General"}, {"id": "getting_started", "label": "🚀 Primeros Pasos"}, {"id": "tutorial", "label": "🎓 Tutorial"}, {"id": "install", "label": "📥 Instalación"}, {"id": "setup", "label": "⚙️ Setup"}, {"id": "memory", "label": "🧠 Memoria"}, {"id": "windows", "label": "🪟 Windows"}, {"id": "macos", "label": "🍎 macOS"}];
 </script>
 <script type="text/markdown" id="docsrc-overview">
-# Model-Agnostic AI Personal Assistant Framework v0.4.0-beta
+# Model-Agnostic AI Personal Assistant Framework vv0.4.1-beta
 <!-- ================================================================ -->
 <!-- ¿ERES USUARIO NUEVO O NO SABES PROGRAMAR?                        -->
 <!-- Lee README-simple.md — es la guia pensada para ti.               -->
@@ -3339,7 +3339,7 @@ window.__DOCS_META__ = [{"id": "overview", "label": "📘 Visión General"}, {"i
 
 > "Tu Asistente AI Personal. Tu Conocimiento. Tu Control."
 
-[![Release](https://img.shields.io/badge/release-v0.4.0-beta)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.4.0-beta)
+[![Release](https://img.shields.io/badge/release-vv0.4.1-beta)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/vv0.4.1-beta)
 [![Instagram](https://img.shields.io/badge/Instagram-%40freakingjson-E4405F?logo=instagram&logoColor=white)](https://instagram.com/freakingjson)
 [![Linktree](https://img.shields.io/badge/Linktree-@freakingjson-43E55C?logo=linktree&logoColor=white)](https://linktr.ee/freakingjson)
 [![Blog](https://img.shields.io/badge/Blog-freakingjson.com-FFA500?logo=firefoxbrowser&logoColor=white)](https://freakingjson.com)
@@ -3355,7 +3355,7 @@ window.__DOCS_META__ = [{"id": "overview", "label": "📘 Visión General"}, {"i
 
 ## 📢 Última Versión
 
-**v0.4.0-beta** - Memory Pipeline + Core Stabilization
+**vv0.4.1-beta** - Memory Pipeline + Core Stabilization
 - Sistema Memory Pipeline para persistencia cross-session (CLI + automodes)
 - Saneamiento de release para distribución pública
 - Agente público por defecto para OpenCode
@@ -3576,7 +3576,7 @@ Hecho con ❤️ por **FreakingJSON**.
 > **"El conocimiento verdadero trasciende a lo público."**
 </script>
 <script type="text/markdown" id="docsrc-overview__en">
-# Model-Agnostic AI Personal Assistant Framework v0.4.0-beta
+# Model-Agnostic AI Personal Assistant Framework vv0.4.1-beta
 <!-- ================================================================ -->
 <!-- ARE YOU A NEW USER OR DON'T KNOW HOW TO CODE?                    -->
 <!-- Read README-simple.md — it's the guide designed for you.         -->
@@ -3590,7 +3590,7 @@ Hecho con ❤️ por **FreakingJSON**.
 
 > "Your Personal AI Assistant. Your Knowledge. Your Control."
 
-[![Release](https://img.shields.io/badge/release-v0.4.0-beta)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.4.0-beta)
+[![Release](https://img.shields.io/badge/release-vv0.4.1-beta)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/vv0.4.1-beta)
 [![Instagram](https://img.shields.io/badge/Instagram-%40freakingjson-E4405F?logo=instagram&logoColor=white)](https://instagram.com/freakingjson)
 [![Linktree](https://img.shields.io/badge/Linktree-@freakingjson-43E55C?logo=linktree&logoColor=white)](https://linktr.ee/freakingjson)
 [![Blog](https://img.shields.io/badge/Blog-freakingjson.com-FFA500?logo=firefoxbrowser&logoColor=white)](https://freakingjson.com)
@@ -3606,7 +3606,7 @@ Hecho con ❤️ por **FreakingJSON**.
 
 ## 📢 Latest Version
 
-**v0.4.0-beta** - Memory Pipeline + Core Stabilization
+**vv0.4.1-beta** - Memory Pipeline + Core Stabilization
 - Memory Pipeline system for cross-session persistence (CLI + automodes)
 - Release sanitization for public distribution
 - Public agent by default for OpenCode
@@ -3829,7 +3829,7 @@ Made with ❤️ by **FreakingJSON**.
 
 > **Tutorial visual de 5 minutos para nuevos usuarios**
 > 
-> *Versión: v0.3.8-alpha | Actualizado: abril de 2026*
+> *Versión: vv0.4.1-beta | Actualizado: abril de 2026*
 
 ---
 
@@ -4132,7 +4132,7 @@ python -m http.server 8000   # luego abre http://localhost:8000/dashboard.html
 │   │                    Sesiones recientes                          │ │
 │   ├───────────────────────────────────────────────────────────────┤ │
 │   │ • 2026-04-17 - Registro de sesión                             │ │
-│   │ • 2026-03-20 - Lanzamiento v0.2.2-prealpha                    │ │
+│   │ • 2026-03-20 - Lanzamiento vv0.4.1-beta                    │ │
 │   │ • 2026-03-12 - Diagnóstico multi-entorno                      │ │
 │   │ • 2026-02-24 - Creación de la skill @dashboard-pro            │ │
 │   └───────────────────────────────────────────────────────────────┘ │
@@ -4262,7 +4262,7 @@ Tus datos personales **se conservan automáticamente** durante las actualizacion
 
 > **5-Minute Visual Tutorial for New Users**
 > 
-> *Version: v0.3.8-alpha | Updated: April 2026*
+> *Version: vv0.4.1-beta | Updated: April 2026*
 
 ---
 
@@ -4565,7 +4565,7 @@ python -m http.server 8000   # luego abre http://localhost:8000/dashboard.html
 │   │                    Recent Sessions                            │ │
 │   ├───────────────────────────────────────────────────────────────┤ │
 │   │ • 2026-04-17 - Session Log                                     │ │
-│   │ • 2026-03-20 - Release v0.2.2-prealpha                         │ │
+│   │ • 2026-03-20 - Release vv0.4.1-beta                         │ │
 │   │ • 2026-03-12 - Multi-Environment Diagnostics                   │ │
 │   │ • 2026-02-24 - Skill @dashboard-pro Creation                   │ │
 │   └───────────────────────────────────────────────────────────────┘ │
@@ -5521,7 +5521,7 @@ GETTING-STARTED.md (prerequisite)
 
 > **¿No tienes un CLI instalado? ¡Esta guía te ayuda a comenzar!**
 > 
-> *Versión: v0.3.8-alpha | Actualizado: abril de 2026*
+> *Versión: vv0.4.1-beta | Actualizado: abril de 2026*
 
 ---
 
@@ -6060,7 +6060,7 @@ $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";"
 
 ```bash
 # Opción 1: Usa nvm (recomendado)
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/vv0.4.1-beta/install.sh | bash
 nvm install 18
 nvm use 18
 
@@ -6131,14 +6131,14 @@ opencode setup
 
 ---
 
-*PA Framework v0.3.8-alpha | Para más información, consulta la [documentación principal](./GETTING-STARTED.md)*
+*PA Framework vv0.4.1-beta | Para más información, consulta la [documentación principal](./GETTING-STARTED.md)*
 </script>
 <script type="text/markdown" id="docsrc-install__en">
 # CLI Installation Guide for PA Framework
 
 > **Don't have a CLI installed? This guide will help you get started!**
 > 
-> *Version: v0.3.8-alpha | Updated: April 2026*
+> *Version: vv0.4.1-beta | Updated: April 2026*
 
 ---
 
@@ -6677,7 +6677,7 @@ $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";"
 
 ```bash
 # Option 1: Use nvm (recommended)
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/vv0.4.1-beta/install.sh | bash
 nvm install 18
 nvm use 18
 
@@ -6748,7 +6748,7 @@ opencode setup
 
 ---
 
-*PA Framework v0.3.8-alpha | For more information, see the [main documentation](./GETTING-STARTED.md)*
+*PA Framework vv0.4.1-beta | For more information, see the [main documentation](./GETTING-STARTED.md)*
 </script>
 <script type="text/markdown" id="docsrc-setup">
 # PA Framework — Guía de Instalación Independiente
@@ -6901,7 +6901,7 @@ export GEMINI_API_KEY="..."
 
 ## Información de Versión
 
-- **Framework**: v0.2.2-prealpha
+- **Framework**: vv0.4.1-beta
 - **Fase**: 3 (integración wiki-cron)
 - **Tests**: 285 passed, 1 skipped
 - **Autor**: FreakingJSON (instagram.com/freakingjson)
@@ -7061,7 +7061,7 @@ export GEMINI_API_KEY="..."
 
 ## Version Info
 
-- **Framework**: v0.2.2-prealpha
+- **Framework**: vv0.4.1-beta
 - **Phase**: 3 (wiki-cron integration)
 - **Tests**: 285 passed, 1 skipped
 - **Author**: FreakingJSON (instagram.com/freakingjson)
@@ -7073,7 +7073,7 @@ export GEMINI_API_KEY="..."
 <script type="text/markdown" id="docsrc-memory">
 # Memory Architecture — Integral 4-Layer Persistence
 
-> **Versión**: v0.3.7-alpha (HOTFIX4 candidate)  
+> **Versión**: vv0.4.1-beta (HOTFIX4 candidate)  
 > **Estado**: Activo  
 > **Modelo**: Persistencia integral (no task-specific)
 
@@ -7165,7 +7165,7 @@ python core/scripts/memory_pipeline.py --full-cycle
 <script type="text/markdown" id="docsrc-memory__en">
 # Memory Architecture — Integral 4-Layer Persistence
 
-> **Version**: v0.3.7-alpha (HOTFIX4 candidate)  
+> **Version**: vv0.4.1-beta (HOTFIX4 candidate)  
 > **Status**: Active  
 > **Model**: Integral persistence (not task-specific)
 

@@ -1,5 +1,5 @@
 # Framework Configuration
-# Version: 0.4.0-beta
+# Version: v0.4.1-beta
 
 evaluation:
   # Mode: full (all criteria) or simplified (core criteria only)
