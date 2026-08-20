@@ -129,7 +129,7 @@ Se revisa según:
 
 ---
 
-**Versión actual**: v0.4.0-beta  
+**Versión actual**: v0.4.1-beta  
 **Filosofía**: *"El conocimiento verdadero trasciende a lo público."*  
 **Última actualización**: 2026-04-19
 
