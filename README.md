@@ -6,7 +6,7 @@
 
 **Tu Asistente AI Personal. Tu Conocimiento. Tu Control.**
 
-[![Version](https://img.shields.io/badge/version-vv0.4.1-beta)]()
+[![Version](https://img.shields.io/badge/version-v0.4.0--beta-lime)]()
 [![Python](https://mod-rect.vercel.app/Python.svg)]( 3.11%2B)
 [![License](https://img.shields.io/badge/license-MIT-lime)]()
 
@@ -24,8 +24,8 @@ Framework **local-first y model-agnostic** para operar un asistente de IA person
 | Menú CLI (`pa.bat` / `pa.sh`) | ✅ Operativo |
 | Dashboard visual (`dashboard.html`) — SPA offline, single-file | ✅ Operativo |
 | Documentación completa offline (8 guías ES/EN, embebidas) | ✅ Operativo |
-| **Índice de skills automático** (en cada arranque + installer) | ✅ Nuevo vv0.4.1-beta |
-| **Métricas reales de uso** (sin datos demo/falsos) | ✅ Nuevo vv0.4.1-beta |
+| **Índice de skills automático** (en cada arranque + installer) | ✅ Nuevo v0.4.0 |
+| **Métricas reales de uso** (sin datos demo/falsos) | ✅ Nuevo v0.4.0 |
 | Sesiones opencode (listar/reanudar) | ✅ Operativo |
 | Chat con IA (puente local) | ✅ Operativo |
 | **Selector + configuración de modelos free** (opencode) | ✅ Operativo |
@@ -81,7 +81,7 @@ pa-framework/
 - Este README + `docs/` (fuente de la documentación)
 
 ## Versiones
-Ver `CHANGELOG.md`. Versión actual: **vv0.4.1-beta**.
+Ver `CHANGELOG.md`. Versión actual: **v0.4.1-beta**.
 
 ## Licencia
 MIT — ver `LICENSE`.

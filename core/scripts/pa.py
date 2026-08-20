@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FreakingJSON PA Framework — Control Panel vv0.4.1-beta
+FreakingJSON PA Framework — Control Panel v0.4.0-beta
 Menú reorganizado: 7+1 opciones principales.
 
 Creator: FreakingJSON (instagram.com/freakingjson, freakingjson.com)
@@ -17,7 +17,7 @@ from datetime import datetime
 from pathlib import Path
 
 
-# --- Windows console compatibility (vv0.4.1-beta) -----------------------------
+# --- Windows console compatibility (v0.4.0-beta) -----------------------------
 # Consolas legacy (cmd.exe / cp1252) no pueden imprimir Unicode (✓, →, ó).
 # Re-ensoblamos stdout/stderr con 'replace' para no crashear; el texto
 # legible sobrevive. No-op en UTF-8 (Linux/macOS/Windows Terminal).
@@ -30,7 +30,7 @@ def _console_safe_streams():
         try:
             stream.encoding.lower().encode("\u2192")
         except (LookupError, UnicodeEncodeError):
-            # vv0.4.1-beta fix: reconfigure in-place (idem patrón A)
+            # v0.4.0-beta fix: reconfigure in-place (idem patrón A)
             try:
                 stream.reconfigure(errors="replace")
             except (ValueError, AttributeError):
@@ -42,7 +42,7 @@ _console_safe_streams()
 if sys.platform == "win32" and sys.stdout.isatty():
     try:
         import io
-        # vv0.4.1-beta fix: reconfigure in-place (TextIOWrapper nuevo dejaba un wrapper
+        # v0.4.0-beta fix: reconfigure in-place (TextIOWrapper nuevo dejaba un wrapper
 # huérfano que su GC cerraba → "I/O operation on closed file"/"lost sys.stderr" al salir)
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
@@ -220,7 +220,7 @@ def print_banner():
     )
     print(
         c(
-           "║   FreakingJSON PA Framework — vv0.4.1-beta          ║",
+           "║   FreakingJSON PA Framework — v0.4.0-beta          ║",
             f"{Colors.HEADER}{Colors.BOLD}",
         )
     )
@@ -317,7 +317,7 @@ def build_cli_command(cli: str, prompt: str, workdir: Path) -> tuple[list[str], 
     """
     # CLIs that support direct prompt injection
     if cli == "opencode":
-        # vv0.4.1-beta: forzar agente FreakingJSON (opencode default es "Build")
+        # v0.4.0-beta: forzar agente FreakingJSON (opencode default es "Build")
         # y leer modelo desde .opencode/config.json si está configurado
         cfg_file = REPO_ROOT / ".opencode" / "config.json"
         model_flag = []
@@ -352,11 +352,11 @@ def build_cli_command(cli: str, prompt: str, workdir: Path) -> tuple[list[str], 
 
 
 def _framework_bootstrap() -> bool:
-    """vv0.4.1-beta: validación + inicialización REAL del framework antes de
+    """v0.4.0-beta: validación + inicialización REAL del framework antes de
     lanzar el CLI. Ejecuta session_start.py (auto-heal + migraciones + carga
     de contexto). Si falla algo crítico, avisa pero no bloquea el chat."""
-    _run_skills_indexer()  # vv0.4.1-beta: índice de skills siempre fresco en el arranque
-    _rebuild_interactions_index()  # vv0.4.1-beta: métricas de uso siempre reales
+    _run_skills_indexer()  # v0.4.0-beta: índice de skills siempre fresco en el arranque
+    _rebuild_interactions_index()  # v0.4.0-beta: métricas de uso siempre reales
     script = SCRIPT_DIR / "session_start.py"
     if not script.exists():
         return True  # nada que ejecutar; no bloquear
@@ -374,7 +374,7 @@ def _framework_bootstrap() -> bool:
 
 
 def _run_skills_indexer() -> bool:
-    """vv0.4.1-beta: regenera core/.context/knowledge/skills-index.json en cada
+    """v0.4.0-beta: regenera core/.context/knowledge/skills-index.json en cada
     arranque (pa.bat / pa.sh). Best-effort: nunca bloquea el menú principal.
     Así el dashboard siempre muestra el inventario real de skills sin pasos
     manuales."""
@@ -392,7 +392,7 @@ def _run_skills_indexer() -> bool:
 
 
 def _rebuild_interactions_index() -> bool:
-    """vv0.4.1-beta: regenera interactions-index.json desde los logs reales
+    """v0.4.0-beta: regenera interactions-index.json desde los logs reales
     (knowledge/interactions/*.log) para que las métricas del dashboard
     reflejen uso real, nunca datos demo. Best-effort, nunca bloquea."""
     script = SCRIPT_DIR / "interaction_logger.py"
@@ -411,7 +411,7 @@ def _rebuild_interactions_index() -> bool:
 
 
 def _preflight_model_check():
-    """vv0.4.1-beta (feedback N30): smoke-check del modelo asignado antes de
+    """v0.4.1-beta (feedback N30): smoke-check del modelo asignado antes de
     lanzar la sesión de IA.
 
     Objetivo: que el modelo/credencial detectados FUNCIONEN al lanzarse.
@@ -468,14 +468,14 @@ def try_auto_launch_cli(cli: str, prompt: str, workdir: Path) -> bool:
         print_info("Usando modo manual (fallback): se mostrará el prompt para copiar.")
         return False
 
-    # vv0.4.1-beta (feedback N30): smoke-check del modelo asignado ANTES de
+    # v0.4.1-beta (feedback N30): smoke-check del modelo asignado ANTES de
     # lanzar la sesión. El objetivo es que el modelo/credencial detectados
     # FUNCIONEN al lanzarse — no bloquear: si el ping falla, se avisa con la
     # causa y se lanza igual (el usuario puede arreglar creds y reintentar).
     if cli == "opencode":
         _preflight_model_check()
 
-    # vv0.4.1-beta (Windows fix): resolver el ejecutable real con shutil.which.
+    # v0.4.0-beta (Windows fix): resolver el ejecutable real con shutil.which.
     # En Windows npm instala 'opencode.cmd'; subprocess sin shell=True no lo
     # encuentra pasando solo el nombre (FileNotFoundError silencioso que
     # degradaba a modo manual). Pasar la ruta absoluta funciona cross-platform.
@@ -615,7 +615,7 @@ def menu_launch_ai(cli_override: str = None):
     # Ensure today's session exists
     _ensure_session_file()
 
-    # vv0.4.1-beta: validación + inicialización real del framework (auto-heal,
+    # v0.4.0-beta: validación + inicialización real del framework (auto-heal,
     # migraciones, contexto) ANTES de lanzar el CLI externo.
     _framework_bootstrap()
 
@@ -863,7 +863,7 @@ def submenu_memoria_wiki():
 
 
 def _select_free_model():
-    """vv0.4.1-beta: Seleccionar modelo free disponible y guardar en config."""
+    """v0.4.0-beta: Seleccionar modelo free disponible y guardar en config."""
     print(c("\n  [MODELO] Seleccionar Modelo Free\n", f"{Colors.BOLD}{Colors.CYAN}"))
 
     # Importar el módulo directamente (sin subprocess): evita timeouts del
@@ -903,7 +903,7 @@ def _select_free_model():
         return
 
     for i, m in enumerate(models, 1):
-        # vv0.4.1-beta (feedback N30): catálogo COMPLETO utilizables (creds +
+        # v0.4.1-beta (feedback N30): catálogo COMPLETO utilizables (creds +
         # free), orden cred-first, badges de credenciales. Nada bloqueado.
         mid = m.get("id") if isinstance(m, dict) else m
         badge = ""
@@ -1415,7 +1415,7 @@ def _save_profile(lang: str = "es", default_cli: str = "opencode"):
     """Save profile.md with current settings."""
     import platform as plat
 
-    version = "v0.4.1-beta"
+    version = "0.4.0-beta"
     vf = REPO_ROOT / "VERSION"
     if vf.exists():
         version = vf.read_text(encoding="utf-8").strip()
@@ -1563,7 +1563,7 @@ def show_help():
 
 def show_cli_help():
     """Display CLI help and exit."""
-    version = "v0.4.1-beta"
+    version = "0.4.0-beta"
     vf = REPO_ROOT / "VERSION"
     if vf.exists():
         version = vf.read_text(encoding="utf-8").strip()
@@ -1739,7 +1739,7 @@ def main_menu():
 # --- ENTRY POINT ---
 def main():
     parser = argparse.ArgumentParser(
-        description="FreakingJSON PA Framework Control Panel vv0.4.1-beta",
+        description="FreakingJSON PA Framework Control Panel v0.4.0-beta",
         add_help=False,  # Custom help handler
     )
     parser.add_argument("--sync", action="store_true", help="Run sync and exit")
@@ -1756,7 +1756,7 @@ def main():
 
     # Handle --version
     if args.version:
-        version = "v0.4.1-beta"
+        version = "0.4.0-beta"
         vf = REPO_ROOT / "VERSION"
         if vf.exists():
             version = vf.read_text(encoding="utf-8").strip()
@@ -1800,7 +1800,7 @@ def main():
         # Ensure session file exists
         _ensure_session_file()
         
-        # vv0.4.1-beta: validación + inicialización real antes del CLI
+        # v0.4.0-beta: validación + inicialización real antes del CLI
         _framework_bootstrap()
         
         # Get magic prompt and try auto-launch
