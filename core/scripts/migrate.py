@@ -16,6 +16,8 @@ Version: 1.0.0
 import argparse
 import json
 import os
+import secrets
+import shutil
 import subprocess
 import sys
 from datetime import datetime
@@ -38,6 +40,24 @@ REPO_ROOT = CORE_DIR.parent
 CONTEXT_DIR = CORE_DIR / ".context"
 MIGRATION_STATE_FILE = CONTEXT_DIR / ".migration_state.json"
 VERSION_FILE = REPO_ROOT / "VERSION"
+SNAPSHOT_ROOTS = (
+    Path(".opencode/config.json"),
+    Path("config"),
+    Path("pa.py"),
+    Path("pa.sh"),
+    Path("pa.bat"),
+    Path("pa.ps1"),
+    Path("core/.context"),
+)
+PROTECTED_PREFIXES = (
+    Path("core/.context/sessions"),
+    Path("core/.context/memory"),
+    Path("core/.context/knowledge/users"),
+    Path("core/.context/knowledge/interactions-index.json"),
+    Path("data/user"),
+    Path("data/wizard"),
+    Path("workspaces/content/projects"),
+)
 
 MIGRATIONS: Dict[str, Dict] = {
     "v0.1.0": {
@@ -78,13 +98,86 @@ MIGRATIONS: Dict[str, Dict] = {
         "description": "Compatibilidad de propagación, backlog y runtime público limpio",
         "creates": [
             "core/.context/codebase/backlog.md",
-            "core/.context/workspaces/",
+            "workspaces/content/projects/",
             "config/update-protected-paths.txt",
             "config/propagation-policy.json",
         ],
         "scripts": ["kb_init.py", "skills_indexer.py", "agents_indexer.py"],
     },
+    "v0.4.1": {
+        "name": "canonical_user_state",
+        "description": "Backlog canónico y workspace de proyectos",
+        "creates": [
+            "core/.context/codebase/backlog.md",
+            "workspaces/content/projects/",
+        ],
+    },
 }
+
+
+def _is_protected(relative: Path) -> bool:
+    return any(
+        relative == prefix or prefix in relative.parents
+        for prefix in PROTECTED_PREFIXES
+    )
+
+
+def create_pre_migration_snapshot(
+    repo_root: str | Path | None = None,
+) -> Path:
+    """Snapshot managed surfaces before the first migration write."""
+    root = Path(repo_root) if repo_root is not None else REPO_ROOT
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+    destination = root / "data" / "backups" / (
+        f"pre-migration-{stamp}-{secrets.token_hex(3)}"
+    )
+    files_root = destination / "files"
+    files_root.mkdir(parents=True, exist_ok=False)
+    roots = []
+
+    for relative in SNAPSHOT_ROOTS:
+        source = root / relative
+        entry = {
+            "path": relative.as_posix(),
+            "existed": source.exists(),
+            "kind": "missing",
+        }
+        if source.is_file():
+            entry["kind"] = "file"
+            target = files_root / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
+        elif source.is_dir():
+            entry["kind"] = "directory"
+            (files_root / relative).mkdir(parents=True, exist_ok=True)
+            for child in sorted(source.rglob("*")):
+                child_relative = child.relative_to(root)
+                if _is_protected(child_relative):
+                    continue
+                target = files_root / child_relative
+                if child.is_dir():
+                    target.mkdir(parents=True, exist_ok=True)
+                elif child.is_file():
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(child, target)
+        roots.append(entry)
+
+    manifest = {
+        "schema": 1,
+        "created_at": datetime.now().isoformat(),
+        "roots": roots,
+        "protected": [path.as_posix() for path in PROTECTED_PREFIXES],
+    }
+    manifest_path = destination / "manifest.json"
+    manifest_path.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    try:
+        manifest_path.chmod(0o600)
+    except OSError:
+        pass
+    return destination
 
 
 class Colors:
@@ -210,6 +303,9 @@ def get_pending_migrations() -> List[str]:
 def create_directory(path: Path) -> bool:
     try:
         path.mkdir(parents=True, exist_ok=True)
+        workspace_root = REPO_ROOT / "workspaces"
+        if path == workspace_root or workspace_root in path.parents:
+            return True
         gitkeep = path / ".gitkeep"
         if not gitkeep.exists():
             gitkeep.write_text("", encoding="utf-8")
@@ -252,10 +348,10 @@ def run_migration_script(script_name: str) -> bool:
             safe_print(c(f"  [WARN] Script con errores: {script_name}", Colors.YELLOW))
             if result.stderr:
                 safe_print(f"    {result.stderr[:200]}")
-            return True
+            return False
     except subprocess.TimeoutExpired:
         safe_print(c(f"  [WARN] Script timeout: {script_name}", Colors.YELLOW))
-        return True
+        return False
     except Exception as e:
         safe_print(c(f"  [ERROR] Ejecutando script {script_name}: {e}", Colors.RED))
         return False
@@ -296,6 +392,16 @@ def apply_migration(version: str, force: bool = False) -> bool:
         else:
             safe_print(f"  [FILE] Creando: {path}")
             initial = {}
+            if path.endswith(".md"):
+                seed = full_path.with_suffix(".seed.md")
+                if seed.exists():
+                    full_path.parent.mkdir(parents=True, exist_ok=True)
+                    full_path.write_text(seed.read_text(encoding="utf-8"), encoding="utf-8")
+                    safe_print(c(f"  [OK] {path} creado desde seed", Colors.GREEN))
+                    continue
+                full_path.parent.mkdir(parents=True, exist_ok=True)
+                full_path.write_text("", encoding="utf-8")
+                continue
             if not path.endswith(".json"):
                 # v0.4.0-beta: archivos NO-JSON (ej. update-protected-paths.txt)
                 # nunca se crean como '{}'. Seed si existe; si no, texto vacío.
@@ -309,21 +415,7 @@ def apply_migration(version: str, force: bool = False) -> bool:
                 full_path.parent.mkdir(parents=True, exist_ok=True)
                 full_path.write_text("", encoding="utf-8")
                 continue
-            if path.endswith(".md"):
-                # v0.3.9-alpha: archivos .md nunca se crean como JSON.
-                # Usar seed si existe; si no, markdown vacío.
-                seed = full_path.with_suffix(".seed.md")
-                if not seed.exists():
-                    stem = full_path.stem
-                    seed = full_path.parent / f"{stem}.seed.md"
-                if seed.exists():
-                    full_path.parent.mkdir(parents=True, exist_ok=True)
-                    full_path.write_text(seed.read_text(encoding="utf-8"), encoding="utf-8")
-                    safe_print(c(f"  [OK] {path} creado desde seed", Colors.GREEN))
-                    continue
-                full_path.parent.mkdir(parents=True, exist_ok=True)
-                full_path.write_text("", encoding="utf-8")
-                continue
+
             if "sessions-index.json" in path:
                 initial = {"sessions": [], "total_sessions": 0, "last_updated": None}
             elif "skills-index.json" in path:
@@ -339,7 +431,7 @@ def apply_migration(version: str, force: bool = False) -> bool:
         if not run_migration_script(script):
             errors.append(f"script:{script}")
 
-    if version not in state.get("migrations_applied", []):
+    if not errors and version not in state.get("migrations_applied", []):
         state["migrations_applied"].append(version)
 
     state["last_migration"] = datetime.now().isoformat()
@@ -353,7 +445,8 @@ def apply_migration(version: str, force: bool = False) -> bool:
         }
     )
 
-    save_migration_state(state)
+    if not save_migration_state(state):
+        errors.append("state:save")
 
     if errors:
         safe_print(
@@ -389,6 +482,36 @@ def run_all_pending(force: bool = False) -> Tuple[int, int]:
             failed += 1
 
     return success, failed
+
+
+def run_all_pending_with_snapshot(
+    force: bool = False,
+) -> tuple[int, int, Optional[Path], List[str]]:
+    """Apply pending migrations after one fail-closed local snapshot."""
+    pending = list(MIGRATIONS) if force else get_pending_migrations()
+    if not pending:
+        safe_print(c("\n[MIGRATE] No hay migraciones pendientes", Colors.GREEN))
+        safe_print("APPLIED=[]")
+        return 0, 0, None, []
+
+    try:
+        snapshot = create_pre_migration_snapshot()
+    except Exception as exc:
+        safe_print(c(f"[ERROR] Snapshot previo falló: {exc}", Colors.RED))
+        safe_print("APPLIED=[]")
+        return 0, 1, None, []
+
+    relative_snapshot = snapshot.relative_to(REPO_ROOT)
+    safe_print(f"SNAPSHOT_DIR={relative_snapshot.as_posix()}")
+    applied = []
+    failed = 0
+    for version in pending:
+        if apply_migration(version, force=force):
+            applied.append(version)
+        else:
+            failed += 1
+    safe_print(f"APPLIED={json.dumps(applied)}")
+    return len(applied), failed, snapshot, applied
 
 
 def show_status():
@@ -535,7 +658,7 @@ Ejemplos:
         return 0
 
     if args.apply:
-        success, failed = run_all_pending(force=False)
+        success, failed, _, _ = run_all_pending_with_snapshot(force=False)
         safe_print(
             c(f"\n[RESULT] Exitosas: {success}, Fallidas: {failed}", Colors.CYAN)
         )
@@ -543,7 +666,7 @@ Ejemplos:
 
     if args.force_all:
         safe_print(c("\n[WARN] Forzando todas las migraciones...", Colors.YELLOW))
-        success, failed = run_all_pending(force=True)
+        success, failed, _, _ = run_all_pending_with_snapshot(force=True)
         safe_print(
             c(f"\n[RESULT] Exitosas: {success}, Fallidas: {failed}", Colors.CYAN)
         )
