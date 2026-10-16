@@ -39,7 +39,7 @@ def _console_safe_streams():
 _console_safe_streams()
 # ----------------------------------------------------------------------------
 # Windows UTF-8 encoding fix (evita acentos corruptos)
-if sys.platform == "win32" and sys.stdout.isatty():
+if sys.platform == "win32":
     try:
         import io
         # v0.4.0-beta fix: reconfigure in-place (TextIOWrapper nuevo dejaba un wrapper

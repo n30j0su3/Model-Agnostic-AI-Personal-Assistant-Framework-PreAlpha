@@ -61,8 +61,8 @@ except ImportError:
 # Global bridge instance
 _session_bridge = None
 
-# Configurar UTF-8 para Windows (solo si es un terminal interactivo)
-if sys.platform == "win32" and sys.stdout.isatty():
+# Configurar UTF-8 para Windows, incluso con stdout/stderr redirigidos
+if sys.platform == "win32":
     try:
         
         # v0.4.0-beta fix: reconfigure in-place (TextIOWrapper nuevo dejaba un wrapper
@@ -805,7 +805,7 @@ def print_session_start(parallel_data: dict = None):
     
     now = datetime.now()
     date_str = now.strftime("%Y-%m-%d")
-    time_str = now.strftime("H:%M")
+    time_str = now.strftime("%H:%M")
 
     # Header
     print(c("\n" + "=" * 60, Colors.HEADER))

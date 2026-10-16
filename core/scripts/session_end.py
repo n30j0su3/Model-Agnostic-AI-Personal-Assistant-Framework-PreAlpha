@@ -32,7 +32,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-if sys.platform == "win32" and sys.stdout.isatty():
+if sys.platform == "win32":
     try:
         
         # v0.4.0-beta fix: reconfigure in-place (TextIOWrapper nuevo dejaba un wrapper

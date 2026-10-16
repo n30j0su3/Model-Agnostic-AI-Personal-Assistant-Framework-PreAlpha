@@ -31,8 +31,8 @@ Versión: 1.0.0
 import os
 import sys
 
-# Configurar UTF-8 para Windows (solo si es un terminal interactivo)
-if sys.platform == "win32" and sys.stdout.isatty():
+# Configurar UTF-8 para Windows, incluso con stdout/stderr redirigidos
+if sys.platform == "win32":
     try:
         
         # v0.4.0-beta fix: reconfigure in-place (TextIOWrapper nuevo dejaba un wrapper
