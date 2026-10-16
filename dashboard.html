@@ -289,6 +289,25 @@
 
         :focus-visible { outline: 2px solid #f2fc9e; outline-offset: 2px; }
 
+        html, body, #main-layout { max-width: 100%; overflow-x: hidden; }
+        #page-container { min-width: 0; }
+        button, [role="button"] { min-height: 44px; }
+        .nav-btn, #menu-toggle { min-width: 44px; }
+        #primary-nav { min-width: 0; overflow-x: auto; scrollbar-width: none; }
+        #primary-nav::-webkit-scrollbar { display: none; }
+
+        @media (max-width: 1023px) {
+            #app-header { gap: 0.25rem; padding-left: 0.5rem; padding-right: 0.5rem; }
+            #app-header .header-brand { flex-shrink: 0; }
+            #app-header .header-actions { flex: 1; min-width: 0; gap: 0.25rem; justify-content: flex-end; }
+            #primary-nav { max-width: calc(100vw - 280px); }
+        }
+
+        @media (max-width: 639px) {
+            #app-header .brand-copy, #lang-toggle { display: none; }
+            #primary-nav { max-width: calc(100vw - 112px); }
+        }
+
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation: none !important; transition: none !important; }
             .matrix-bg, .scanlines { display: none !important; }
@@ -341,8 +360,8 @@
         <!-- Main Layout -->
         <div id="main-layout" class="hidden h-screen flex flex-col">
             <!-- Header -->
-            <header class="h-16 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 flex items-center justify-between px-4 lg:px-6 shrink-0 z-40">
-                <div class="flex items-center gap-3">
+            <header id="app-header" class="h-16 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 flex items-center justify-between px-4 lg:px-6 shrink-0 z-40">
+                <div class="header-brand flex items-center gap-3">
                     <button id="menu-toggle" class="lg:hidden p-2 hover:bg-slate-800 rounded-lg transition-colors">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
@@ -354,15 +373,15 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
                 </div>
-                        <div class="hidden sm:block">
+                        <div class="brand-copy hidden sm:block">
                             <h1 class="font-semibold text-sm">FreakingJSON</h1>
                             <p class="text-xs text-slate-400"><span id="header-framework-version" data-framework-version>—</span> <span id="build-id" class="text-slate-600"></span></p>
                         </div>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2">
-                    <div class="relative hidden md:block">
+                <div class="header-actions flex items-center gap-2">
+                    <div class="relative hidden lg:block">
                         <input type="text" id="global-search" placeholder="Buscar sesiones, skills..." 
                             class="w-64 bg-slate-800 border border-slate-700 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-lime-400 transition-colors">
                         <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -372,7 +391,7 @@
 
                     <button id="lang-toggle" class="px-3 py-1.5 text-xs rounded-lg border border-slate-700 hover:border-lime-400/60 bg-slate-900/70" aria-label="Toggle language">ES/EN</button>
                     
-                    <nav class="flex items-center gap-1">
+                    <nav id="primary-nav" class="flex items-center gap-1">
                         <button onclick="router.navigate('home')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="home" title="Inicio">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
@@ -864,6 +883,7 @@
             lang: localStorage.getItem('pa-docs-lang') || 'es',
             show(id) {
                 this.current = id;
+                localStorage.setItem('pa-docs-current', id);
                 document.querySelectorAll('.doc-tab').forEach(b => {
                     const active = b.dataset.doc === id;
                     b.classList.toggle('bg-lime-400/10', active);
@@ -872,7 +892,7 @@
                 // v0.4.0-beta: fuente según idioma activo — docsrc-<id> (es) o docsrc-<id>__en
                 let src = document.getElementById('docsrc-' + id + (this.lang === 'en' ? '__en' : ''));
                 if (!src) src = document.getElementById('docsrc-' + id); // fallback al original
-                const out = document.getElementById('docs-content');
+                const out = document.getElementById('docs-body');
                 if (!src || !out) return;
                 out.innerHTML = '<p class="text-slate-500 text-sm">Cargando…</p>';
                 requestAnimationFrame(() => {
@@ -1014,6 +1034,11 @@
                 }
                 if (this.currentPage === 'modelo') {
                     modeloPage.init();
+                }
+                if (this.currentPage === 'docs') {
+                    docsPage.updateLangButtons();
+                    const firstDoc = (window.__DOCS_META__ || [])[0]?.id || 'overview';
+                    docsPage.show(docsPage.current || localStorage.getItem('pa-docs-current') || firstDoc);
                 }
             }
         };
@@ -1755,7 +1780,7 @@
                     </aside>
                     <main class="flex-1 min-w-0">
                         <div id="docs-content" class="bg-slate-900/40 rounded-2xl border border-slate-800 p-6 lg:p-8 max-w-4xl">
-                            <p class="text-slate-500 text-sm">${t('docs_pick')}</p>
+                            <div id="docs-body"><p class="text-slate-500 text-sm">${t('docs_pick')}</p></div>
                         </div>
                     </main>
                 </div>

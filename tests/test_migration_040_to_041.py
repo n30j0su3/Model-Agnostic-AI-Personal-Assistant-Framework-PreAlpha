@@ -11,6 +11,8 @@ import sys
 import tarfile
 from pathlib import Path
 
+import pytest
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -82,6 +84,14 @@ def snapshot_from_output(root: Path, output: str) -> Path:
 
 
 def test_migrate_full_roundtrip_is_idempotent(tmp_path):
+    git_check = subprocess.run(
+        ["git", "rev-parse", "--is-inside-work-tree"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    if git_check.returncode != 0:
+        pytest.skip("v0.4.0 tag fixture requires Git history")
     root = make_candidate_from_040(tmp_path)
     assert (root / "core/scripts/rollback.py").is_file()
     session = root / "core/.context/sessions/current.json"

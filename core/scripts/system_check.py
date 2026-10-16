@@ -251,10 +251,21 @@ def check_opencode_dir():
 
 @register("dashboard", "Dashboard HTML")
 def check_dashboard():
-    dh = REPO_ROOT / "dashboard.html"
-    if dh.exists():
-        return True, "dashboard.html OK"
-    return "warn", "Dashboard no disponible"
+    dashboard = REPO_ROOT / "dashboard.html"
+    tailwind = REPO_ROOT / "assets" / "tailwind.js"
+    chart = REPO_ROOT / "assets" / "chart.umd.js"
+    server = REPO_ROOT / "core" / "scripts" / "dashboard_server.py"
+    required = (dashboard, tailwind, chart, server)
+    missing = [path.relative_to(REPO_ROOT).as_posix() for path in required if not path.is_file()]
+    if missing:
+        return False, "Missing dashboard bundle files: " + ", ".join(missing)
+
+    html = dashboard.read_text(encoding="utf-8")
+    if "assets/tailwind.js" not in html or "assets/chart.umd.js" not in html:
+        return False, "Missing local asset references in dashboard.html"
+    if '"/api/status"' not in server.read_text(encoding="utf-8"):
+        return False, "Missing /api/status route in dashboard_server.py"
+    return True, "dashboard.html + local assets + /api/status OK"
 
 @register("config_files", "Archivos de configuracion")
 def check_config_files():

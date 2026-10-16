@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import os
+import shutil
 import subprocess
 import tarfile
 from pathlib import Path
@@ -33,6 +34,23 @@ def repo_extract(tmp_path):
     """Extract the current staged tree into a writable temporary directory."""
     destination = tmp_path / "repo-extract"
     destination.mkdir()
+    in_git = subprocess.run(
+        ["git", "rev-parse", "--is-inside-work-tree"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    if in_git.returncode != 0:
+        shutil.copytree(
+            ROOT,
+            destination,
+            dirs_exist_ok=True,
+            ignore=shutil.ignore_patterns(
+                ".git", ".pytest_cache", "__pycache__", "*.pyc", "data"
+            ),
+        )
+        return destination
+
     tree = subprocess.run(
         ["git", "write-tree"],
         cwd=ROOT,

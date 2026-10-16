@@ -61,7 +61,7 @@ def test_backlog_has_one_canonical_post_install_path(repo_extract, tmp_path):
     assert not (repo_extract / "core/.context/knowledge/backlog.md").exists()
 
 
-def test_dashboard_check_only_requires_the_served_html(repo_extract):
+def test_dashboard_check_requires_served_assets_and_status_route(repo_extract):
     module_path = repo_extract / "core/scripts/system_check.py"
     scripts = str(module_path.parent)
     sys.path.insert(0, scripts)
@@ -73,8 +73,22 @@ def test_dashboard_check_only_requires_the_served_html(repo_extract):
     finally:
         sys.path.remove(scripts)
 
+    tailwind = repo_extract / "assets/tailwind.js"
+    chart = repo_extract / "assets/chart.umd.js"
+    server = repo_extract / "core/scripts/dashboard_server.py"
+    tailwind.unlink()
+    chart.unlink()
+    server.write_text("# route intentionally absent\n", encoding="utf-8")
     setattr(module, "REPO_ROOT", repo_extract)
+
+    ok, detail = module.check_dashboard()
+    assert ok is False
+    assert "missing" in detail.lower()
+
+    tailwind.write_text("// local tailwind\n", encoding="utf-8")
+    chart.write_text("// local chart\n", encoding="utf-8")
+    server.write_text('STATUS_ROUTE = "/api/status"\n', encoding="utf-8")
     ok, detail = module.check_dashboard()
 
     assert ok is True, detail
-    assert detail == "dashboard.html OK"
+    assert detail == "dashboard.html + local assets + /api/status OK"
