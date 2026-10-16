@@ -46,6 +46,7 @@ sys.path.insert(0, str(SCRIPT_DIR))
 import oc_auth  # noqa: E402  (v0.4.1-beta: detección auth-aware de credenciales)
 import select_free_model as sfm  # noqa: E402  (v0.4.1-beta: catálogo usable auth-aware)
 import version as framework_version  # noqa: E402
+from ensure_data_dirs import ensure_data_dirs  # noqa: E402
 
 OPENCODE_PORT = 47371          # puerto fijo del opencode serve gestionado
 SERVER_PORT_DEFAULT = 8760     # puerto del dashboard bridge
@@ -417,18 +418,20 @@ class Handler(BaseHTTPRequestHandler):
 
 
         if path == "/api/config/model":
-            # v0.4.0-beta: modelo ACTUAL desde .opencode/config.json (sin exponer el archivo crudo)
-            cfg_path = REPO_ROOT / ".opencode" / "config.json"
-            cfg = {}
-            if cfg_path.exists():
+            # La selección mutable vive en data/user; agent conserva lectura legacy.
+            selection = sfm.load_selection(self.repo_root)
+            legacy = {}
+            legacy_path = self.repo_root / ".opencode" / "config.json"
+            if legacy_path.exists():
                 try:
-                    cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+                    value = json.loads(legacy_path.read_text(encoding="utf-8"))
+                    legacy = value if isinstance(value, dict) else {}
                 except Exception:
-                    cfg = {}
+                    legacy = {}
             return self._json({
                 "ok": True,
-                "model": cfg.get("model") or "",
-                "agent": cfg.get("agent") or "",
+                "model": selection.get("model") or "",
+                "agent": selection.get("agent") or legacy.get("agent") or "",
             })
 
         # estáticos: knowledge indexes, assets
@@ -506,14 +509,8 @@ class Handler(BaseHTTPRequestHandler):
             # vía CLI (--agent), no vía serve.
             model = body.get("model")
             if not model:
-                # fallback: modelo guardado en .opencode/config.json (asignación del framework)
-                cfg_path = REPO_ROOT / ".opencode" / "config.json"
-                if cfg_path.exists():
-                    try:
-                        cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
-                        model = cfg.get("model") or None
-                    except Exception:
-                        model = None
+                # fallback: selección local generada, nunca el config trackeado.
+                model = sfm.load_selection(self.repo_root).get("model") or None
             payload: dict = {"parts": [{"type": "text", "text": msg}]}
             if model:
                 # normalizar a objeto — la API serve rechaza strings (400)
@@ -551,24 +548,16 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"ok": True, "saved": str(p.relative_to(self.repo_root))})
 
         if path == "/api/config/model":
-            # v0.5.0: guardar modelo predeterminado en .opencode/config.json (con backup)
+            # Estado generado local: no mutar .opencode/config.json trackeado.
             model = (body.get("model") or "").strip()
             if not model:
                 return self._json({"ok": False, "error": "model vacío"}, 400)
-            cfg_path = REPO_ROOT / ".opencode" / "config.json"
-            cfg_path.parent.mkdir(parents=True, exist_ok=True)
-            cfg = {}
-            if cfg_path.exists():
-                try:
-                    cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
-                except Exception:
-                    cfg = {}
-            if cfg_path.exists():
-                bak = cfg_path.with_suffix(cfg_path.suffix + f".bak-{datetime.now():%Y%m%d-%H%M%S}")
-                shutil.copy2(cfg_path, bak)
-            cfg["model"] = model
-            cfg_path.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
-            return self._json({"ok": True, "model": model, "saved": ".opencode/config.json"})
+            sfm.save_selection(model, self.repo_root)
+            return self._json({
+                "ok": True,
+                "model": model,
+                "saved": "data/user/model-selection.json",
+            })
 
         if path == "/api/launch/opencode-tui":
             # bootstrap del framework ANTES de abrir la TUI (flujo base completo)
@@ -603,6 +592,8 @@ def make_server(host: str = "127.0.0.1", port: int = 0,
     try:
         srv.repo_root = Path(repo_root or REPO_ROOT).resolve()
         srv.token_required = token_required
+        ensure_data_dirs(srv.repo_root)
+        sfm.load_selection(srv.repo_root)
         srv.initialize_token()
     except Exception:
         srv.server_close()

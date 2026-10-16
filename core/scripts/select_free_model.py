@@ -20,7 +20,7 @@ Cambios v0.4.1-beta:
 
 Flujo: descubre puerto del serve (o lo arranca) → consulta
 /config/providers → filtra modelos gratuitos (cost 0 / sufijo -free)
-→ verifica estado de credenciales → guarda en .opencode/config.json.
+→ verifica estado de credenciales → guarda en data/user/model-selection.json.
 
 Uso interactivo:
     python core/scripts/select_free_model.py
@@ -42,11 +42,11 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent.parent
-CONFIG_PATH = REPO_ROOT / ".opencode" / "config.json"
 PORTS = [47017, 47018, 47019, 47020, 47021]
 
 sys.path.insert(0, str(SCRIPT_DIR))
 import oc_auth  # noqa: E402  (misma carpeta; stdlib-only)
+from ensure_data_dirs import atomic_write_json, ensure_data_dirs  # noqa: E402
 
 AUTH_RANK = {"authed_env": 0, "authed_file": 1, "anon": 2, "missing": 3}
 
@@ -193,18 +193,44 @@ def _get_models(port, timeout=15, free_only=True):
     return sorted(out, key=lambda x: (AUTH_RANK.get(x["status"], 9), x["id"]))
 
 
-def save_selection(model_id):
-    """Guardar modelo seleccionado en .opencode/config.json."""
-    CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    cfg = {}
-    if CONFIG_PATH.exists():
+def _read_json_object(path: Path) -> dict:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return value if isinstance(value, dict) else {}
+
+
+def load_selection(repo_root: str | Path | None = None) -> dict:
+    """Read user state and migrate a legacy tracked model exactly once."""
+    root = Path(repo_root) if repo_root is not None else REPO_ROOT
+    selection_path = ensure_data_dirs(root)["user"] / "model-selection.json"
+    if selection_path.exists():
+        state = _read_json_object(selection_path)
         try:
-            cfg = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
-        except Exception:
-            cfg = {}
-    cfg["model"] = model_id
-    CONFIG_PATH.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
-    print(f"✓ Config actualizado: model = {model_id}")
+            selection_path.chmod(0o600)
+        except OSError:
+            pass
+        return state
+
+    legacy = _read_json_object(root / ".opencode" / "config.json")
+    model = legacy.get("model")
+    if isinstance(model, str) and model.strip():
+        state = {"model": model.strip()}
+        atomic_write_json(selection_path, state)
+        return state
+    return {}
+
+
+def save_selection(model_id: str, repo_root: str | Path | None = None) -> dict:
+    """Persist the selected model outside the tracked configuration tree."""
+    root = Path(repo_root) if repo_root is not None else REPO_ROOT
+    selection_path = ensure_data_dirs(root)["user"] / "model-selection.json"
+    state = load_selection(root)
+    state["model"] = model_id
+    atomic_write_json(selection_path, state)
+    print(f"✓ Selección de usuario actualizada: model = {model_id}")
+    return state
 
 
 def verify_model(model_id: str, port=None) -> int:

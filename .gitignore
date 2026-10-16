@@ -6,7 +6,7 @@
 __pycache__/
 *.pyc
 
-# User data (sessions, memory, logs)
+# User data (sessions, memory, model selections, wizard state, logs)
 data/
 data/*.db
 data/*.log
