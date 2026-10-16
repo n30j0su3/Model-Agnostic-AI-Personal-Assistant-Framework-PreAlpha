@@ -87,7 +87,7 @@ class DashboardHTTPServer(ThreadingHTTPServer):
         """Return the token, reloading it when the token file changes."""
         with self._token_lock:
             if not self.token_path.is_file():
-                return self.rotate_token()
+                raise FileNotFoundError(f"dashboard token missing: {self.token_path}")
             mtime_ns = self.token_path.stat().st_mtime_ns
             if self._token_value is None or self._token_mtime_ns != mtime_ns:
                 token = self.token_path.read_text(encoding="utf-8").strip()
@@ -292,8 +292,8 @@ class Handler(BaseHTTPRequestHandler):
         return {key: self.repo_root / relative
                 for key, relative in EDITABLE_FILE_PATHS.items()}
 
-    def _guard_mutation(self) -> bool:
-        """Validate loopback same-origin JSON mutations before reading body."""
+    def _guard_loopback_origin(self) -> bool:
+        """Require a loopback Host and reject foreign browser origins."""
         server = cast(DashboardHTTPServer, self.server)
         port = int(server.server_address[1])
         allowed_hosts = {f"127.0.0.1:{port}", f"localhost:{port}"}
@@ -307,10 +307,21 @@ class Handler(BaseHTTPRequestHandler):
         if origin and origin not in allowed_origins:
             self._json({"ok": False, "error": "invalid origin"}, 403)
             return False
+        return True
 
+    def _guard_mutation(self) -> bool:
+        """Validate same-origin token-authenticated JSON mutations."""
+        if not self._guard_loopback_origin():
+            return False
+
+        server = cast(DashboardHTTPServer, self.server)
         token_required = bool(server.token_required)
         supplied = self.headers.get("X-PA-Token") or ""
-        expected = server.current_token() if token_required else ""
+        try:
+            expected = server.current_token() if token_required else ""
+        except OSError:
+            self._json({"ok": False, "error": "dashboard token unavailable"}, 503)
+            return False
         if token_required and not secrets.compare_digest(supplied, expected):
             self._json({"ok": False, "error": "invalid token"}, 401)
             return False
@@ -346,6 +357,14 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/" or path == "/index.html":
             return self._serve_file(self.repo_root / "dashboard.html")
+        if path == "/api/security/token":
+            if not self._guard_loopback_origin():
+                return
+            server = cast(DashboardHTTPServer, self.server)
+            try:
+                return self._json({"token": server.current_token()})
+            except OSError:
+                return self._json({"error": "dashboard token unavailable"}, 503)
         if path == "/api/status":
             return self._json({
                 "framework": {
@@ -378,21 +397,17 @@ class Handler(BaseHTTPRequestHandler):
                     "content": p.read_text(encoding="utf-8", errors="replace") if p.exists() else "",
                 }
             return self._json(out)
-        if path == "/api/framework/check":
-            return self._json(run_py("system_check.py", "--quick", timeout=60))
-        if path == "/api/framework/bootstrap":
-            return self._json(run_py("session_start.py", timeout=90))
+        if path in {"/api/framework/check", "/api/framework/bootstrap", "/api/models/test"}:
+            return self._json({"error": "method not allowed", "method": "POST"}, 405)
         
         if path == "/api/models/free":
-            # Detectar modelos desde opencode serve (auto-inicia si es necesario)
+            # Lectura pura: nunca inicia procesos. Si serve está apagado, retorna [].
             # v0.4.1-beta (feedback N30): AUTH-AWARE y COMPLETO — lista TODO el
             # catálogo de proveedores con credenciales (free + paid, ej. minimax
             # configurado) + los free del resto. Nada bloqueado: sin-creds van
             # al final con badge. Detectar != usar — para eso existe /test.
-            r = opencode_ensure()
-            if not r.get("ok"):
-                return self._json({"ok": False, "error": r.get("error", "opencode no disponible")}, 503)
-            models = sfm.get_usable_models(r["port"])
+            port = _opencode_proc.get("port") or OPENCODE_PORT
+            models = sfm.get_usable_models(port)
             models_payload = [
                 {"id": m["id"], "status": m["status"], "badge": oc_auth.provider_auth_badge(m["status"]), "free": m.get("free", True)}
                 for m in models
@@ -400,43 +415,6 @@ class Handler(BaseHTTPRequestHandler):
             # cred-first ya garantizado por get_usable_models
             return self._json(models_payload)
 
-        if path == "/api/models/test":
-            # v0.4.1-beta: ping REAL del modelo seleccionado — verifica que la
-            # credencial FUNCIONA (no solo que existe). Un modelo "detectado"
-            # sin creds que funcione es exactamente el bug reportado.
-            q = path  # solo GET
-            model_id = (self.path.split("?", 1)[1] if "?" in self.path else "")
-            from urllib.parse import parse_qs
-            params = parse_qs(model_id)
-            mid_param = (params.get("model", [""])[0] or "").strip()
-            if not mid_param:
-                return self._json({"ok": False, "error": "parámetro model requerido"}, 400)
-            ensure = opencode_ensure()
-            if not ensure.get("ok"):
-                return self._json({"ok": False, "error": ensure.get("error")}, 503)
-            provider_id, _, model_name = mid_param.partition("/")
-            if not model_name:
-                return self._json({"ok": False, "error": "formato provider/model"}, 400)
-            st, sess = oc_call("/session", "POST", {"title": "PA model test"})
-            if st != 200 or not isinstance(sess, dict):
-                return self._json({"ok": False, "error": f"crear sesión: {sess}"}, 502)
-            sid = sess.get("id")
-            st, resp = oc_call(
-                f"/session/{sid}/message", "POST",
-                {"parts": [{"type": "text", "text": "ping"}],
-                 "model": {"providerID": provider_id, "modelID": model_name}},
-                timeout=60,
-            )
-            info = resp.get("info", {}) if isinstance(resp, dict) else {}
-            used = f"{info.get('providerID')}/{info.get('modelID')}"
-            ok = st == 200 and info.get("modelID") == model_name
-            return self._json({
-                "ok": ok,
-                "status": st,
-                "used_model": used,
-                "requested": mid_param,
-                "error": None if ok else (resp if not isinstance(resp, dict) else resp.get("error")),
-            })
 
         if path == "/api/config/model":
             # v0.4.0-beta: modelo ACTUAL desde .opencode/config.json (sin exponer el archivo crudo)
@@ -466,16 +444,51 @@ class Handler(BaseHTTPRequestHandler):
             return
         body = self._body()
 
-        if path == "/api/opencode/ensure":
+        if path == "/api/runtime/ensure":
             return self._json(opencode_ensure())
+
+        if path == "/api/framework/check":
+            return self._json(run_py("system_check.py", "--quick", timeout=60))
+
+        if path == "/api/framework/bootstrap":
+            return self._json(run_py("session_start.py", timeout=90))
+
+        if path == "/api/models/test":
+            mid_param = str(body.get("model") or "").strip()
+            if not mid_param:
+                return self._json({"ok": False, "error": "model requerido"}, 400)
+            if not opencode_serving():
+                return self._json({"ok": False, "error": "runtime no activo"}, 503)
+            provider_id, _, model_name = mid_param.partition("/")
+            if not model_name:
+                return self._json({"ok": False, "error": "formato provider/model"}, 400)
+            st, sess = oc_call("/session", "POST", {"title": "PA model test"})
+            if st != 200 or not isinstance(sess, dict):
+                return self._json({"ok": False, "error": f"crear sesión: {sess}"}, 502)
+            sid = sess.get("id")
+            st, resp = oc_call(
+                f"/session/{sid}/message", "POST",
+                {"parts": [{"type": "text", "text": "ping"}],
+                 "model": {"providerID": provider_id, "modelID": model_name}},
+                timeout=60,
+            )
+            info = resp.get("info", {}) if isinstance(resp, dict) else {}
+            used = f"{info.get('providerID')}/{info.get('modelID')}"
+            ok = st == 200 and info.get("modelID") == model_name
+            return self._json({
+                "ok": ok,
+                "status": st,
+                "used_model": used,
+                "requested": mid_param,
+                "error": None if ok else (resp if not isinstance(resp, dict) else resp.get("error")),
+            })
 
         if path == "/api/opencode/chat":
             msg = (body.get("message") or "").strip()
             if not msg:
                 return self._json({"ok": False, "error": "mensaje vacío"}, 400)
-            ensure = opencode_ensure()
-            if not ensure.get("ok"):
-                return self._json(ensure, 503)
+            if not opencode_serving():
+                return self._json({"ok": False, "error": "runtime no activo"}, 503)
             sid = body.get("session")
             if not sid:
                 st, sess = oc_call("/session", "POST", {"title": body.get("title") or "PA Dashboard"})
@@ -608,7 +621,7 @@ def main():
     log(f"http://{args.host}:{port}  (Ctrl+C para detener)")
     log(f"repo: {srv.repo_root}")
     if opencode_installed():
-        log(f"opencode: {opencode_installed()} (serve se arranca on-demand vía /api/opencode/ensure)")
+        log(f"opencode: {opencode_installed()} (serve se arranca vía POST /api/runtime/ensure)")
     else:
         log("opencode: NO detectado — chat no disponible hasta instalarlo")
     try:

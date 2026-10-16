@@ -2793,9 +2793,28 @@
         const paConsole = {
             session: null,
             busy: false,
+            token: null,
+
+            async bootstrapSecurity() {
+                if (this.token) return this.token;
+                const r = await fetch('/api/security/token', {
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                const payload = await r.json();
+                if (!payload.token) throw new Error('dashboard token unavailable');
+                this.token = payload.token;
+                return this.token;
+            },
 
             async api(path, method = 'GET', body = null) {
-                const opts = { method, headers: { 'Content-Type': 'application/json' } };
+                method = method.toUpperCase();
+                const headers = { 'Accept': 'application/json' };
+                if (method !== 'GET') {
+                    headers['Content-Type'] = 'application/json';
+                    headers['X-PA-Token'] = await this.bootstrapSecurity();
+                }
+                const opts = { method, headers };
                 if (body) opts.body = JSON.stringify(body);
                 const r = await fetch(path, opts);
                 if (!r.ok && r.status !== 502 && r.status !== 503) {
@@ -2824,6 +2843,7 @@
 
             async init() {
                 try {
+                    await this.bootstrapSecurity();
                     const s = await this.api('/api/status');
                     const badge = document.getElementById('pa-bridge-status');
                     if (badge) badge.textContent = `🟢 bridge v${s.framework.version} · opencode ${s.opencode.serving ? '🟢' : (s.opencode.installed ? '⚫ (on-demand)' : '🔴 no instalado')}`;
@@ -2852,6 +2872,7 @@
                 const status = document.getElementById('pa-chat-status');
                 if (status) status.textContent = '…pensando';
                 try {
+                    await this.api('/api/runtime/ensure', 'POST', {});
                     const r = await this.api('/api/opencode/chat', 'POST', { message: msg, session: this.session });
                     if (r.ok) {
                         this.session = r.session || this.session;
@@ -2942,7 +2963,7 @@
                 const status = document.getElementById('pa-chat-status');
                 if (status) status.textContent = '…init framework';
                 try {
-                    const r = await this.api('/api/framework/bootstrap');
+                    const r = await this.api('/api/framework/bootstrap', 'POST', {});
                     this.log('sys', r.ok ? '✅ Framework inicializado (session_start OK)' : `⚠ session_start: ${(r.output || '').slice(-200)}`);
                 } catch (e) {
                     this.log('sys', `⚠ ${e.message}`);
@@ -3008,9 +3029,8 @@
                 }
                 
                 try {
-                    const resp = await fetch('/api/models/free');
-                    if (!resp.ok) throw new Error('No response');
-                    const models = await resp.json();
+                    await paConsole.api('/api/runtime/ensure', 'POST', {});
+                    const models = await paConsole.api('/api/models/free');
                     
                     if (models && models.length > 0) {
                         select.innerHTML = `<option value="">${t('modelo_select_ph')}</option>`;
@@ -3051,8 +3071,8 @@
                 }
                 this.showFeedback(t('modelo_testing'), 'info');
                 try {
-                    const resp = await fetch('/api/models/test?model=' + encodeURIComponent(model));
-                    const r = await resp.json();
+                    await paConsole.api('/api/runtime/ensure', 'POST', {});
+                    const r = await paConsole.api('/api/models/test', 'POST', {model});
                     if (r.ok) {
                         this.showFeedback(t('modelo_test_ok') + (r.used_model ? ` (${r.used_model})` : ''), 'success');
                     } else {
@@ -3075,13 +3095,8 @@
                 }
                 
                 try {
-                    const resp = await fetch('/api/config/model', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({model: model})
-                    });
-                    
-                    if (resp.ok) {
+                    const result = await paConsole.api('/api/config/model', 'POST', {model: model});
+                    if (result.ok) {
                         this.showFeedback('✓ Modelo guardado en .opencode/config.json', 'success');
                         this.currentModel = model;
                         await this.loadCurrentModel();
