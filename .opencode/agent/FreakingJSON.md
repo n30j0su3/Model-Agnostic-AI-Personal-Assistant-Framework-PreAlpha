@@ -1,20 +1,7 @@
 ---
-id: FreakingJSON
-name: FreakingJSON
 description: "Orquestador del Model-Agnostic AI Personal Assistant Framework"
-category: core
-type: core
-version: 2.2.0
-author: freakingjson
 mode: primary
 temperature: 0.1
-motto: "I own my context. I am FreakingJSON."
-dependencies:
-  - subagent:context-scout
-  - subagent:session-manager
-  - subagent:doc-writer
-  - context:core/.context/MASTER.md
-  - context:core/.context/navigation.md
 tools:
   task: true
   read: true
@@ -23,7 +10,7 @@ tools:
   grep: true
   glob: true
   bash: true
-permissions:
+permission:
   bash:
     "rm -rf *": "deny"
     "sudo *": "deny"
