@@ -32,6 +32,7 @@ import sys
 import threading
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -54,6 +55,22 @@ EDITABLE_FILE_PATHS = {        # paths relativos al repo configurado
     "master": Path("core/.context/MASTER.md"),
     "profile": Path("core/.context/profile.md"),
 }
+BRANDING_FILE = Path("config/branding.json")
+BRANDING_DEFAULT: dict = {}
+BRAND_CACHE: dict[str, tuple[float, dict]] = {}
+AGENT_EDIT_ROOTS = {                 # raíces permitidas para edición de agentes
+    Path(".opencode") / "agent",
+    Path("core") / "agents",
+    Path("core") / "agents" / "subagents",
+}
+AGENT_EDIT_SUFFIXES = {".md"}
+AGENT_MAX_BYTES = 512 * 1024         # cap de contenido por documento de agente
+def _pa_config_file() -> Path:
+    """config.json real del usuario; HOME dinámico para hermeticidad."""
+    return Path.home() / ".pa-framework" / "config.json"
+
+
+SKILLS_INDEXER_SCRIPT = "skills_indexer.py"
 MIME = {
     ".html": "text/html; charset=utf-8",
     ".js": "application/javascript; charset=utf-8",
@@ -231,6 +248,322 @@ def run_py(script: str, *args: str, timeout: int = 90) -> dict:
         return {"ok": False, "output": str(e)}
 
 
+# ------------------------------------------------- dashboard command center ---
+def load_brand(repo_root: Path) -> dict:
+    """Lee config/branding.json del repo trackeado (con cache por mtime).
+
+    Nunca lanza: branding corrupto → {} y /api/status sigue vivo. Defaults
+    no invaden la respuesta: si falta el archivo no se inventan datos.
+    """
+    path = repo_root / BRANDING_FILE
+    try:
+        mtime = path.stat().st_mtime_ns
+    except OSError:
+        return dict(BRANDING_DEFAULT)
+    cached = BRAND_CACHE.get(str(path))
+    if cached and cached[0] == mtime:
+        return cached[1]
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            data = dict(BRANDING_DEFAULT)
+    except Exception:
+        data = dict(BRANDING_DEFAULT)
+    BRAND_CACHE[str(path)] = (mtime, data)
+    return data
+
+
+def _load_json_index(path: Path) -> object:
+    """Lee un índice JSON; devuelve None ante missing/malformed."""
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def _entries(data: object, key: str) -> list:
+    """Lista de entries dict de un índice; shape raro → []."""
+    if not isinstance(data, dict):
+        return []
+    entries = data.get(key)
+    return entries if isinstance(entries, list) else []
+
+
+def _atomic_write_json_0600(path: Path, payload: object) -> None:
+    """Escribe JSON privado de forma atómica, sin dejar temporales."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(
+        f".{path.name}.{os.getpid()}.{threading.get_ident()}.tmp"
+    )
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            json.dump(payload, handle, indent=2, ensure_ascii=False)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.chmod(tmp, 0o600)
+        os.replace(tmp, path)
+        os.chmod(path, 0o600)
+    finally:
+        if tmp.exists():
+            tmp.unlink()
+
+
+def knowledge_summary(repo_root: Path) -> dict:
+    """Resumen whitelisted de los índices de conocimiento (sin cuerpos).
+
+    Metadatos only: ids, fechas, títulos, contadores. Nunca summary/content/
+    highlights/file_path — nada de rutas absolutas ni secretos.
+    """
+    kdir = repo_root / "core" / ".context" / "knowledge"
+
+    sessions: list[dict] = []
+    raw = _load_json_index(kdir / "sessions-index.json")
+    for s in _entries(raw, "sessions"):
+        if not isinstance(s, dict):
+            continue
+        session = {k: s[k] for k in ("id", "date", "title", "topics") if k in s}
+        if session:
+            sessions.append(session)
+
+    interactions: list[dict] = []
+    raw = _load_json_index(kdir / "interactions-index.json")
+    for i in _entries(raw, "interactions"):
+        if not isinstance(i, dict):
+            continue
+        event = {k: i[k] for k in ("tool", "count") if k in i}
+        if event:
+            interactions.append(event)
+
+    skills: list[dict] = []
+    raw = _load_json_index(kdir / "skills-index.json")
+    for s in _entries(raw, "skills"):
+        if not isinstance(s, dict):
+            continue
+        skill = {k: s[k] for k in ("id", "name", "category") if k in s}
+        if skill:
+            skills.append(skill)
+
+    agents: list[dict] = []
+    raw = _load_json_index(kdir / "agents-index.json")
+    for a in _entries(raw, "agents"):
+        if not isinstance(a, dict):
+            continue
+        location = a.get("location")
+        entry = {k: a[k] for k in ("name", "type", "description", "location",
+                                   "status") if k in a}
+        entry["editable"] = bool(location and
+                                 resolve_agent_document(repo_root, location))
+        agents.append(entry)
+
+    errors: list[dict] = []
+    raw = _load_json_index(kdir / "errors" / "index.json")
+    for e in (raw if isinstance(raw, list) else
+              _entries(raw, "errors")):
+        if not isinstance(e, dict):
+            continue
+        entry = {k: e[k] for k in ("id", "timestamp", "type", "severity") if k in e}
+        if entry:
+            errors.append(entry)
+
+    return {
+        "ok": True,
+        "sessions": sessions,
+        "interactions": interactions,
+        "skills": skills,
+        "agents": agents,
+        "errors": errors,
+        "counts": {
+            "sessions": len(sessions),
+            "interactions": len(interactions),
+            "skills": len(skills),
+            "agents": len(agents),
+            "errors": len(errors),
+        },
+    }
+
+
+def agent_document_path(repo_root: Path, location: str) -> Path:
+    """Resuelve la ruta de un documento de agente o lanza ValueError.
+
+    Contención estricta: relativo, sin traversal, suffix .md y dentro de
+    AGENT_EDIT_ROOTS. (root / location) — jamás rutas absolutas del índice.
+    """
+    if not isinstance(location, str) or not location.strip():
+        raise ValueError("location vacía")
+    if "\\" in location:
+        raise ValueError("separador backslash no permitido")
+    candidate = Path(location)
+    if candidate.is_absolute() or candidate.drive or candidate.root:
+        raise ValueError("ruta absoluta no permitida")
+    if candidate.suffix.lower() not in AGENT_EDIT_SUFFIXES:
+        raise ValueError("solo documentos .md")
+    if any(part == ".." for part in candidate.parts):
+        raise ValueError("traversal no permitido")
+    resolved = (repo_root / candidate).resolve()
+    allowed = [((repo_root / root).resolve(), root) for root in AGENT_EDIT_ROOTS]
+    for root_resolved, root in allowed:
+        try:
+            resolved.relative_to(root_resolved)
+        except ValueError:
+            continue
+        return repo_root / candidate
+    raise ValueError("documento fuera de las raíces de edición")
+
+
+def resolve_agent_document(repo_root: Path, location: str) -> Path | None:
+    """Ruta real de un documento de agente editable; None si no aplica."""
+    try:
+        path = agent_document_path(repo_root, location)
+    except (ValueError, OSError):
+        return None
+    try:
+        if path.is_symlink() or not path.is_file():
+            return None
+        if path.resolve() != path:
+            return None
+    except OSError:
+        return None
+    if path.stat().st_size > AGENT_MAX_BYTES:
+        return None
+    return path
+
+
+def agent_editable_from_index(repo_root: Path, agents: object) -> set[str]:
+    """Ids/nombres de agentes con documento index-backed editable."""
+    editable: set[str] = set()
+    for entry in _entries(agents, "agents"):
+        if not isinstance(entry, dict):
+            continue
+        location = entry.get("location")
+        name = entry.get("name") or entry.get("id")
+        if isinstance(location, str) and isinstance(name, str) and \
+                resolve_agent_document(repo_root, location):
+            editable.add(name)
+    return editable
+
+
+def agent_index_by_id(repo_root: Path) -> dict[str, dict]:
+    """Mapa id/nombre → entry del agents-index actual (solo reales)."""
+    raw = _load_json_index(
+        repo_root / "core" / ".context" / "knowledge" / "agents-index.json")
+    mapping: dict[str, dict] = {}
+    for entry in _entries(raw, "agents"):
+        if not isinstance(entry, dict):
+            continue
+        for key in ("name", "id"):
+            value = entry.get(key)
+            if isinstance(value, str) and value:
+                mapping[value] = entry
+    return mapping
+
+
+def update_agent_document(repo_root: Path, agent_id: str, content: object) -> int:
+    """Escribe un documento de agente con backup timestamped.
+
+    Devuelve 0 en éxito o el código HTTP que corresponde al rechazo.
+    Nunca toca credenciales ni core/.context: la contención vive en
+    agent_document_path() y resolve_agent_document().
+    """
+    if not isinstance(content, str):
+        return 400
+    if len(content.encode("utf-8")) > AGENT_MAX_BYTES:
+        return 413
+    entry = agent_index_by_id(repo_root).get(agent_id)
+    if entry is None:
+        return 404  # id no indexado
+    location = entry.get("location")
+    if not isinstance(location, str):
+        return 400
+    try:
+        path = agent_document_path(repo_root, location)
+    except ValueError:
+        return 400
+    if path.is_symlink() or not path.is_file():
+        return 400
+    try:
+        if path.resolve() != path:
+            return 400  # symlink (aunque apunte dentro del repo)
+        if path.stat().st_size > AGENT_MAX_BYTES:
+            return 413
+        backup = path.with_name(
+            f"{path.name}.bak-{datetime.now():%Y%m%d-%H%M%S}")
+        shutil.copy2(path, backup)
+        path.write_text(content, encoding="utf-8")
+    except OSError:
+        return 500
+    return 0
+
+
+def read_agent_document(repo_root: Path, agent_id: str) -> tuple[int, dict]:
+    """Lee un documento de agente index-backed (contención estricta)."""
+    entry = agent_index_by_id(repo_root).get(agent_id)
+    if entry is None:
+        return 404, {}
+    location = entry.get("location")
+    if not isinstance(location, str):
+        return 400, {}
+    try:
+        path = agent_document_path(repo_root, location)
+    except ValueError:
+        return 400, {}
+    if path.is_symlink() or not path.is_file():
+        return 400, {}
+    try:
+        if path.resolve() != path:
+            return 400, {}
+        if path.stat().st_size > AGENT_MAX_BYTES:
+            return 413, {}
+        content = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return 500, {}
+    return 0, {"ok": True, "id": agent_id,
+               "path": path.relative_to(repo_root).as_posix(),
+               "content": content}
+
+
+def toggle_skill(repo_root: Path, skill_id: object, enabled: object) -> tuple[int, dict]:
+    """Activa/desactiva una skill en ~/.pa-framework/config.json (atómico).
+
+    Valida el id contra el skills-index actual, preserva claves desconocidas
+    y fuerza chmod 0600. Devuelve (status, payload).
+    """
+    if not isinstance(skill_id, str) or not skill_id.strip():
+        return 400, {"ok": False, "error": "id requerido"}
+    if not isinstance(enabled, bool):
+        return 400, {"ok": False, "error": "enabled debe ser booleano"}
+    raw = _load_json_index(
+        repo_root / "core" / ".context" / "knowledge" / "skills-index.json")
+    known = {s.get("id") for s in _entries(raw, "skills")
+             if isinstance(s, dict) and isinstance(s.get("id"), str)}
+    if skill_id not in known:
+        return 404, {"ok": False, "error": f"skill no indexada: {skill_id}"}
+    try:
+        config_file = _pa_config_file()
+        config_file.parent.mkdir(parents=True, exist_ok=True)
+        config: dict = {}
+        if config_file.exists():
+            try:
+                loaded = json.loads(config_file.read_text(encoding="utf-8"))
+                if isinstance(loaded, dict):
+                    config = loaded
+            except Exception:
+                config = {}
+        current = config.get("enabled_skills")
+        enabled_skills = [s for s in current if isinstance(s, str)] \
+            if isinstance(current, list) else []
+        if enabled:
+            if skill_id not in enabled_skills:
+                enabled_skills.append(skill_id)
+        else:
+            enabled_skills = [s for s in enabled_skills if s != skill_id]
+        config["enabled_skills"] = enabled_skills
+        _atomic_write_json_0600(config_file, config)
+    except OSError as exc:
+        return 500, {"ok": False, "error": str(exc)}
+    return 200, {"ok": True, "enabled_skills": enabled_skills}
+
+
 def launch_opencode_tui() -> dict:
     """Abre el TUI de opencode en una terminal nueva del SO (best effort).
 
@@ -389,6 +722,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({
                 "framework": {
                     "version": framework_version.canonical(self.repo_root),
+                    "brand": load_brand(self.repo_root),
                 },
                 "opencode": {
                     "installed": bool(opencode_installed()),
@@ -396,6 +730,41 @@ class Handler(BaseHTTPRequestHandler):
                     "port": _opencode_proc.get("port") or OPENCODE_PORT,
                 },
             })
+        if path == "/api/knowledge/summary":
+            if not self._guard_loopback_origin():
+                return
+            return self._json(knowledge_summary(self.repo_root))
+        if path == "/api/agents/list":
+            if not self._guard_loopback_origin():
+                return
+            agents = agent_index_by_id(self.repo_root)
+            # dedup preservando orden de índice (name+id pueden duplicar)
+            seen: set[str] = set()
+            listing: list[dict] = []
+            for entry in agents.values():
+                name = entry.get("name") or entry.get("id") or ""
+                if not isinstance(name, str) or name in seen:
+                    continue
+                seen.add(name)
+                location = entry.get("location")
+                item: dict = {"name": name}
+                for field in ("type", "description", "location", "status"):
+                    value = entry.get(field)
+                    if isinstance(value, str):
+                        item[field] = value
+                item["editable"] = bool(isinstance(location, str) and
+                                        resolve_agent_document(self.repo_root,
+                                                               location))
+                listing.append(item)
+            return self._json({"ok": True, "agents": listing})
+        if path == "/api/agents/read":
+            # Contenido de agentes: token SIEMPRE (mutation-grade guard en GET)
+            if not self._guard_mutation():
+                return
+            agent_id = (urllib.parse.parse_qs(self.path.split("?", 1)[-1])
+                        .get("id") or [""])[0]
+            status, payload = read_agent_document(self.repo_root, agent_id)
+            return self._json(payload, status or 200)
         if path == "/api/opencode/sessions":
             if not opencode_serving():
                 return self._json({"ok": False, "error": "opencode serve no activo"}, 503)
@@ -418,21 +787,21 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(out)
         if path in {"/api/framework/check", "/api/framework/bootstrap", "/api/models/test"}:
             return self._json({"error": "method not allowed", "method": "POST"}, 405)
+        if path == "/api/skills/toggle":
+            return self._json({"error": "method not allowed", "method": "POST"}, 405)
         
         if path == "/api/models/free":
             # Lectura pura: nunca inicia procesos. Si serve está apagado, retorna [].
-            # v0.4.1-beta (feedback N30): AUTH-AWARE y COMPLETO — lista TODO el
-            # catálogo de proveedores con credenciales (free + paid, ej. minimax
-            # configurado) + los free del resto. Nada bloqueado: sin-creds van
-            # al final con badge. Detectar != usar — para eso existe /test.
+            # Dashboard command center (D1): SOLO modelos free vía sfm.get_free_models.
+            # Detección != uso: para probar/usar cualquier modelo existe /test.
             port = _opencode_proc.get("port") or OPENCODE_PORT
-            # QAWIN-RUNTIME: solo modelos free en superficies de PA.
+            # QAWIN-RUNTIME/Dashboard D1: solo modelos free en superficies de PA.
             models = sfm.get_free_models(port)
             models_payload = [
-                {"id": m["id"], "status": m["status"], "badge": oc_auth.provider_auth_badge(m["status"]), "free": m.get("free", True)}
+                {"id": m["id"], "status": m["status"],
+                 "badge": oc_auth.provider_auth_badge(m["status"]), "free": True}
                 for m in models
             ]
-            # cred-first ya garantizado por get_usable_models
             return self._json(models_payload)
 
 
@@ -453,10 +822,19 @@ class Handler(BaseHTTPRequestHandler):
                 "agent": selection.get("agent") or legacy.get("agent") or "",
             })
 
-        # estáticos: knowledge indexes, assets
-        rel = path.lstrip("/")
-        if rel.startswith(("core/", "assets/", "docs/")):
-            return self._serve_file(self.repo_root / rel)
+        # Estáticos públicos exclusivamente. Nunca exponer context/data/config,
+        # dotfiles, traversal codificado ni symlinks.
+        decoded = urllib.parse.unquote(path).replace("\\", "/")
+        rel = decoded.lstrip("/")
+        parts = Path(rel).parts
+        static_allowed = bool(parts and parts[0] in {"core", "assets", "docs"})
+        static_denied = (
+            any(part in {"", ".", ".."} or part.startswith(".") for part in parts)
+            or (parts and parts[0] == "core" and len(parts) > 1
+                and parts[1] == ".context")
+        )
+        if static_allowed and not static_denied:
+            return self._serve_file(self.repo_root / Path(*parts))
         self._json({"error": "not found", "path": path}, 404)
 
     # ---- POST ----
@@ -578,6 +956,27 @@ class Handler(BaseHTTPRequestHandler):
                 "saved": "data/user/model-selection.json",
             })
 
+        if path == "/api/skills/toggle":
+            status, payload = toggle_skill(
+                self.repo_root, body.get("id"), body.get("enabled"))
+            return self._json(payload, status)
+
+        if path == "/api/skills/reindex":
+            # Solo skills_indexer.py: el body NO puede elegir script (fijo).
+            return self._json(run_py(SKILLS_INDEXER_SCRIPT, timeout=120))
+
+        if path == "/api/agents/update":
+            agent_id = body.get("id")
+            if not isinstance(agent_id, str) or not agent_id.strip():
+                return self._json({"ok": False, "error": "id requerido"}, 400)
+            status = update_agent_document(
+                self.repo_root, agent_id, body.get("content"))
+            if status == 0:
+                return self._json({"ok": True, "id": agent_id,
+                                   "saved": True})
+            return self._json({"ok": False, "error": f"agent update rejected ({status})"},
+                              status)
+
         if path == "/api/launch/opencode-tui":
             # bootstrap del framework ANTES de abrir la TUI (flujo base completo)
             run_py("session_start.py", timeout=90)
@@ -587,11 +986,23 @@ class Handler(BaseHTTPRequestHandler):
 
     # ---- static ----
     def _serve_file(self, f: Path):
-        if not f.is_file():
+        try:
+            root = self.repo_root.resolve()
+            candidate = f.resolve(strict=True)
+            candidate.relative_to(root)
+            relative = f.relative_to(self.repo_root)
+            current = self.repo_root
+            for part in relative.parts:
+                current = current / part
+                if current.is_symlink():
+                    raise ValueError("symlinked static path")
+        except (OSError, ValueError):
             return self._json({"error": "not found"}, 404)
-        data = f.read_bytes()
+        if not candidate.is_file():
+            return self._json({"error": "not found"}, 404)
+        data = candidate.read_bytes()
         self.send_response(200)
-        self.send_header("Content-Type", MIME.get(f.suffix.lower(), "application/octet-stream"))
+        self.send_header("Content-Type", MIME.get(candidate.suffix.lower(), "application/octet-stream"))
         self.send_header("Content-Length", str(len(data)))
         # v0.5.0: no-cache para que el browser siempre pida el HTML/JS fresco
         # (evita que una extracción vieja siga sirviendo JS roto desde cache)
