@@ -9,6 +9,7 @@ Creator: FreakingJSON (instagram.com/freakingjson, freakingjson.com)
 """
 
 import argparse
+import json
 import os
 import platform
 import shutil
@@ -142,18 +143,70 @@ def configure_preferences(repo_root):
     return lang, style
 
 
-def main():
+def installation_directories() -> list[Path]:
+    return [
+        CONTEXT_DIR,
+        CONTEXT_DIR / "sessions",
+        CONTEXT_DIR / "codebase",
+        CONTEXT_DIR / "backups",
+        CONTEXT_DIR / "memory",
+        CONTEXT_DIR / "memory" / "summaries",
+        CONTEXT_DIR / "memory" / "profile",
+        CONTEXT_DIR / "knowledge" / "wiki",
+        CORE_DIR / "agents" / "subagents",
+        CORE_DIR / "skills" / "core",
+        REPO_ROOT / "workspaces" / "content" / "projects",
+        REPO_ROOT / "docs",
+        REPO_ROOT / "config",
+    ]
+
+
+def main(argv=None):
     # Parse arguments
-    parser = argparse.ArgumentParser(description="FreakingJSON PA Framework Installer")
+    parser = argparse.ArgumentParser(
+        description="FreakingJSON PA Framework Installer",
+        epilog="Exit codes: 0 success, 2 invalid arguments, 3 installation failure.",
+    )
     parser.add_argument(
         "--no-browser",
         action="store_true",
         help="Skip auto-opening dashboard in browser (for headless installs)",
     )
-    args = parser.parse_args()
+    parser.add_argument("--non-interactive", action="store_true",
+                        help="Use safe defaults and never prompt")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Print the installation plan without writing")
+    parser.add_argument("--json", action="store_true",
+                        help="Emit a machine-readable receipt on stdout")
+    args = parser.parse_args(argv)
+
+    version = framework_version.canonical(REPO_ROOT)
+    if args.dry_run:
+        receipt = {
+            "ok": True,
+            "mode": "dry-run",
+            "version": version,
+            "non_interactive": args.non_interactive,
+            "no_browser": args.no_browser,
+            "planned_directories": [
+                str(path.relative_to(REPO_ROOT)) for path in installation_directories()
+            ],
+            "writes": [],
+        }
+        if args.json:
+            print(json.dumps(receipt, ensure_ascii=False))
+        else:
+            print("DRY RUN — no files written")
+            for path in receipt["planned_directories"]:
+                print(f"  mkdir -p {path}")
+        return 0
+
+    machine_stdout = sys.stdout if args.json else None
+    if machine_stdout is not None:
+        sys.stdout = sys.stderr
 
     display_version = framework_version.render(
-        framework_version.canonical(REPO_ROOT), "badge"
+        version, "badge"
     )
     print(
         f"\n{Colors.HEADER}{Colors.BOLD}  ╔══════════════════════════════════════════════════════════╗\n"
@@ -172,27 +225,23 @@ def main():
     # Check Python version
     if sys.version_info < MIN_PYTHON:
         print_error(f"Python {'.'.join(str(v) for v in MIN_PYTHON)}+ requerido.")
-        sys.exit(1)
+        if machine_stdout is not None:
+            sys.stdout = machine_stdout
+            print(json.dumps({"ok": False, "mode": "failed", "error": "python-version"}))
+        return 3
 
     # Check optional dependencies
-    check_optional_dependencies()
+    if args.non_interactive:
+        try:
+            import yaml  # noqa: F401
+            print_ok("pyyaml disponible (soporte YAML para configuración).")
+        except ImportError:
+            print_info("pyyaml no disponible; continúa el soporte JSON stdlib.")
+    else:
+        check_optional_dependencies()
 
     # Ensure directories
-    dirs = [
-        CONTEXT_DIR,
-        CONTEXT_DIR / "sessions",
-        CONTEXT_DIR / "codebase",
-        CONTEXT_DIR / "backups",
-        CONTEXT_DIR / "memory",
-        CONTEXT_DIR / "memory" / "summaries",
-        CONTEXT_DIR / "memory" / "profile",
-        CONTEXT_DIR / "knowledge" / "wiki",
-        CORE_DIR / "agents" / "subagents",
-        CORE_DIR / "skills" / "core",
-        REPO_ROOT / "workspaces" / "content" / "projects",
-        REPO_ROOT / "docs",
-        REPO_ROOT / "config",
-    ]
+    dirs = installation_directories()
     for d in dirs:
         d.mkdir(parents=True, exist_ok=True)
     print_ok("Estructura de directorios verificada.")
@@ -268,7 +317,7 @@ Bienvenida. Este framework actúa como asistente personal para tareas diarias, i
 
     # Choose default CLI
     default_cli = "opencode"
-    if found:
+    if found and not args.non_interactive:
         print("\n  Selecciona CLI por defecto:")
         for i, cli in enumerate(found, 1):
             print(f"    {i}. {CLI_LABELS.get(cli, cli)}")
@@ -280,8 +329,6 @@ Bienvenida. Este framework actúa como asistente personal para tareas diarias, i
             default_cli = found[0] if found else "opencode"
 
     # Save profile
-    version = framework_version.canonical(REPO_ROOT)
-
     profile = CONTEXT_DIR / "profile.md"
     profile.write_text(
         f"# Perfil de Instalación\n\n"
@@ -297,14 +344,18 @@ Bienvenida. Este framework actúa como asistente personal para tareas diarias, i
     sync_script = SCRIPT_DIR / "sync_context.py"
     if sync_script.exists():
         print_info("Sincronizando contexto...")
-        subprocess.run([sys.executable, str(sync_script)], cwd=REPO_ROOT, check=False)
+        subprocess.run(
+            [sys.executable, str(sync_script)], cwd=REPO_ROOT, check=False,
+            capture_output=args.json, text=args.json,
+        )
 
     # Initialize Knowledge Base (sesion 2026-03-09)
     kb_init_script = SCRIPT_DIR / "kb_init.py"
     if kb_init_script.exists():
         print_info("Inicializando Knowledge Base...")
         subprocess.run(
-            [sys.executable, str(kb_init_script), "--force"], cwd=REPO_ROOT, check=False
+            [sys.executable, str(kb_init_script), "--force"], cwd=REPO_ROOT,
+            check=False, capture_output=args.json, text=args.json,
         )
 
     # v0.4.0-beta: generar índice de skills automáticamente al instalar
@@ -372,6 +423,17 @@ Bienvenida. Este framework actúa como asistente personal para tareas diarias, i
     print(f"{Colors.CYAN}  ─────────────────────────────────────────────────{Colors.END}")
     print(f"{Colors.BOLD}{Colors.HEADER}  \"I own my context. I am FreakingJSON.\"{Colors.END}\n")
 
+    if machine_stdout is not None:
+        sys.stdout = machine_stdout
+        print(json.dumps({
+            "ok": True,
+            "mode": "installed",
+            "version": version,
+            "default_cli": default_cli,
+            "no_browser": args.no_browser,
+        }, ensure_ascii=False))
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
