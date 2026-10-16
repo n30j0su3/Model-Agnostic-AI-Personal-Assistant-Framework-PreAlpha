@@ -62,6 +62,12 @@ MIME = {
 _opencode_proc = {"proc": None, "port": None, "lock": threading.Lock()}
 
 
+class DashboardHTTPServer(ThreadingHTTPServer):
+    """Threaded local server carrying its configured repository root."""
+
+    repo_root: Path
+
+
 # ---------------------------------------------------------------- helpers ---
 def log(msg: str) -> None:
     print(f"[pa-dashboard] {msg}", flush=True)
@@ -222,6 +228,11 @@ class Handler(BaseHTTPRequestHandler):
     server_version = "PA-Dashboard/0.4.1-beta"
 
     # ---- plumbing ----
+    @property
+    def repo_root(self) -> Path:
+        """Repository root configured for this server instance."""
+        return Path(getattr(self.server, "repo_root", REPO_ROOT))
+
     def _json(self, obj: object, status: int = 200) -> None:
         data = json.dumps(obj, ensure_ascii=False, default=str).encode("utf-8")
         self.send_response(status)
@@ -246,7 +257,7 @@ class Handler(BaseHTTPRequestHandler):
         path = self.path.split("?", 1)[0]
 
         if path == "/" or path == "/index.html":
-            return self._serve_file(REPO_ROOT / "dashboard.html")
+            return self._serve_file(self.repo_root / "dashboard.html")
         if path == "/api/status":
             return self._json({
                 "framework": {
@@ -480,6 +491,14 @@ class Handler(BaseHTTPRequestHandler):
 
 
 # ------------------------------------------------------------------- main ---
+def make_server(host: str = "127.0.0.1", port: int = 0,
+                repo_root: str | Path | None = None) -> tuple[DashboardHTTPServer, int]:
+    """Create a dashboard server without starting its serving loop."""
+    srv = DashboardHTTPServer((host, port), Handler)
+    srv.repo_root = Path(repo_root or REPO_ROOT).resolve()
+    return srv, int(srv.server_address[1])
+
+
 def main():
     ap = argparse.ArgumentParser(description="PA Framework Dashboard Server")
     ap.add_argument("--port", type=int, default=SERVER_PORT_DEFAULT)
@@ -487,9 +506,9 @@ def main():
                     help="loopback-only por defecto (local-first)")
     args = ap.parse_args()
 
-    srv = ThreadingHTTPServer((args.host, args.port), Handler)
-    log(f"http://{args.host}:{args.port}  (Ctrl+C para detener)")
-    log(f"repo: {REPO_ROOT}")
+    srv, port = make_server(args.host, args.port)
+    log(f"http://{args.host}:{port}  (Ctrl+C para detener)")
+    log(f"repo: {srv.repo_root}")
     if opencode_installed():
         log(f"opencode: {opencode_installed()} (serve se arranca on-demand vía /api/opencode/ensure)")
     else:
