@@ -7,6 +7,7 @@ __pycache__/
 *.pyc
 
 # User data (sessions, memory, logs)
+data/
 data/*.db
 data/*.log
 data/bridge.log

@@ -24,6 +24,7 @@ Uso:
 import argparse
 import json
 import os
+import secrets
 import shutil
 import socket
 import subprocess
@@ -66,6 +67,58 @@ class DashboardHTTPServer(ThreadingHTTPServer):
     """Threaded local server carrying its configured repository root."""
 
     repo_root: Path
+    token_required: bool
+
+    def initialize_token(self) -> str:
+        """Load an existing per-install token or create a private one."""
+        self._token_lock = threading.RLock()
+        self._token_value: str | None = None
+        self._token_mtime_ns: int | None = None
+        if self.token_path.is_file():
+            return self.current_token()
+        return self.rotate_token()
+
+    @property
+    def token_path(self) -> Path:
+        return self.repo_root / "data" / "dashboard.token"
+
+    def current_token(self) -> str:
+        """Return the token, reloading it when the token file changes."""
+        with self._token_lock:
+            if not self.token_path.is_file():
+                return self.rotate_token()
+            mtime_ns = self.token_path.stat().st_mtime_ns
+            if self._token_value is None or self._token_mtime_ns != mtime_ns:
+                token = self.token_path.read_text(encoding="utf-8").strip()
+                if len(token) < 32:
+                    return self.rotate_token()
+                self._token_value = token
+                self._token_mtime_ns = mtime_ns
+            return self._token_value
+
+    def rotate_token(self) -> str:
+        """Atomically replace the token and revoke the cached value."""
+        with self._token_lock:
+            token = secrets.token_urlsafe(32)
+            self.token_path.parent.mkdir(parents=True, exist_ok=True)
+            tmp_path = self.token_path.with_name(
+                f".{self.token_path.name}.{os.getpid()}.{threading.get_ident()}.tmp"
+            )
+            fd = os.open(tmp_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                    handle.write(token + "\n")
+                    handle.flush()
+                    os.fsync(handle.fileno())
+                os.chmod(tmp_path, 0o600)
+                os.replace(tmp_path, self.token_path)
+                os.chmod(self.token_path, 0o600)
+            finally:
+                if tmp_path.exists():
+                    tmp_path.unlink()
+            self._token_value = token
+            self._token_mtime_ns = self.token_path.stat().st_mtime_ns
+            return token
 
 
 # ---------------------------------------------------------------- helpers ---
@@ -492,10 +545,17 @@ class Handler(BaseHTTPRequestHandler):
 
 # ------------------------------------------------------------------- main ---
 def make_server(host: str = "127.0.0.1", port: int = 0,
-                repo_root: str | Path | None = None) -> tuple[DashboardHTTPServer, int]:
+                repo_root: str | Path | None = None,
+                token_required: bool = True) -> tuple[DashboardHTTPServer, int]:
     """Create a dashboard server without starting its serving loop."""
     srv = DashboardHTTPServer((host, port), Handler)
-    srv.repo_root = Path(repo_root or REPO_ROOT).resolve()
+    try:
+        srv.repo_root = Path(repo_root or REPO_ROOT).resolve()
+        srv.token_required = token_required
+        srv.initialize_token()
+    except Exception:
+        srv.server_close()
+        raise
     return srv, int(srv.server_address[1])
 
 
