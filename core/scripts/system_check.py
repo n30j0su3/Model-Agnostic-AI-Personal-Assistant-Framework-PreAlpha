@@ -510,7 +510,7 @@ def auto_fix():
     print()
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(
         description="PA Framework — System Health Check",
     )
@@ -519,7 +519,7 @@ def main():
                         help="Modo silencioso para auto-heal de primer arranque (session_start)")
     parser.add_argument("--json", action="store_true", help="Salida JSON")
     parser.add_argument("--quick", action="store_true", help="Solo checks criticos")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     if args.fix:
         # quiet-first-run: solo imprimir lo creado (llamado por session_start)
@@ -537,6 +537,11 @@ def main():
         return 0
 
     results_data, elapsed = run_all_checks(quick=args.quick)
+    critical_errors = sum(
+        1 for result in results_data
+        if result["status"] is False and result["critical"]
+    )
+    exit_code = 1 if critical_errors else 0
 
     if args.json:
         output = {
@@ -548,15 +553,14 @@ def main():
                 "ok": sum(1 for r in results_data if r["status"] is True),
                 "warnings": sum(1 for r in results_data if r["status"] == "warn"),
                 "errors": sum(1 for r in results_data if r["status"] is False),
-                "critical_errors": sum(1 for r in results_data if r["status"] is False and r["critical"]),
+                "critical_errors": critical_errors,
             },
         }
         print(json.dumps(output, indent=2, ensure_ascii=False))
     else:
-        all_ok = print_report(results_data, elapsed)
-        return 0 if all_ok else 1
+        print_report(results_data, elapsed)
 
-    return 0
+    return exit_code
 
 
 if __name__ == "__main__":
