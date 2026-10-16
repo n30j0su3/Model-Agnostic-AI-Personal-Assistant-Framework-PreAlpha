@@ -171,7 +171,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Windows UTF-8 encoding**: `pa.py`, `install.py`, `system_check.py` ahora configuran `sys.stdout` para UTF-8 en Windows, corrigiendo acentos corruptos.
 - **CLI opencode error**: Mensaje cambiado de `[ERROR]` a `[WARN]` con fallback automatico a modo manual.
 - **Migraciones auto-aplicadas**: `session_start.py` ya no solo muestra warning — aplica `migrate.py --apply` automaticamente.
-- **Leaks sanitizados**: Eliminados paths reales de desarrollador (`/home/freakingjson/`) de documentacion y ejemplos. Eliminado QA checklist interno con datos de entorno DEV.
+- **Leaks sanitizados**: Eliminados paths reales de desarrollador (`/home/<user>/`) de documentacion y ejemplos. Eliminado QA checklist interno con datos de entorno DEV.
 - **Terminologia interna sanitizada**: Referencias a BASE/DEV/PROD reemplazadas por lenguaje generico.
 - **Versiones sincronizadas**: Todos los archivos actualizados de `v0.3.0-alpha` a `v0.3.7-alpha` (READMEs, docstrings, banners, metadata).
 

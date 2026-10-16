@@ -1,0 +1,131 @@
+name: Release gates
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main, "release/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  test-matrix:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Linux x64
+            os: ubuntu-latest
+            machine: x86_64
+          - label: Windows x64
+            os: windows-latest
+            machine: AMD64
+          - label: macOS arm64
+            os: macos-14
+            machine: arm64
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Assert runner architecture
+        shell: bash
+        run: python -c "import platform; expected='${{ matrix.machine }}'.lower(); actual=platform.machine().lower(); assert actual == expected, (actual, expected)"
+      - name: Compile Python
+        run: python -m compileall -q core/scripts tests
+      - name: Installer automation smoke
+        run: python core/scripts/install.py --non-interactive --dry-run --json --no-browser
+      - name: Windows launcher smoke
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: pa.bat --help
+      - name: Full test suite
+        run: python -m pytest tests -q
+
+  browser-gate:
+    name: Browser gate · ${{ matrix.label }}
+    needs: test-matrix
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Linux x64
+            os: ubuntu-latest
+            chrome: google-chrome
+          - label: macOS arm64
+            os: macos-14
+            chrome: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Start dashboard and CDP
+        shell: bash
+        run: |
+          python -u core/scripts/dashboard_server.py --host 127.0.0.1 --port 48764 >/tmp/pa-dashboard.log 2>&1 &
+          echo $! >/tmp/pa-dashboard.pid
+          "${{ matrix.chrome }}" --headless --no-sandbox --disable-dev-shm-usage --remote-debugging-port=9222 --user-data-dir=/tmp/pa-cdp about:blank >/tmp/pa-chrome.log 2>&1 &
+          echo $! >/tmp/pa-chrome.pid
+          python - <<'PY'
+          import time
+          import urllib.request
+
+          for url in (
+              "http://127.0.0.1:48764/api/status",
+              "http://127.0.0.1:9222/json/version",
+          ):
+              for _ in range(100):
+                  try:
+                      with urllib.request.urlopen(url, timeout=1) as response:
+                          if response.status == 200:
+                              break
+                  except Exception:
+                      time.sleep(0.2)
+              else:
+                  raise SystemExit(f"endpoint did not become ready: {url}")
+          PY
+          npx --yes agent-browser --cdp 9222 open about:blank
+      - name: Four viewport DOM gate
+        env:
+          PA_DASHBOARD_URL: http://127.0.0.1:48764/
+          PA_CDP_PORT: "9222"
+        run: python -m pytest tests/ui/test_dashboard_dom.py -q
+      - name: Stop local QA processes
+        if: always()
+        shell: bash
+        run: |
+          kill "$(cat /tmp/pa-dashboard.pid)" 2>/dev/null || true
+          kill "$(cat /tmp/pa-chrome.pid)" 2>/dev/null || true
+
+  release-package:
+    name: Sanitized release package
+    needs: [test-matrix, browser-gate]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Package contract
+        run: python -m pytest tests/test_public_package.py -q
+      - name: Build deterministic ZIP
+        run: python core/scripts/build_release.py --output-dir dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pa-framework-release-package
+          path: dist/*.zip
+          if-no-files-found: error

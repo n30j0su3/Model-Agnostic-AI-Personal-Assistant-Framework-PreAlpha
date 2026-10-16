@@ -31,8 +31,8 @@
 
 | Architecture | Path | Status |
 |--------------|------|--------|
-| Apple Silicon (M1/M2/M3) | `/opt/homebrew/bin/python3` | ✅ Standard |
-| Intel Macs | `/usr/local/bin/python3` | ✅ Standard |
+| Apple Silicon (M1/M2/M3) | `/opt/homebrew/bin/python3` | ✅ Soportado por CI v0.4.1 |
+| Intel Macs | `/usr/local/bin/python3` | ❌ No soportado en v0.4.1 (sin runner bloqueante) |
 | System Python | `/usr/bin/python3` | ⚠️ Deprecated macOS 12+ |
 
 **Recommendation**: Framework should NOT hardcode Python path. Use:
@@ -125,8 +125,9 @@ python_path = sys.executable  # Dynamically resolved
 - [x] Framework-relative data storage
 - [x] launchd plist generation implemented
 
-### Phase 2: macOS Testing (PENDING)
-- [ ] Run on macOS machine (Apple Silicon or Intel)
+### Phase 2: macOS Testing
+- [x] Gate CI bloqueante en macOS arm64
+- [ ] Añadir runner bloqueante antes de declarar soporte para macOS Intel
 - [ ] Test `session-start.py` initialization
 - [ ] Test `session_memory.py` SQLite operations
 - [ ] Test `cron_setup.py --setup` on macOS

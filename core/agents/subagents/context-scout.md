@@ -92,7 +92,7 @@ SIEMPRE que el framework se inicialice, ContextScout debe:
 
 ```
 Ejemplo:
-Usuario en: /home/user/projects/pa-framework/workspaces/professional/projects/MyApp/
+Usuario en: ~/projects/pa-framework/workspaces/professional/projects/MyApp/
 
 Detecta:
 - Workspace: professional (por path)

@@ -64,6 +64,23 @@ y recarga — el dashboard detecta el puente automáticamente.
 - Python 3.11+
 - [opencode](https://opencode.ai) CLI (auto-instalable en Windows)
 
+## Plataformas soportadas en v0.4.1
+
+El soporte se declara solo para lanes con CI bloqueante en
+`.github/workflows/release-gates.yml`:
+
+- **Windows x64** — soportado.
+- **Linux x64** — soportado.
+- **macOS arm64 (Apple Silicon)** — soportado.
+- **Windows arm64** — no soportado en v0.4.1.
+- **Linux arm64** — no soportado en v0.4.1.
+- **macOS Intel** — no soportado en v0.4.1.
+
+Una plataforma no entra en soporte por compartir launcher: necesita suite,
+installer smoke y package gate verdes en su runner real. Para este candidato
+`v0.4.1-beta`, la publicación permanece **NO-GO** hasta completar el workflow
+multiplataforma y el checklist `docs/WINDOWS-CHECKLIST.md` sobre Windows x64.
+
 ## Estructura
 ```
 pa-framework/
