@@ -36,6 +36,7 @@ import urllib.request
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import cast
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CORE_DIR = SCRIPT_DIR.parent
@@ -47,9 +48,9 @@ import select_free_model as sfm  # noqa: E402  (v0.4.1-beta: catálogo usable au
 
 OPENCODE_PORT = 47371          # puerto fijo del opencode serve gestionado
 SERVER_PORT_DEFAULT = 8760     # puerto del dashboard bridge
-EDITABLE_FILES = {             # archivos .md editables desde el dashboard
-    "master": CORE_DIR / ".context" / "MASTER.md",
-    "profile": CORE_DIR / ".context" / "profile.md",
+EDITABLE_FILE_PATHS = {        # paths relativos al repo configurado
+    "master": Path("core/.context/MASTER.md"),
+    "profile": Path("core/.context/profile.md"),
 }
 MIME = {
     ".html": "text/html; charset=utf-8",
@@ -286,6 +287,40 @@ class Handler(BaseHTTPRequestHandler):
         """Repository root configured for this server instance."""
         return Path(getattr(self.server, "repo_root", REPO_ROOT))
 
+    @property
+    def editable_files(self) -> dict[str, Path]:
+        return {key: self.repo_root / relative
+                for key, relative in EDITABLE_FILE_PATHS.items()}
+
+    def _guard_mutation(self) -> bool:
+        """Validate loopback same-origin JSON mutations before reading body."""
+        server = cast(DashboardHTTPServer, self.server)
+        port = int(server.server_address[1])
+        allowed_hosts = {f"127.0.0.1:{port}", f"localhost:{port}"}
+        host = (self.headers.get("Host") or "").strip().lower()
+        if host not in allowed_hosts:
+            self._json({"ok": False, "error": "invalid host"}, 403)
+            return False
+
+        origin = (self.headers.get("Origin") or "").strip().lower().rstrip("/")
+        allowed_origins = {f"http://{candidate}" for candidate in allowed_hosts}
+        if origin and origin not in allowed_origins:
+            self._json({"ok": False, "error": "invalid origin"}, 403)
+            return False
+
+        token_required = bool(server.token_required)
+        supplied = self.headers.get("X-PA-Token") or ""
+        expected = server.current_token() if token_required else ""
+        if token_required and not secrets.compare_digest(supplied, expected):
+            self._json({"ok": False, "error": "invalid token"}, 401)
+            return False
+
+        content_type = (self.headers.get("Content-Type") or "").split(";", 1)[0]
+        if content_type.strip().lower() != "application/json":
+            self._json({"ok": False, "error": "application/json required"}, 415)
+            return False
+        return True
+
     def _json(self, obj: object, status: int = 200) -> None:
         data = json.dumps(obj, ensure_ascii=False, default=str).encode("utf-8")
         self.send_response(status)
@@ -336,9 +371,9 @@ class Handler(BaseHTTPRequestHandler):
                                "error": None if st == 200 else data}, 200 if st == 200 else 502)
         if path == "/api/files/config":
             out = {"ok": True, "files": {}}
-            for key, p in EDITABLE_FILES.items():
+            for key, p in self.editable_files.items():
                 out["files"][key] = {
-                    "path": str(p.relative_to(REPO_ROOT)),
+                    "path": str(p.relative_to(self.repo_root)),
                     "exists": p.exists(),
                     "content": p.read_text(encoding="utf-8", errors="replace") if p.exists() else "",
                 }
@@ -427,6 +462,8 @@ class Handler(BaseHTTPRequestHandler):
     # ---- POST ----
     def do_POST(self):
         path = self.path.split("?", 1)[0]
+        if path.startswith("/api/") and not self._guard_mutation():
+            return
         body = self._body()
 
         if path == "/api/opencode/ensure":
@@ -489,15 +526,16 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/files/config":
             key = body.get("file")
             content = body.get("content", "")
-            if key not in EDITABLE_FILES:
+            editable_files = self.editable_files
+            if key not in editable_files:
                 return self._json({"ok": False, "error": f"archivo no editable: {key}"}, 400)
-            p = EDITABLE_FILES[key]
+            p = editable_files[key]
             p.parent.mkdir(parents=True, exist_ok=True)
             if p.exists():  # preservación: .bak con timestamp
                 bak = p.with_suffix(p.suffix + f".bak-{datetime.now():%Y%m%d-%H%M%S}")
                 shutil.copy2(p, bak)
             p.write_text(content, encoding="utf-8")
-            return self._json({"ok": True, "saved": str(p.relative_to(REPO_ROOT))})
+            return self._json({"ok": True, "saved": str(p.relative_to(self.repo_root))})
 
         if path == "/api/config/model":
             # v0.5.0: guardar modelo predeterminado en .opencode/config.json (con backup)
