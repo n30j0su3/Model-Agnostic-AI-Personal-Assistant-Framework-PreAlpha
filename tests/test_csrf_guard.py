@@ -33,8 +33,8 @@ def running_server(repo_root: Path):
         thread.join(timeout=5)
 
 
-def post_config(port: int, headers: dict[str, str]) -> int:
-    body = json.dumps({"file": "profile", "content": "PWNED"}).encode()
+def post_config(port: int, headers: dict[str, str], content: str = "PWNED") -> int:
+    body = json.dumps({"file": "profile", "content": content}).encode()
     request = urllib.request.Request(
         f"http://127.0.0.1:{port}/api/files/config",
         data=body,
@@ -87,3 +87,32 @@ def test_non_json_mutation_is_rejected(tmp_path):
         )
     assert status == 415
     assert not (tmp_path / "core/.context/profile.md").exists()
+
+
+def test_mutation_without_token_is_rejected(tmp_path):
+    with running_server(tmp_path) as (_, port):
+        status = post_config(
+            port,
+            {
+                "Origin": f"http://127.0.0.1:{port}",
+                "Content-Type": "application/json",
+            },
+        )
+    assert status == 401
+    assert not (tmp_path / "core/.context/profile.md").exists()
+
+
+def test_mutation_with_token_succeeds_and_persists(tmp_path):
+    with running_server(tmp_path) as (server, port):
+        status = post_config(
+            port,
+            {
+                "Origin": f"http://127.0.0.1:{port}",
+                "Content-Type": "application/json",
+                "X-PA-Token": server.current_token(),
+            },
+            content="legítimo",
+        )
+    profile = tmp_path / "core/.context/profile.md"
+    assert status == 200
+    assert profile.read_text(encoding="utf-8") == "legítimo"
