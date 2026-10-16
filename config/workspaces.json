@@ -1,0 +1,9 @@
+{
+  "_comment": "Canonical semantic workspace definitions. Keys are semantic; per-install selection/names live in data/user/workspaces.json (untracked, 0600). Do not put user data here.",
+  "personal": { "display": "Personal" },
+  "professional": { "display": "Professional" },
+  "research": { "display": "Research" },
+  "content": { "display": "Content" },
+  "development": { "display": "Development" },
+  "homelab": { "display": "Homelab" }
+}
