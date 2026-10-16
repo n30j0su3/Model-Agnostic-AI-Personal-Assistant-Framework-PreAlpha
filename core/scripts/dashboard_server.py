@@ -192,6 +192,10 @@ def opencode_ensure() -> dict:
         exe = opencode_installed()
         if not exe:
             return {"ok": False, "error": "opencode no está instalado (npm install -g opencode-ai)"}
+        # QAWIN-RUNTIME: gate de versión fail-closed antes de spawnear serve.
+        ver_ok, ver_msg = sfm.enforce_opencode_version(exe)
+        if not ver_ok:
+            return {"ok": False, "error": ver_msg}
         port = free_port(OPENCODE_PORT)
         creationflags = 0
         if sys.platform == "win32":
@@ -238,26 +242,40 @@ def launch_opencode_tui() -> dict:
     exe = opencode_installed()
     if not exe:
         return {"ok": False, "error": "opencode no está instalado"}
-    # flags de agente/modelo desde la asignación del framework
+    # QAWIN-RUNTIME: gate de versión fail-closed antes de abrir la TUI.
+    ver_ok, ver_msg = sfm.enforce_opencode_version(exe)
+    if not ver_ok:
+        return {"ok": False, "error": ver_msg}
+    # QAWIN-RUNTIME: modelo desde la selección canónica del usuario; el agente
+    # sigue siendo parte del config OpenCode compatible con v0.4.0.
     agent_flags = []
-    cfg_path = REPO_ROOT / ".opencode" / "config.json"
-    if cfg_path.exists():
-        try:
-            cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
-            agent = cfg.get("agent")
-            if agent:
-                agent_flags += ["--agent", str(agent)]
-            model = cfg.get("model")
-            if model and model != "auto":
-                agent_flags += ["--model", str(model)]
-        except Exception:
-            pass
+    try:
+        selection = sfm.load_selection(REPO_ROOT)
+    except Exception:
+        selection = {}
+    model = selection.get("model")
+    try:
+        cfg = json.loads(
+            (REPO_ROOT / ".opencode" / "config.json").read_text(encoding="utf-8")
+        )
+    except Exception:
+        cfg = {}
+    if not model:
+        model = cfg.get("model")
+    agent = cfg.get("agent")
+    if agent:
+        agent_flags += ["--agent", str(agent)]
+    if model and model != "auto":
+        agent_flags += ["--model", str(model)]
     try:
         if sys.platform == "win32":
-            # 'start' abre consola nueva; /k la mantiene viva
-            flags = " ".join(_win_quote(a) for a in agent_flags)
-            subprocess.Popen(f'start "FreakingJSON PA — opencode" /D "{REPO_ROOT}" "{exe}" {flags}',
-                             shell=True, cwd=str(REPO_ROOT))
+            # QAWIN-RUNTIME: consola nueva SIN shell=True — cmd.exe con
+            # lista argv ('start' como argumento), cero interpolación.
+            subprocess.Popen(
+                ["cmd.exe", "/d", "/s", "/c", "start", "FreakingJSON PA — opencode",
+                 "/D", str(REPO_ROOT), exe, *agent_flags],
+                cwd=str(REPO_ROOT),
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
         elif sys.platform == "darwin":
             subprocess.Popen(["open", "-a", "Terminal", exe], cwd=str(REPO_ROOT))
         else:
@@ -408,7 +426,8 @@ class Handler(BaseHTTPRequestHandler):
             # configurado) + los free del resto. Nada bloqueado: sin-creds van
             # al final con badge. Detectar != usar — para eso existe /test.
             port = _opencode_proc.get("port") or OPENCODE_PORT
-            models = sfm.get_usable_models(port)
+            # QAWIN-RUNTIME: solo modelos free en superficies de PA.
+            models = sfm.get_free_models(port)
             models_payload = [
                 {"id": m["id"], "status": m["status"], "badge": oc_auth.provider_auth_badge(m["status"]), "free": m.get("free", True)}
                 for m in models

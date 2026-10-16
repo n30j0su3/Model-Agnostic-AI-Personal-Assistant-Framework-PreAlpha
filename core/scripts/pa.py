@@ -82,6 +82,11 @@ sys.path.insert(0, str(SCRIPT_DIR))
 
 import version as framework_version
 
+try:
+    import select_free_model as _sfm  # noqa: E402  (mismo dir; stdlib-only)
+except Exception:  # pragma: no cover - entorno sin el modulo
+    _sfm = None
+
 # Optional memory bridge (best-effort)
 try:
     from session_bridge import SessionBridge
@@ -324,18 +329,12 @@ def build_cli_command(cli: str, prompt: str, workdir: Path) -> tuple[list[str], 
     # CLIs that support direct prompt injection
     if cli == "opencode":
         # v0.4.0-beta: forzar agente FreakingJSON (opencode default es "Build")
-        # y leer modelo desde .opencode/config.json si está configurado
-        cfg_file = REPO_ROOT / ".opencode" / "config.json"
+        # QAWIN-RUNTIME: modelo canónico data/user/model-selection.json
+        # (fallback legacy .opencode/config.json dentro del resolver).
         model_flag = []
-        if cfg_file.exists():
-            import json
-            try:
-                cfg = json.loads(cfg_file.read_text(encoding="utf-8"))
-                model = cfg.get("model")
-                if model and model != "auto":
-                    model_flag = ["--model", model]
-            except:
-                pass
+        model = _resolve_selected_model()
+        if model:
+            model_flag = ["--model", model]
         return [cli, "--agent", "FreakingJSON"] + model_flag + ["--prompt", prompt], True
     
     elif cli == "claude":
@@ -416,7 +415,95 @@ def _rebuild_interactions_index() -> bool:
         return False
 
 
+def _resolve_selected_model(repo_root: Path | None = None) -> str:
+    """QAWIN-RUNTIME: modelo seleccionado canónico (data/user primero).
+
+    data/user/model-selection.json es la selección mutable canónica;
+    .opencode/config.json solo como fallback retrocompatible.
+    """
+    root = Path(repo_root) if repo_root is not None else REPO_ROOT
+    if _sfm is not None:
+        try:
+            model = _sfm.load_selection(root).get("model")
+            if model and model != "auto":
+                return str(model)
+        except Exception:
+            pass
+    cfg_file = root / ".opencode" / "config.json"
+    try:
+        cfg = json.loads(cfg_file.read_text(encoding="utf-8"))
+        model = cfg.get("model")
+        if isinstance(model, str) and model.strip() and model.strip() != "auto":
+            return model.strip()
+    except Exception:
+        pass
+    return ""
+
+
+def _current_selected_model_display(repo_root: Path | None = None) -> str:
+    """Modelo actual para display del menú (cadena legible)."""
+    return _resolve_selected_model(repo_root) or "(no configurado)"
+
+
+def _enforce_opencode_gate(exe: str | None) -> bool:
+    """QAWIN-RUNTIME: gate de versión fail-closed para launches PA-owned.
+
+    Imprime el mensaje no técnico y el comando oficial de actualización
+    cuando OpenCode falta o es < 1.18.0. Nunca actualiza en automático.
+    """
+    if _sfm is None:
+        return False
+    try:
+        ok, msg = _sfm.enforce_opencode_version(exe)
+    except Exception:
+        ok, msg = False, (
+            "No se pudo verificar la version de OpenCode. "
+            "Actualiza OpenCode con: npm install -g opencode-ai@latest")
+    if not ok:
+        print_warn(msg)
+        print_info("Actualiza manualmente y vuelve a intentar "
+                   "(no se actualiza automáticamente).")
+    return ok
+
+
+def _run_cli_interactive(cli: str, repo_root: Path | None = None):
+    """Lanzar el CLI de forma interactiva y devolver el control al menú.
+
+    QAWIN-RUNTIME: resuelve el ejecutable real, aplica el gate de versión
+    para opencode y lo invoca con lista argv (nunca shell=True). Captura y
+    reporta el returncode (incluido signed/hex de Windows) y regresa al
+    menú. KeyboardInterrupt sigue siendo graceful.
+    Retorna el returncode del hijo, o None si no se lanzó nada.
+    """
+    root = Path(repo_root) if repo_root is not None else REPO_ROOT
+    exe = shutil.which(cli)
+    if not exe:
+        print_warn(f"'{CLI_LABELS.get(cli, cli)}' no está disponible en PATH.")
+        return None
+    if cli == "opencode" and not _enforce_opencode_gate(exe):
+        return None  # gate desactualizado: no se lanza nada
+    print_info(f"Iniciando {CLI_LABELS.get(cli, cli)}...")
+    print_info("Presiona Ctrl+C para salir del CLI y volver al menú.\n")
+    try:
+        result = subprocess.run([exe], cwd=root, check=False)
+    except KeyboardInterrupt:
+        return 0
+    except FileNotFoundError:
+        print_warn(f"No se pudo iniciar {CLI_LABELS.get(cli, cli)}.")
+        return None
+    except Exception as e:
+        print_warn(f"No se pudo iniciar el CLI: {e}")
+        return None
+    if result.returncode != 0:
+        code = result.returncode & 0xFFFFFFFF
+        print_warn(
+            f"{CLI_LABELS.get(cli, cli)} terminó con código "
+            f"{result.returncode} (0x{code:X}). Revisa el mensaje anterior.")
+    return result.returncode
+
+
 def _preflight_model_check():
+
     """v0.4.1-beta (feedback N30): smoke-check del modelo asignado antes de
     lanzar la sesión de IA.
 
@@ -427,14 +514,11 @@ def _preflight_model_check():
     Usa el mismo serve que ya corre (puerto del config o descubrimiento).
     """
     try:
-        import json
-        cfg_file = REPO_ROOT / ".opencode" / "config.json"
-        if not cfg_file.exists():
+        # QAWIN-RUNTIME: resolver la selección canónica del usuario
+        # (data/user/model-selection.json primero, legacy como fallback).
+        model = _resolve_selected_model()
+        if not model:
             return  # sin asignación previa: nada que verificar
-        cfg = json.loads(cfg_file.read_text(encoding="utf-8"))
-        model = cfg.get("model")
-        if not model or model == "auto":
-            return  # modo auto: opencode decide con su default global
         print_info(f"Verificando modelo asignado: {model}")
         result = subprocess.run(
             [get_python(), str(SCRIPT_DIR / "select_free_model.py"), "--verify", model],
@@ -472,6 +556,11 @@ def try_auto_launch_cli(cli: str, prompt: str, workdir: Path) -> bool:
     if not cli_path:
         print_warn(f"CLI '{CLI_LABELS.get(cli, cli)}' no está disponible en PATH.")
         print_info("Usando modo manual (fallback): se mostrará el prompt para copiar.")
+        return False
+
+    # QAWIN-RUNTIME: validar la versión antes de cualquier lanzamiento
+    # automático; el fallback manual aplica el mismo gate por separado.
+    if cli == "opencode" and not _enforce_opencode_gate(cli_path):
         return False
 
     # v0.4.1-beta (feedback N30): smoke-check del modelo asignado ANTES de
@@ -657,18 +746,9 @@ def menu_launch_ai(cli_override: str = None):
 
     pause("Presiona Enter después de copiar el prompt para iniciar la CLI...")
 
-    print_info(f"Iniciando {CLI_LABELS.get(selected, selected)}...")
-    print_info("Presiona Ctrl+C para salir del CLI y volver al menú.\n")
-
-    try:
-        subprocess.run(selected, cwd=REPO_ROOT, shell=True, check=False)
-    except KeyboardInterrupt:
-        pass
-    except Exception as e:
-        print_error(f"No se pudo iniciar el CLI: {e}")
-        _close_cli_memory_bridge(summary=f"CLI launch error ({selected}): {e}")
-        pause()
-        return
+    # QAWIN-RUNTIME: argv list, sin shell=True; returncode reportado y
+    # el control regresa al menú de PA.
+    _run_cli_interactive(selected)
 
     _close_cli_memory_bridge(summary=f"CLI session finished ({selected})")
 
@@ -897,7 +977,7 @@ def _select_free_model():
 
     print_info(f"Consultando modelos free (serve en puerto {port})…")
     try:
-        models = sfm.get_usable_models(port, timeout=25)
+        models = sfm.get_free_models(port, timeout=25)  # QAWIN-RUNTIME: free-only
     except Exception as e:
         print_error(f"Error consultando modelos: {e}")
         models = []
@@ -976,16 +1056,9 @@ def submenu_comportamiento_agente():
     cur_style = _extract(lines, "- Response style")
     cur_cli = config.get("default_cli", get_default_cli())
     
-    # Leer modelo actual de .opencode/config.json
-    oc_cfg = REPO_ROOT / ".opencode" / "config.json"
-    cur_model = "(no configurado)"
-    if oc_cfg.exists():
-        try:
-            import json
-            oc = json.loads(oc_cfg.read_text(encoding="utf-8"))
-            cur_model = oc.get("model", "(no configurado)")
-        except:
-            pass
+    # QAWIN-RUNTIME: modelo actual desde la selección canónica del usuario
+    # (data/user/model-selection.json; fallback legacy .opencode/config.json)
+    cur_model = _current_selected_model_display()
     
     print(f"  (Enter para mantener valor actual)\n")
     
@@ -1014,14 +1087,8 @@ def submenu_comportamiento_agente():
     model_choice = input(f"  (M para seleccionar, Enter para mantener): ").strip()
     if model_choice.lower() == "m":
         _select_free_model()
-        # Recargar modelo
-        if oc_cfg.exists():
-            try:
-                import json
-                oc = json.loads(oc_cfg.read_text(encoding="utf-8"))
-                cur_model = oc.get("model", "(no configurado)")
-            except:
-                pass
+        # QAWIN-RUNTIME: recargar desde la selección canónica del usuario
+        cur_model = _current_selected_model_display()
     
     # Update MASTER.md
     import re
@@ -1826,15 +1893,9 @@ def main():
             )
             pause("Presiona Enter para iniciar la CLI...")
             
-            print_info(f"Iniciando {CLI_LABELS.get(args.cli, args.cli)}...")
-            try:
-                subprocess.run(args.cli, cwd=REPO_ROOT, shell=True, check=False)
-            except KeyboardInterrupt:
-                pass
-            except Exception as e:
-                print_error(f"No se pudo iniciar el CLI: {e}")
-                _close_cli_memory_bridge(summary=f"CLI launch error ({args.cli}): {e}")
-                sys.exit(1)
+            # QAWIN-RUNTIME: argv list, sin shell=True; el control regresa
+            # a PA para el cierre normal de sesión.
+            _run_cli_interactive(args.cli)
         _close_cli_memory_bridge(summary=f"CLI session finished ({args.cli})")
         sys.exit(0)
 

@@ -31,6 +31,7 @@ Uso no interactivo (primer modelo free AUTENTICADO):
 import argparse
 import json
 import os
+import re
 import shutil
 import socket
 import subprocess
@@ -88,6 +89,50 @@ def find_opencode_exe():
     return None
 
 
+# QAWIN-RUNTIME: versión mínima de OpenCode verificada por QA Windows.
+OPCODE_MIN_VERSION = (1, 18, 0)
+_SEMVER_RE = re.compile(r"(\d+)\.(\d+)\.(\d+)")
+
+
+def enforce_opencode_version(exe: str) -> tuple[bool, str]:
+    """QAWIN-RUNTIME: gate de version >= 1.18.0 (fail-closed).
+
+    Ejecuta `<exe> --version` y parsea semver robusto del output ordinario.
+    Falta de exe, output malformado, exit != 0 o version anterior →
+    (False, mensaje no tecnico con comando oficial de actualizacion).
+    Nunca actualiza automaticamente sin confirmacion del usuario.
+    """
+    if not exe:
+        return False, (
+            "OpenCode no esta instalado o no se encontro. "
+            "Actualiza OpenCode con: npm install -g opencode-ai@latest")
+    try:
+        proc = subprocess.run(
+            [exe, "--version"], capture_output=True, text=True, timeout=30,
+        )
+    except Exception:
+        return False, (
+            "No se pudo verificar la version de OpenCode. "
+            "Actualiza OpenCode con: npm install -g opencode-ai@latest")
+    out = f"{proc.stdout or ''}\n{proc.stderr or ''}"
+    if proc.returncode != 0:
+        code = proc.returncode & 0xFFFFFFFF
+        return False, (
+            "OpenCode no respondio correctamente (codigo 0x%X). "
+            "Actualiza OpenCode con: npm install -g opencode-ai@latest" % code)
+    found = None
+    for found in _SEMVER_RE.finditer(out):
+        if tuple(int(part) for part in found.groups()) >= OPCODE_MIN_VERSION:
+            return True, f"OpenCode {found.group(0)} OK"
+    if found:
+        return False, (
+            f"OpenCode {found.group(0)} es anterior a la version minima requerida "
+            "(1.18.0). Actualiza OpenCode con: npm install -g opencode-ai@latest")
+    return False, (
+        "No se pudo detectar la version de OpenCode. "
+        "Actualiza OpenCode con: npm install -g opencode-ai@latest")
+
+
 def ensure_opencode_serve():
     """Iniciar opencode serve si no está corriendo. Retorna puerto o None."""
     port = find_serve_port()
@@ -99,6 +144,12 @@ def ensure_opencode_serve():
     exe = find_opencode_exe()
     if not exe:
         print("[ERROR] opencode no está instalado (npm install -g opencode-ai)")
+        return None
+
+    # QAWIN-RUNTIME: gate de version fail-closed antes de spawnear serve.
+    ok, msg = enforce_opencode_version(exe)
+    if not ok:
+        print(f"[ERROR] {msg}")
         return None
 
     try:
