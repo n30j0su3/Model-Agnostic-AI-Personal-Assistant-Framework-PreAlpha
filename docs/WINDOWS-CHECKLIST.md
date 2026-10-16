@@ -1,6 +1,6 @@
-# Windows x64 QA Checklist — PA Framework v0.4.1-beta
+# Windows x64 QA Checklist — PA Framework v0.4.1-beta-r3
 
-**Estado:** candidato local pendiente de QA humana en Windows x64
+**Estado:** candidato `r3` local pendiente de QA humana en Windows x64
 **Runtime requerido:** Python 3.11+
 **Default:** OpenCode
 **Alternativa opt-in:** Pi
@@ -16,7 +16,7 @@
 En PowerShell, desde la carpeta que contiene el ZIP:
 
 ```powershell
-Get-FileHash .\pa-framework-0.4.1-beta.zip -Algorithm SHA256
+Get-FileHash .\pa-framework-0.4.1-beta-r3.zip -Algorithm SHA256
 ```
 
 Registra:
@@ -35,7 +35,7 @@ Python 3.11+.
 
 1. Elimina o aparta extracciones anteriores.
 2. Extrae el ZIP en una ruta nueva y corta, por ejemplo:
-   `C:\PA-QA\pa-framework-0.4.1-beta`.
+   `C:\PA-QA\pa-framework-0.4.1-beta-r3`.
 3. Abre PowerShell dentro de esa carpeta.
 4. Confirma que existe `MANIFEST.sha256.json`.
 
@@ -116,6 +116,57 @@ No compartas API keys, tokens ni contenido de `data\user\` en el reporte.
 
 ---
 
+## 5A. Regresiones específicas RC3
+
+### A. Provider estricto de OpenCode
+
+1. En el wizard, selecciona `GLM-5.3-Flash Free`.
+2. Inicia PA con `cmd /c pa.bat` y envía un prompt corto.
+3. Repite con otro modelo free que ya funcionaba en RC2.
+
+Esperado: ambos responden. No debe aparecer
+`unknown_parameter ... unknown field "id"`.
+
+### B. Consola redirigida con code page legacy
+
+```powershell
+chcp 850
+py -3.11 core\scripts\session_start.py > session-start.txt
+$LASTEXITCODE
+Select-String -Path .\session-start.txt -Pattern 'UnicodeEncodeError|\[TIME\] H:'
+```
+
+Esperado: exit `0`, búsqueda vacía y hora con formato `HH:MM`. No fuerces
+`PYTHONIOENCODING=utf-8`; esta prueba valida el fix nativo.
+
+### C. Cold-start, warm-start y consumo de contexto
+
+```powershell
+Remove-Item core\.context\.cache\warm-start.json -ErrorAction SilentlyContinue
+py -3.11 core\scripts\session_start.py --bootstrap-only
+py -3.11 core\scripts\session_start.py --bootstrap-only
+$r = Get-Content core\.context\.cache\warm-start.json | ConvertFrom-Json
+$r.schema
+$r.status
+Select-String -Path core\.context\.cache\warm-start.json -Pattern '"content"'
+```
+
+Esperado:
+
+- Primer comando: `cold-refreshed`; segundo: `warm`.
+- Receipt: schema `pa.warm-start/1`, status `ready`, sin coincidencia `"content"`.
+- Al abrir PA, registra el contador inicial de OpenCode. Objetivo: `<=6.5K`
+  tokens (`<=3%`); `>6.5K` mantiene este gate en `BLOCKED`.
+
+### D. Cierre nativo de OpenCode
+
+Cierra OpenCode por su flujo normal y luego una vez con `Ctrl+C`. No debe aparecer
+`cmd.exe - Error de la aplicación (0xc0000142)`. Si reaparece, registra solo:
+versión de Windows, comando usado para cerrar y captura del diálogo; no compartas
+logs, rutas personales ni contenido de sesiones.
+
+---
+
 ## 6. Dashboard en navegador
 
 ```powershell
@@ -177,6 +228,10 @@ Smokes pa.bat: PASS/FAIL
 Installer dry-run: PASS/FAIL
 Suite pytest: <passed/skipped/failed>
 Wizard OpenCode default: PASS/FAIL
+Provider strict models: PASS/FAIL
+Redirect cp1252: PASS/FAIL
+Warm-start: <cold s / warm s / tokens / percent>
+Cierre OpenCode sin 0xc0000142: PASS/FAIL
 Pi opt-in: PASS/FAIL/NOT TESTED
 Dashboard: PASS/FAIL
 Migración doble: PASS/FAIL/NOT TESTED
