@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FreakingJSON Personal Assistant Framework — Instalador v0.3.8-alpha
+FreakingJSON Personal Assistant Framework — Instalador
 
 Crea estructura, configura perfil y sincroniza contexto.
 Framework multi-IA standalone — OpenCode, Claude, Gemini, Codex, Ollama.
@@ -31,6 +31,8 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 CORE_DIR = SCRIPT_DIR.parent
 REPO_ROOT = CORE_DIR.parent
 CONTEXT_DIR = CORE_DIR / ".context"
+sys.path.insert(0, str(SCRIPT_DIR))
+import version as framework_version  # noqa: E402
 
 CLI_COMMANDS = ["opencode", "claude", "gemini", "codex"]
 LOCAL_CLI_COMMANDS = ["ollama", "lms"]
@@ -150,9 +152,12 @@ def main():
     )
     args = parser.parse_args()
 
+    display_version = framework_version.render(
+        framework_version.canonical(REPO_ROOT), "badge"
+    )
     print(
         f"\n{Colors.HEADER}{Colors.BOLD}  ╔══════════════════════════════════════════════════════════╗\n"
-        f"  ║   FreakingJSON Personal Assistant Framework v0.3.8-alpha    ║\n"
+        f"  ║   FreakingJSON Personal Assistant Framework {display_version:<15} ║\n"
         f"  ║   I own my context. I am FreakingJSON.                      ║\n"
         f"  ╚══════════════════════════════════════════════════════════╝{Colors.END}\n"
     )
@@ -184,13 +189,19 @@ def main():
         CONTEXT_DIR / "knowledge" / "wiki",
         CORE_DIR / "agents" / "subagents",
         CORE_DIR / "skills" / "core",
-        REPO_ROOT / "workspaces",
+        REPO_ROOT / "workspaces" / "content" / "projects",
         REPO_ROOT / "docs",
         REPO_ROOT / "config",
     ]
     for d in dirs:
         d.mkdir(parents=True, exist_ok=True)
     print_ok("Estructura de directorios verificada.")
+
+    backlog = CONTEXT_DIR / "codebase" / "backlog.md"
+    backlog_seed = CONTEXT_DIR / "codebase" / "backlog.seed.md"
+    if not backlog.exists() and backlog_seed.exists():
+        shutil.copyfile(backlog_seed, backlog)
+        print_ok("backlog.md creado desde backlog.seed.md.")
 
     # Ensure MASTER.md
     master = CONTEXT_DIR / "MASTER.md"
@@ -269,10 +280,7 @@ Bienvenida. Este framework actúa como asistente personal para tareas diarias, i
             default_cli = found[0] if found else "opencode"
 
     # Save profile
-    version = "0.1.0-alpha"
-    vf = REPO_ROOT / "VERSION"
-    if vf.exists():
-        version = vf.read_text(encoding="utf-8").strip()
+    version = framework_version.canonical(REPO_ROOT)
 
     profile = CONTEXT_DIR / "profile.md"
     profile.write_text(

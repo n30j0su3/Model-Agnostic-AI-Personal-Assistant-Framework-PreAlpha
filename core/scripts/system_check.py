@@ -252,9 +252,8 @@ def check_opencode_dir():
 @register("dashboard", "Dashboard HTML")
 def check_dashboard():
     dh = REPO_ROOT / "dashboard.html"
-    dj = REPO_ROOT / "dashboard-data.js"
-    if dh.exists() and dj.exists():
-        return True, f"dashboard.html + data.js OK"
+    if dh.exists():
+        return True, "dashboard.html OK"
     return "warn", "Dashboard no disponible"
 
 @register("config_files", "Archivos de configuracion")

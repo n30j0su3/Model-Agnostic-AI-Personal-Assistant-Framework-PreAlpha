@@ -58,7 +58,8 @@ def check_backtick_paths(issues: list[str]) -> None:
                 token in ref for token in ("YYYY-MM-DD", "{workspace}", "{project}")
             ):
                 continue
-            candidate = ROOT / ref
+            candidate_ref = re.split(r"<[^>]+>", ref, maxsplit=1)[0].rstrip("/")
+            candidate = ROOT / candidate_ref
             if not candidate.exists():
                 issues.append(
                     f"Missing referenced path: {path.relative_to(ROOT)} -> {ref}"
@@ -122,7 +123,7 @@ def check_guardian_timings(issues: list[str]) -> None:
 def check_expected_paths(issues: list[str]) -> None:
     expected = [
         ROOT / "core" / ".context" / "codebase" / "backlog.md",
-        ROOT / "core" / ".context" / "workspaces",
+        ROOT / "workspaces" / "content" / "projects",
     ]
     for path in expected:
         if not path.exists():

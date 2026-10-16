@@ -30,11 +30,18 @@ def hermetic_env(tmp_path, monkeypatch):
 
 @pytest.fixture
 def repo_extract(tmp_path):
-    """Extract tracked HEAD into a writable temporary tree."""
+    """Extract the current staged tree into a writable temporary directory."""
     destination = tmp_path / "repo-extract"
     destination.mkdir()
+    tree = subprocess.run(
+        ["git", "write-tree"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
     archive = subprocess.run(
-        ["git", "archive", "HEAD"],
+        ["git", "archive", tree],
         cwd=ROOT,
         capture_output=True,
         check=True,

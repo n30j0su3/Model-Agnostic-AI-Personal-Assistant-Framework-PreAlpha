@@ -68,7 +68,7 @@ Invocación: `task(subagent_type="...", description="...", prompt="...")`
 
 | Tipo | Ubicación |
 |------|-----------|
-| Pendientes | `core/.context/codebase/recordatorios.md` |
+| Pendientes | `core/.context/codebase/backlog.md` |
 | Ideas | `core/.context/codebase/ideas.md` |
 | Descubrimientos | `knowledge/learning/discoveries.md` |
 | Best practices | `knowledge/learning/best-practices.md` |
