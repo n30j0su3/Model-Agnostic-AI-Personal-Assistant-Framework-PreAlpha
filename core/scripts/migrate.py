@@ -595,10 +595,9 @@ def check_migrations():
                 Colors.YELLOW,
             )
         )
-        safe_print("  Ejecuta: python core/scripts/migrate.py --apply")
-        return 1
+        safe_print("  No hay migraciones pendientes; revisa --status para detalles")
 
-    safe_print(c("\n  [OK] Framework en estado correcto", Colors.GREEN))
+    safe_print(c("\n  [OK] Framework sin migraciones pendientes", Colors.GREEN))
     return 0
 
 

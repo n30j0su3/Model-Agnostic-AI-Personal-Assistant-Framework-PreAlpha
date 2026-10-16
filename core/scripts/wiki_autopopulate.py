@@ -128,12 +128,19 @@ summary: "{summary}"
     }
 
 
+def _stored_title(content: str) -> str | None:
+    """Read the exact frontmatter title used to distinguish slug collisions."""
+    for line in content.splitlines():
+        if line.startswith("title:"):
+            return line.split(":", 1)[1].strip().strip("\"'")
+    return None
+
+
 def save_wiki_entry(entry: Dict) -> Optional[Path]:
-    """Save a wiki entry to the appropriate directory."""
+    """Idempotently upsert a wiki entry at its canonical type/title slug."""
     wiki_type = entry["type"]
     title = entry["title"]
 
-    # Select directory
     type_dirs = {
         "entity": WIKI_ENTITIES,
         "concept": WIKI_CONCEPTS,
@@ -141,24 +148,26 @@ def save_wiki_entry(entry: Dict) -> Optional[Path]:
         "query": WIKI_QUERIES,
         "raw": WIKI_RAW,
     }
-
     target_dir = type_dirs.get(wiki_type, WIKI_RAW)
-    if wiki_type not in type_dirs:
-        target_dir = WIKI_RAW
-
-    # Generate filename
     base_name = sanitize_filename(title)
     file_path = target_dir / f"{base_name}.md"
+    content = entry["content"]
 
-    # Handle duplicates
-    counter = 1
-    while file_path.exists():
-        file_path = target_dir / f"{base_name}_{counter}.md"
-        counter += 1
-
-    # Write file
     try:
-        file_path.write_text(entry["content"], encoding="utf-8")
+        target_dir.mkdir(parents=True, exist_ok=True)
+        counter = 1
+        while file_path.exists():
+            current = file_path.read_text(encoding="utf-8")
+            if current == content:
+                return file_path
+            if _stored_title(current) == title:
+                break
+            file_path = target_dir / f"{base_name}_{counter}.md"
+            counter += 1
+
+        temp_path = file_path.with_name(f".{file_path.name}.{os.getpid()}.tmp")
+        temp_path.write_text(content, encoding="utf-8")
+        os.replace(temp_path, file_path)
         return file_path
     except Exception as e:
         print(f"[WARN] Failed to save wiki entry '{title}': {e}")

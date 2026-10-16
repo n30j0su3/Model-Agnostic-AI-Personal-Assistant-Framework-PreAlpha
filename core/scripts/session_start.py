@@ -127,8 +127,9 @@ def check_pending_migrations():
                 timeout=5,
                 cwd=REPO_ROOT,
             )
-            # Si hay migraciones pendientes, aplicarlas automaticamente
-            if result.returncode != 0 or "0" not in result.stdout:
+            # Exit code is the machine contract. Human-readable output may
+            # change and must never trigger an unnecessary --apply.
+            if result.returncode != 0:
                 print(c("\\n[MIGRATE] Aplicando migraciones pendientes...", Colors.CYAN))
                 apply_result = subprocess.run(
                     [sys.executable, str(migrate_script), "--apply"],

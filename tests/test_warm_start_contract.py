@@ -185,7 +185,7 @@ def test_cold_bootstrap_only_builds_receipt_without_session(monkeypatch):
                         "md_memory_available": True,
                         "sessions_md_available": True,
                         "all_available": False,
-                        "private_path": "C:/Users/PRIVATE",
+                        "private_path": "PRIVATE-SENTINEL-MUST-NOT-PERSIST",
                     }
                 ),
                 stderr="",
