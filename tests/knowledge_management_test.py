@@ -985,13 +985,9 @@ class TestAPIFunctions:
         test_sessions_dir = temp_dir / "api-sessions"
         test_index_file = test_knowledge_dir / "sessions-index.json"
 
-        # v0.4.0-beta fix: el módulo top-level se carga con spec_from_file_location
-        # (no queda en sys.modules), por lo que `import knowledge_export` aquí crea
-        # OTRO objeto con paths reales y el monkeypatch original parcheaba el objeto
-        # equivocado → export corría contra el índice real → sessions_exported: 0.
-        # Fix: parchear el MISMO objeto (ke_module) que se va a llamar.
-        import importlib
-        import knowledge_export as ke_module
+        # Usar la misma instancia cargada al inicio; reimportar por nombre crea
+        # otro módulo con paths reales y rompe el aislamiento del fixture.
+        ke_module = knowledge_export
 
         monkeypatch.setattr(
             ke_module,
@@ -1017,15 +1013,15 @@ class TestAPIFunctions:
         for session_file in sample_sessions_index["sessions_dir"].glob("*.md"):
             shutil.copy(session_file, test_sessions_dir / session_file.name)
 
+        dates = [item["date"] for item in sample_sessions_index["index_data"]["sessions"]]
         result = ke_module.export_knowledge(
             str(temp_dir / "api-export"),
             format='json',
-            from_date='2026-04-01',
-            to_date='2026-04-17'
+            from_date=min(dates),
+            to_date=max(dates)
         )
 
-        # Should export all 5 sessions in date range
-        assert result["sessions_exported"] > 0
+        assert result["sessions_exported"] == 5
         assert result["format"] == "json"
 
     def test_import_knowledge_api(self, sample_sessions_index, temp_dir, monkeypatch):
@@ -1059,13 +1055,12 @@ class TestAPIFunctions:
         for session_file in sample_sessions_index["sessions_dir"].glob("*.md"):
             shutil.copy(session_file, export_sessions_dir / session_file.name)
 
-        # Force reimport
-        import importlib
-        import knowledge_export as ke_module
-        importlib.reload(ke_module)
+        # Mantener la instancia ya parcheada; reload restablece paths reales.
+        ke_module = knowledge_export
 
         export_file = temp_dir / "api-import-test.json"
         export_result = ke_module.export_knowledge(str(export_file), format='json')
+        assert export_result["sessions_exported"] == 5
 
         # Setup completely separate import paths
         import_knowledge_dir = temp_dir / "import-knowledge-api2"
@@ -1095,9 +1090,8 @@ class TestAPIFunctions:
         initial_index = {"sessions": [], "last_updated": datetime.now().isoformat()}
         import_index_file.write_text(json.dumps(initial_index), encoding='utf-8')
 
-        # Force reimport with clean state
-        import knowledge_import as ki_module
-        importlib.reload(ki_module)
+        # Mantener la instancia ya parcheada; reload restablece paths reales.
+        ki_module = knowledge_import
 
         result = ki_module.import_knowledge(str(export_file), merge=True, skip_existing=False)
 
