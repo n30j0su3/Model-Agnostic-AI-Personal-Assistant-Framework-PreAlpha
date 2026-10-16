@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PA Framework Command Center v0.4.1-beta</title>
+    <title>PA Framework Command Center</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a3e635' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M13 10V3L4 14h7v7l9-11h-7z'/%3E%3C/svg%3E">
     <meta name="description" content="Dashboard profesional del FreakingJSON Personal Assistant Framework">
     
@@ -324,9 +324,6 @@
     <div class="matrix-bg" aria-hidden="true"><canvas id="matrix-canvas"></canvas></div>
     <div class="scanlines" aria-hidden="true"></div>
     <div id="a11y-live" class="sr-only" aria-live="polite" style="position:absolute;left:-9999px;"></div>
-    <!-- Dashboard Data (Embedded for file:// compatibility) -->
-    <script src="dashboard-data.js"></script>
-    
     <div id="app">
         <!-- Loading State -->
         <div id="loading-screen" class="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center">
@@ -359,7 +356,7 @@
                 </div>
                         <div class="hidden sm:block">
                             <h1 class="font-semibold text-sm">FreakingJSON</h1>
-                            <p class="text-xs text-slate-400">v0.4.1-beta <span id="build-id" class="text-slate-600"></span></p>
+                            <p class="text-xs text-slate-400"><span id="header-framework-version" data-framework-version>—</span> <span id="build-id" class="text-slate-600"></span></p>
                         </div>
                     </div>
                 </div>
@@ -426,7 +423,7 @@
                     <!-- Badge de versión -->
                     <div class="inline-flex items-center gap-2 px-5 py-2.5 bg-lime-400/10 border border-lime-400/30 rounded-full text-lime-300 text-sm mb-8 neon-glow animate-fade-in">
                         <span class="w-2.5 h-2.5 bg-lime-400 rounded-full animate-pulse"></span>
-                        Framework v0.4.1-beta — 100% Local, 100% Privado
+                        Framework <span id="home-framework-version" data-framework-version>—</span> — 100% Local, 100% Privado
                     </div>
                     
                     <!-- Título principal -->
@@ -518,8 +515,31 @@
                 weeklyGrowth: 12
             },
             currentSession: null,
-            isLoading: true
+            isLoading: true,
+            frameworkVersion: null
         };
+
+        function applyFrameworkVersion(root = document) {
+            const version = store.frameworkVersion;
+            if (!version) return;
+            const display = version.startsWith('v') ? version : `v${version}`;
+            root.querySelectorAll('[data-framework-version]').forEach((element) => {
+                element.textContent = display;
+            });
+            document.title = `PA Framework Command Center ${display}`;
+        }
+
+        async function loadFrameworkVersion() {
+            try {
+                const response = await fetch('/api/status', { cache: 'no-store' });
+                if (!response.ok) return;
+                const status = await response.json();
+                store.frameworkVersion = status.framework?.version || null;
+                applyFrameworkVersion();
+            } catch (error) {
+                console.warn('[Version] Status API unavailable');
+            }
+        }
 
         // ============================================
         // i18n (ES/EN) - lightweight runtime toggle
@@ -537,7 +557,7 @@
                 tab_skills: 'Skills',
                 tab_agents: 'Agents',
                 workflow_title: 'Workflow Real del Framework',
-                workflow_desc: 'Flujo operativo real usado por PA Framework v0.4.0-beta (sin placeholders).',
+                workflow_desc: 'Flujo operativo real usado por PA Framework (sin placeholders).',
                 skills_title: 'Skills Disponibles',
                 agents_title: 'Agentes del Sistema',
                 console_title: 'Consola',
@@ -596,7 +616,7 @@
                 tab_skills: 'Skills',
                 tab_agents: 'Agents',
                 workflow_title: 'Real Framework Workflow',
-                workflow_desc: 'Operational flow used by PA Framework v0.4.0-beta (no placeholders).',
+                workflow_desc: 'Operational flow used by PA Framework (no placeholders).',
                 skills_title: 'Available Skills',
                 agents_title: 'System Agents',
                 console_title: 'Console',
@@ -678,7 +698,7 @@
                 ['Referencias de implementación','Implementation references'],
                 ['Ver detalle','View detail'],
                 ['Cerrar','Close'],
-                ['Flujo operativo real usado por PA Framework v0.4.0-beta (sin placeholders).','Operational flow used by PA Framework v0.4.0-beta (no placeholders).'],
+                ['Flujo operativo real usado por PA Framework (sin placeholders).','Operational flow used by PA Framework (no placeholders).'],
                 ['Pipeline de Sesión','Session Pipeline'],
                 ['Sistema de Memoria (completo)','Memory System (complete)'],
                 ['Arquitectura de Persistencia','Persistence Architecture'],
@@ -983,6 +1003,7 @@
                 const container = document.getElementById('page-container');
                 container.innerHTML = pages[this.currentPage]();
                 translateStaticUI(container);
+                applyFrameworkVersion(container);
                 
                 // Initialize page-specific JS
                 if (this.currentPage === 'internals') {
@@ -1206,7 +1227,7 @@
 
                     <!-- Footer -->
                     <footer class="py-12 px-4 border-t border-slate-800 text-center text-slate-500">
-                        <p>FreakingJSON Framework v0.4.0-beta · MIT License</p>
+                        <p>FreakingJSON Framework <span id="footer-framework-version" data-framework-version>—</span> · MIT License</p>
                         <p class="mt-2 text-sm">"El conocimiento verdadero trasciende a lo público"</p>
                     </footer>
                 </div>
@@ -1390,7 +1411,7 @@
                         <div id="fw-tab-workflow" class="fw-tab-content hidden">
                             <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6">
                                 <h2 class="text-2xl font-bold mb-2">${t('workflow_title')}</h2>
-                                <p class="text-slate-400">${t('workflow_desc')}</p>
+                                <p class="text-slate-400">${t('workflow_desc')} · <span id="workflow-framework-version" data-framework-version>—</span></p>
                             </div>
 
                             <div class="grid md:grid-cols-2 gap-6 mb-6">
@@ -2876,7 +2897,7 @@
                     const r = await this.api('/api/opencode/chat', 'POST', { message: msg, session: this.session });
                     if (r.ok) {
                         this.session = r.session || this.session;
-                        // v0.4.1-beta: evidencia del modelo realmente usado
+                        // Evidencia del modelo realmente usado.
                         if (r.model_used) this.log('sys', `⚙ ${r.model_used}`);
                         this.log('assistant', r.reply || '(sin texto)');
                     } else {
@@ -2976,6 +2997,7 @@
         // Initialize app when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
             app.init();
+            loadFrameworkVersion();
             // BUILD ID: hash SHA-256 del HTML servido — permite verificar
             // de un vistazo que el navegador no sirve una versión cacheada
             (async () => {
@@ -3036,7 +3058,7 @@
                         select.innerHTML = `<option value="">${t('modelo_select_ph')}</option>`;
                         models.forEach(m => {
                             const opt = document.createElement('option');
-                            // v0.4.1-beta: la API devuelve objetos {id, status, badge}
+                            // La API devuelve objetos {id, status, badge}.
                             const mid = (typeof m === 'string') ? m : m.id;
                             const badge = (typeof m === 'object' && m.badge) ? ` — ${m.badge}` : '';
                             const missing = (typeof m === 'object' && m.status === 'missing');
@@ -3061,7 +3083,7 @@
             },
             
             async test() {
-                // v0.4.1-beta: ping real del modelo seleccionado — verifica que
+                // Ping real del modelo seleccionado — verifica que
                 // la credencial FUNCIONA (detectar ≠ poder usar).
                 const select = document.getElementById('modelo-select');
                 const model = select.value;

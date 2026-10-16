@@ -45,6 +45,7 @@ REPO_ROOT = CORE_DIR.parent
 sys.path.insert(0, str(SCRIPT_DIR))
 import oc_auth  # noqa: E402  (v0.4.1-beta: detección auth-aware de credenciales)
 import select_free_model as sfm  # noqa: E402  (v0.4.1-beta: catálogo usable auth-aware)
+import version as framework_version  # noqa: E402
 
 OPENCODE_PORT = 47371          # puerto fijo del opencode serve gestionado
 SERVER_PORT_DEFAULT = 8760     # puerto del dashboard bridge
@@ -279,7 +280,7 @@ def _win_quote(s: str) -> str:
 
 # ---------------------------------------------------------------- handler ---
 class Handler(BaseHTTPRequestHandler):
-    server_version = "PA-Dashboard/0.4.1-beta"
+    server_version = f"PA-Dashboard/{framework_version.canonical(REPO_ROOT)}"
 
     # ---- plumbing ----
     @property
@@ -368,8 +369,7 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/status":
             return self._json({
                 "framework": {
-                    "version": (REPO_ROOT / "VERSION").read_text(encoding="utf-8").strip()
-                               if (REPO_ROOT / "VERSION").exists() else "?",
+                    "version": framework_version.canonical(self.repo_root),
                 },
                 "opencode": {
                     "installed": bool(opencode_installed()),
@@ -431,10 +431,10 @@ class Handler(BaseHTTPRequestHandler):
                 "agent": cfg.get("agent") or "",
             })
 
-        # estáticos: dashboard-data.js, knowledge indexes, assets
+        # estáticos: knowledge indexes, assets
         rel = path.lstrip("/")
-        if rel.startswith(("dashboard-data.js", "core/", "assets/", "docs/")):
-            return self._serve_file(REPO_ROOT / rel)
+        if rel.startswith(("core/", "assets/", "docs/")):
+            return self._serve_file(self.repo_root / rel)
         self._json({"error": "not found", "path": path}, 404)
 
     # ---- POST ----
