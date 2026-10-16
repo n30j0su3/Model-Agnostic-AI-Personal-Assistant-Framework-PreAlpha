@@ -313,8 +313,12 @@ def get_default_cli() -> str:
 
 
 def get_magic_prompt() -> str:
-    """Get the magic prompt for session initialization."""
-    return "Lee 'core/.context/quick-start.md' para iniciar. Este archivo contiene todo lo necesario para comenzar."
+    """Return the compact handoff after deterministic PA bootstrap."""
+    return (
+        "Bootstrap PA listo. Lee solo "
+        "'core/.context/.cache/warm-start.json'; no repitas bootstrap ni discovery. "
+        "Carga contexto adicional bajo demanda y pregunta qué desea hacer el usuario."
+    )
 
 
 def build_cli_command(cli: str, prompt: str, workdir: Path) -> tuple[list[str], bool]:
@@ -357,17 +361,18 @@ def build_cli_command(cli: str, prompt: str, workdir: Path) -> tuple[list[str], 
 
 
 def _framework_bootstrap() -> bool:
-    """v0.4.0-beta: validación + inicialización REAL del framework antes de
-    lanzar el CLI. Ejecuta session_start.py (auto-heal + migraciones + carga
-    de contexto). Si falla algo crítico, avisa pero no bloquea el chat."""
-    _run_skills_indexer()  # v0.4.0-beta: índice de skills siempre fresco en el arranque
-    _rebuild_interactions_index()  # v0.4.0-beta: métricas de uso siempre reales
+    """Run one deterministic bootstrap process before launching the external CLI.
+
+    session_start owns cold/warm decisions. ``--bootstrap-only`` prevents the
+    preflight child from opening a coordinator or SQLite session; pa.py owns the
+    real CLI session lifecycle.
+    """
     script = SCRIPT_DIR / "session_start.py"
     if not script.exists():
         return True  # nada que ejecutar; no bloquear
     try:
         result = subprocess.run(
-            [get_python(), str(script)],
+            [get_python(), str(script), "--bootstrap-only"],
             cwd=REPO_ROOT, capture_output=True, text=True, timeout=90,
         )
         if result.returncode != 0:

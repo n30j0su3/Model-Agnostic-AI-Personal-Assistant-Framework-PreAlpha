@@ -85,10 +85,30 @@ SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
 CODEBASE_DIR.mkdir(parents=True, exist_ok=True)
 KNOWLEDGE_DIR.mkdir(parents=True, exist_ok=True)
 
-# --- WARM START CACHE (v2.2.0) ---
+# --- WARM START RECEIPT (v0.4.1-beta-r3) ---
 CACHE_DIR = CONTEXT_DIR / ".cache"
 WARM_CACHE_PATH = CACHE_DIR / "warm-start.json"
-WARM_CACHE_TTL = 7200  # 2 hours in seconds
+WARM_CACHE_TTL = 86400  # Hashes invalidate first; TTL is a 24h backstop.
+WARM_RECEIPT_SCHEMA = "pa.warm-start/1"
+STORAGE_RECEIPT_KEYS = (
+    "sqlite_available",
+    "wiki_available",
+    "md_memory_available",
+    "sessions_md_available",
+    "all_available",
+)
+WARM_RECEIPT_INPUTS = (
+    "VERSION",
+    "AGENTS-lite.md",
+    "AGENTS.md",
+    ".opencode/agent/FreakingJSON.md",
+    "core/.context/quick-start.md",
+    "core/.context/MASTER.md",
+    "core/.context/profile.md",
+    "core/.context/knowledge/sessions-index.json",
+    "config/workspaces.json",
+    "data/user/workspaces.json",
+)
 
 # --- GLOBAL COORDINATOR (inicializado en main) ---
 _coordinator = None
@@ -227,67 +247,130 @@ def sync_workspaces_status():
         master_path.write_text(rendered, encoding="utf-8", newline="")
 
 
-# --- WARM START CACHE (v2.2.0) ---
+# --- WARM START RECEIPT (v0.4.1-beta-r3) ---
+def _relative_source(source: str | Path) -> str | None:
+    """Return a safe repository-relative source path, never a local absolute path."""
+    try:
+        root = REPO_ROOT.resolve()
+        path = Path(source)
+        if not path.is_absolute():
+            path = root / path
+        resolved = path.resolve()
+        if resolved != root and root not in resolved.parents:
+            return None
+        return resolved.relative_to(root).as_posix()
+    except (OSError, ValueError):
+        return None
+
+
+def _source_sha256(relative: str) -> str | None:
+    """Hash one regular in-repo file; missing/unsafe inputs are represented by null."""
+    try:
+        path = REPO_ROOT / relative
+        if path.is_symlink() or not path.is_file():
+            return None
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+    except OSError:
+        return None
+
+
+def _receipt_source_paths(tier_0_data: dict, tier_1_data: dict) -> list[str]:
+    paths: set[str] = set(WARM_RECEIPT_INPUTS)
+    for tier in (tier_0_data, tier_1_data):
+        for source in tier.get("sources", []):
+            relative = _relative_source(source)
+            if relative:
+                paths.add(relative)
+    return sorted(paths)
+
+
+def _framework_version() -> str:
+    try:
+        return (REPO_ROOT / "VERSION").read_text(encoding="utf-8").strip()
+    except OSError:
+        return "unknown"
+
+
 def check_warm_start_cache() -> dict | None:
-    """
-    Check if a valid warm start cache exists.
-    
-    Returns cached tier data if cache is fresh (< WARM_CACHE_TTL seconds old),
-    or None if no valid cache exists (cold start).
-    """
+    """Return a valid metadata-only receipt, or None for a deterministic cold start."""
     if not WARM_CACHE_PATH.exists():
         return None
 
     try:
-        cache_data = json.loads(WARM_CACHE_PATH.read_text(encoding="utf-8"))
-        cached_at = cache_data.get("timestamp", 0)
-        age = time.time() - cached_at
-
-        if age > WARM_CACHE_TTL:
-            return None  # Stale cache
-
-        # Verify cache integrity — check tier keys exist
-        tiers = cache_data.get("tiers", {})
-        if "tier_0" not in tiers or "tier_1" not in tiers:
+        receipt = json.loads(WARM_CACHE_PATH.read_text(encoding="utf-8"))
+        if receipt.get("schema") != WARM_RECEIPT_SCHEMA:
+            return None
+        if time.time() - float(receipt.get("timestamp", 0)) > WARM_CACHE_TTL:
+            return None
+        if receipt.get("framework_version") != _framework_version():
             return None
 
-        return cache_data
-    except (json.JSONDecodeError, KeyError, OSError):
+        tiers = receipt.get("tiers", {})
+        if "tier_0" not in tiers or "tier_1" not in tiers:
+            return None
+        if any("content" in tier for tier in tiers.values() if isinstance(tier, dict)):
+            return None
+
+        source_hashes = receipt.get("source_hashes")
+        if not isinstance(source_hashes, dict) or not source_hashes:
+            return None
+        for relative, expected in source_hashes.items():
+            if not isinstance(relative, str) or Path(relative).is_absolute():
+                return None
+            if _source_sha256(relative) != expected:
+                return None
+        return receipt
+    except (json.JSONDecodeError, KeyError, OSError, TypeError, ValueError):
         return None
 
 
-def save_warm_cache(tier_0_data: dict, tier_1_data: dict) -> bool:
-    """
-    Save tier 0-1 data to warm start cache for faster subsequent startups.
-    
-    Returns True if cache was saved successfully.
-    """
+def save_warm_cache(
+    tier_0_data: dict,
+    tier_1_data: dict,
+    storage_status: dict | None = None,
+) -> bool:
+    """Atomically persist hashes and counters only; never cache context text."""
     try:
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        source_paths = _receipt_source_paths(tier_0_data, tier_1_data)
 
-        cache_data = {
+        def tier_metadata(data: dict) -> dict:
+            sources = []
+            for source in data.get("sources", []):
+                relative = _relative_source(source)
+                if relative:
+                    sources.append(relative)
+            return {
+                "tokens": int(data.get("tokens", 0) or 0),
+                "sources": sorted(set(sources)),
+            }
+
+        receipt = {
+            "schema": WARM_RECEIPT_SCHEMA,
             "timestamp": time.time(),
-            "version": "2.2.0",
+            "framework_version": _framework_version(),
+            "status": "ready",
+            "storage": {
+                key: bool((storage_status or {}).get(key, False))
+                for key in STORAGE_RECEIPT_KEYS
+            },
             "tiers": {
-                "tier_0": {
-                    "content": tier_0_data.get("content", ""),
-                    "tokens": tier_0_data.get("tokens", 0),
-                    "sources": tier_0_data.get("sources", []),
-                },
-                "tier_1": {
-                    "content": tier_1_data.get("content", ""),
-                    "tokens": tier_1_data.get("tokens", 0),
-                    "sources": tier_1_data.get("sources", []),
-                },
+                "tier_0": tier_metadata(tier_0_data),
+                "tier_1": tier_metadata(tier_1_data),
+            },
+            "deferred_tiers": [2, 3, 4],
+            "source_hashes": {
+                relative: _source_sha256(relative) for relative in source_paths
             },
         }
-
-        WARM_CACHE_PATH.write_text(
-            json.dumps(cache_data, ensure_ascii=False, indent=2),
+        temp_path = WARM_CACHE_PATH.with_suffix(".json.tmp")
+        temp_path.write_text(
+            json.dumps(receipt, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )
+        os.replace(temp_path, WARM_CACHE_PATH)
         return True
-    except OSError:
+    except (OSError, TypeError, ValueError):
         return False
 
 
@@ -907,6 +990,90 @@ def print_session_start(parallel_data: dict = None):
     print(c("-" * 60 + "\n", Colors.DIM))
 
 
+# --- DETERMINISTIC BOOTSTRAP-ONLY PATH (v0.4.1-beta-r3) ---
+def _refresh_bootstrap_indexes() -> bool:
+    """Refresh dashboard indexes in-process; best-effort and process-free."""
+    ok = True
+    try:
+        from skills_indexer import SkillsIndexer
+
+        SkillsIndexer().index_all_skills()
+    except Exception:
+        ok = False
+    try:
+        from interaction_logger import InteractionLogger
+
+        InteractionLogger().rebuild_interactions_index()
+    except Exception:
+        ok = False
+    return ok
+
+
+def _discover_storage_status() -> dict:
+    """Return only non-sensitive storage availability booleans."""
+    script = SCRIPT_DIR / "persistent_storage_discover.py"
+    if not script.exists():
+        return {key: False for key in STORAGE_RECEIPT_KEYS}
+    try:
+        result = subprocess.run(
+            [sys.executable, str(script), "--integration"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            cwd=REPO_ROOT,
+        )
+        payload = json.loads(result.stdout) if result.returncode == 0 else {}
+        if not isinstance(payload, dict):
+            payload = {}
+    except (OSError, subprocess.SubprocessError, json.JSONDecodeError):
+        payload = {}
+    return {key: bool(payload.get(key, False)) for key in STORAGE_RECEIPT_KEYS}
+
+
+def _run_bootstrap_only() -> int:
+    """Build or reuse the compact receipt without opening a user session."""
+    _refresh_bootstrap_indexes()
+    receipt = check_warm_start_cache()
+    if receipt is not None:
+        print(json.dumps({
+            "schema": WARM_RECEIPT_SCHEMA,
+            "status": "warm",
+            "receipt": "core/.context/.cache/warm-start.json",
+        }))
+        return 0
+
+    try:
+        heal_script = SCRIPT_DIR / "system_check.py"
+        if heal_script.exists():
+            subprocess.run(
+                [sys.executable, str(heal_script), "--fix", "--quiet-first-run"],
+                capture_output=True,
+                text=True,
+                timeout=30,
+                cwd=REPO_ROOT,
+            )
+    except (OSError, subprocess.SubprocessError):
+        pass
+
+    check_pending_migrations()
+    storage_status = _discover_storage_status()
+    try:
+        loader = ContextLoader(repo_root=REPO_ROOT)
+        tier_0_data = loader.load_tier(0)
+        tier_1_data = loader.load_tier(1)
+    except Exception:
+        return 1
+
+    if not save_warm_cache(tier_0_data, tier_1_data, storage_status=storage_status):
+        return 1
+    print(json.dumps({
+        "schema": WARM_RECEIPT_SCHEMA,
+        "status": "cold-refreshed",
+        "receipt": "core/.context/.cache/warm-start.json",
+    }))
+    return 0
+
+
 # --- MAIN (v2.2.0 — ContextLoader Integration) ---
 def main():
     """Función principal de inicio rápido.
@@ -935,7 +1102,15 @@ def main():
         action="store_true",
         help="Skip context loading entirely (API-Contracts.md compatibility)",
     )
+    parser.add_argument(
+        "--bootstrap-only",
+        action="store_true",
+        help="Prepare/reuse the warm receipt without opening a CLI session",
+    )
     args = parser.parse_args()
+
+    if args.bootstrap_only:
+        return _run_bootstrap_only()
 
     start_time = datetime.now()
 

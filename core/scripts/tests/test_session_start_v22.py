@@ -122,27 +122,6 @@ Agent routing info here.
         yield repo_root
 
 
-@pytest.fixture
-def warm_cache_data():
-    """Sample warm cache data for testing."""
-    return {
-        "timestamp": time.time(),
-        "version": "2.2.0",
-        "tiers": {
-            "tier_0": {
-                "content": "# Bootstrap content",
-                "tokens": 50,
-                "sources": ["/fake/AGENTS-lite.md"],
-            },
-            "tier_1": {
-                "content": "# Essential content\nSessions data here",
-                "tokens": 200,
-                "sources": ["/fake/MASTER.md", "/fake/sessions-index.json"],
-            },
-        },
-    }
-
-
 def _patch_paths(temp_repo):
     """Return a list of patch context managers for all session-start paths."""
     context_dir = temp_repo / "core" / ".context"
@@ -176,35 +155,35 @@ class TestWarmStartCache:
             result = check_warm_start_cache()
             assert result is None
 
-    def test_check_cache_valid(self, temp_repo, warm_cache_data):
-        """Valid cache should return cached data."""
-        cache_dir = temp_repo / "core" / ".context" / ".cache"
-        cache_path = cache_dir / "warm-start.json"
-        cache_path.write_text(json.dumps(warm_cache_data), encoding="utf-8")
-
-        with patch.object(session_start, "WARM_CACHE_PATH", cache_path):
+    def test_check_cache_valid(self, temp_repo):
+        """RC3: a metadata-only receipt with matching hashes is warm."""
+        patches = _patch_paths(temp_repo)
+        with ExitStack() as stack:
+            for item in patches:
+                stack.enter_context(item)
+            loader = ContextLoader(repo_root=temp_repo)
+            assert save_warm_cache(loader.load_tier(0), loader.load_tier(1))
             result = check_warm_start_cache()
-            assert result is not None
-            assert "tiers" in result
-            assert "tier_0" in result["tiers"]
+
+        assert result is not None
+        assert result["schema"] == "pa.warm-start/1"
+        assert "content" not in json.dumps(result)
 
     def test_check_cache_stale(self, temp_repo):
-        """Stale cache (older than TTL) should return None."""
-        stale_data = {
-            "timestamp": time.time() - 7201,  # 1 second past TTL
-            "version": "2.2.0",
-            "tiers": {
-                "tier_0": {"content": "old", "tokens": 10, "sources": []},
-                "tier_1": {"content": "old", "tokens": 10, "sources": []},
-            },
-        }
-        cache_dir = temp_repo / "core" / ".context" / ".cache"
-        cache_path = cache_dir / "warm-start.json"
-        cache_path.write_text(json.dumps(stale_data), encoding="utf-8")
-
-        with patch.object(session_start, "WARM_CACHE_PATH", cache_path):
+        """TTL remains a backstop after hash validation."""
+        patches = _patch_paths(temp_repo)
+        cache_path = temp_repo / "core" / ".context" / ".cache" / "warm-start.json"
+        with ExitStack() as stack:
+            for item in patches:
+                stack.enter_context(item)
+            loader = ContextLoader(repo_root=temp_repo)
+            assert save_warm_cache(loader.load_tier(0), loader.load_tier(1))
+            receipt = json.loads(cache_path.read_text(encoding="utf-8"))
+            receipt["timestamp"] = time.time() - session_start.WARM_CACHE_TTL - 1
+            cache_path.write_text(json.dumps(receipt), encoding="utf-8")
             result = check_warm_start_cache()
-            assert result is None
+
+        assert result is None
 
     def test_check_cache_corrupted(self, temp_repo):
         """Corrupted cache file should return None."""
@@ -217,57 +196,71 @@ class TestWarmStartCache:
             assert result is None
 
     def test_check_cache_missing_tiers(self, temp_repo):
-        """Cache missing tier keys should return None."""
-        bad_data = {
-            "timestamp": time.time(),
-            "version": "2.2.0",
-            "tiers": {"tier_0": {"content": "x", "tokens": 1, "sources": []}},
-        }
-        cache_dir = temp_repo / "core" / ".context" / ".cache"
-        cache_path = cache_dir / "warm-start.json"
-        cache_path.write_text(json.dumps(bad_data), encoding="utf-8")
-
-        with patch.object(session_start, "WARM_CACHE_PATH", cache_path):
+        """A schema-valid receipt missing tier metadata is cold."""
+        patches = _patch_paths(temp_repo)
+        cache_path = temp_repo / "core" / ".context" / ".cache" / "warm-start.json"
+        with ExitStack() as stack:
+            for item in patches:
+                stack.enter_context(item)
+            loader = ContextLoader(repo_root=temp_repo)
+            assert save_warm_cache(loader.load_tier(0), loader.load_tier(1))
+            receipt = json.loads(cache_path.read_text(encoding="utf-8"))
+            receipt["tiers"].pop("tier_1")
+            cache_path.write_text(json.dumps(receipt), encoding="utf-8")
             result = check_warm_start_cache()
-            assert result is None
+
+        assert result is None
 
     def test_save_warm_cache(self, temp_repo):
-        """save_warm_cache should write valid cache file."""
-        cache_dir = temp_repo / "core" / ".context" / ".cache"
-        cache_path = cache_dir / "warm-start.json"
+        """RC3 receipt writes counters/hashes without cached context."""
+        patches = _patch_paths(temp_repo)
+        cache_path = temp_repo / "core" / ".context" / ".cache" / "warm-start.json"
+        tier_0 = {
+            "content": "bootstrap-private",
+            "tokens": 50,
+            "sources": [str(temp_repo / "AGENTS-lite.md")],
+        }
+        tier_1 = {
+            "content": "essential-private",
+            "tokens": 200,
+            "sources": [str(temp_repo / "core/.context/MASTER.md")],
+        }
 
-        tier_0 = {"content": "bootstrap", "tokens": 50, "sources": ["/a.md"]}
-        tier_1 = {"content": "essential", "tokens": 200, "sources": ["/b.md"]}
+        with ExitStack() as stack:
+            for item in patches:
+                stack.enter_context(item)
+            assert save_warm_cache(tier_0, tier_1) is True
 
-        with patch.object(session_start, "WARM_CACHE_PATH", cache_path), \
-             patch.object(session_start, "CACHE_DIR", cache_dir):
-            result = save_warm_cache(tier_0, tier_1)
-            assert result is True
-
-        # Verify file was written
-        assert cache_path.exists()
         data = json.loads(cache_path.read_text(encoding="utf-8"))
-        assert data["version"] == "2.2.0"
-        assert "tier_0" in data["tiers"]
-        assert "tier_1" in data["tiers"]
+        assert data["schema"] == "pa.warm-start/1"
         assert data["tiers"]["tier_0"]["tokens"] == 50
+        assert "content" not in json.dumps(data)
+        assert "bootstrap-private" not in json.dumps(data)
 
     def test_save_and_load_roundtrip(self, temp_repo):
-        """Save then load should return equivalent data."""
-        cache_dir = temp_repo / "core" / ".context" / ".cache"
-        cache_path = cache_dir / "warm-start.json"
+        """Save/load preserves metadata while intentionally dropping content."""
+        patches = _patch_paths(temp_repo)
+        tier_0 = {
+            "content": "hello bootstrap",
+            "tokens": 100,
+            "sources": [str(temp_repo / "AGENTS-lite.md")],
+        }
+        tier_1 = {
+            "content": "essential data",
+            "tokens": 300,
+            "sources": [str(temp_repo / "core/.context/MASTER.md")],
+        }
 
-        tier_0 = {"content": "hello bootstrap", "tokens": 100, "sources": ["/test.md"]}
-        tier_1 = {"content": "essential data", "tokens": 300, "sources": ["/test2.md"]}
-
-        with patch.object(session_start, "WARM_CACHE_PATH", cache_path), \
-             patch.object(session_start, "CACHE_DIR", cache_dir):
+        with ExitStack() as stack:
+            for item in patches:
+                stack.enter_context(item)
             save_warm_cache(tier_0, tier_1)
             loaded = check_warm_start_cache()
 
         assert loaded is not None
-        assert loaded["tiers"]["tier_0"]["content"] == "hello bootstrap"
+        assert loaded["tiers"]["tier_0"]["tokens"] == 100
         assert loaded["tiers"]["tier_1"]["tokens"] == 300
+        assert "content" not in json.dumps(loaded)
 
 
 # --- DEFER LOADING TESTS ---
