@@ -190,6 +190,7 @@ def create_snapshot():
 def load_update_protected_paths() -> list[str]:
     defaults = [
         "workspaces",
+        "data/user",
         "core/.context/MASTER.md",
         "core/.context/profile.md",
         "core/.context/opencode.md",

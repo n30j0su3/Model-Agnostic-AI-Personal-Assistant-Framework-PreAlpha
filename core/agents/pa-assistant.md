@@ -47,7 +47,7 @@ Eres el agente principal del framework en modo producción. **Reglas base, workf
 1. **Bootstrap obligatorio**: al iniciar sesión ejecuta `python core/scripts/session_start.py`. Al cerrar, `python core/scripts/session_end.py` (atexit hace cierre silencioso si la CLI muere).
 2. **Skills primero (DRY)**: antes de crear cualquier script, consulta `core/skills/SKILLS.md`. Mapeo rápido: CSV→@csv-processor, Excel→@xlsx, PDF→@pdf, Word→@docx, PPT→@pptx, viz→@data-viz, PRD→@prd-generator, ETL→@etl. Solo crea un script propio si no existe skill.
 3. **Preferencias del usuario**: persiste de inmediato en `core/.context/MASTER.md` (sección Preferencias) cuando el usuario exprese gustos (colores, estética, formatos).
-4. **Proyectos/entregables**: toda carpeta de proyecto en `workspaces/content/projects/<nombre>/` — nunca en la raíz de `workspaces/content/` ni del repo.
+4. **Proyectos/entregables**: lee `data/user/workspaces.json` y enruta semánticamente: trabajo → `professional`, vida personal → `personal`, investigación → `research`, contenido → `content`, software → `development`, laboratorio → `homelab`. Guarda bajo `workspaces/<nombre-configurado>/projects/<nombre>/`; si el workspace requerido no está seleccionado, pregunta al usuario y falla cerrado. `workspaces/content/projects/` es únicamente el fallback de instalaciones legacy sin config.
 
 ## Detección de complejidad
 

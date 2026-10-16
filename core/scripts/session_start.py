@@ -44,6 +44,8 @@ MEMORY_DIR = CORE_DIR / "memory"
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+import workspace_config as workspace_cfg  # noqa: E402
+
 # Add memory to sys.path for session_memory imports
 if str(MEMORY_DIR) not in sys.path:
     sys.path.insert(0, str(MEMORY_DIR))
@@ -202,47 +204,27 @@ def safe_print(text: str, **kwargs):
 
 # --- WORKSPACE SYNC (sesion 2026-03-09) ---
 def sync_workspaces_status():
-    """Sincroniza estado de workspaces en MASTER.md con directorios existentes."""
+    """Renderiza en MASTER los workspaces configurados por el usuario."""
     ws_dir = REPO_ROOT / "workspaces"
     master_path = CONTEXT_DIR / "MASTER.md"
 
-    if not ws_dir.exists() or not master_path.exists():
+    if not master_path.exists():
         return
 
-    existing = [d.name for d in ws_dir.iterdir() if d.is_dir() and d.name != ".gitkeep"]
-    defaults = [
-        "personal",
-        "professional",
-        "research",
-        "content",
-        "development",
-        "homelab",
-    ]
-
+    status, entries = workspace_cfg.load_user_config(REPO_ROOT)
+    if status == "missing":
+        entries = {
+            directory.name: {
+                "dir": directory.name,
+                "display": directory.name.capitalize(),
+            }
+            for directory in (ws_dir.iterdir() if ws_dir.is_dir() else [])
+            if directory.is_dir() and directory.name != ".gitkeep"
+        }
     content = master_path.read_text(encoding="utf-8")
-    updated = False
-
-    # Marcar como configurados los que existen
-    for ws in existing:
-        ws_cap = ws.capitalize()
-        old = f"- [ ] {ws_cap}: No configurado."
-        new = f"- [x] {ws_cap}: Configurado."
-        if old in content:
-            content = content.replace(old, new)
-            updated = True
-
-    # Marcar como no configurados los defaults que no existen
-    for ws in defaults:
-        if ws not in existing:
-            ws_cap = ws.capitalize()
-            old = f"- [x] {ws_cap}: Configurado."
-            new = f"- [ ] {ws_cap}: No configurado."
-            if old in content:
-                content = content.replace(old, new)
-                updated = True
-
-    if updated:
-        master_path.write_text(content, encoding="utf-8")
+    rendered = workspace_cfg.render_master_workspaces(content, entries)
+    if rendered != content:
+        master_path.write_text(rendered, encoding="utf-8", newline="")
 
 
 # --- WARM START CACHE (v2.2.0) ---

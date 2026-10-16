@@ -4,6 +4,7 @@
 # Directories preserve all content recursively.
 
 workspaces
+data/user
 core/.context/MASTER.md
 core/.context/profile.md
 core/.context/navigation.md

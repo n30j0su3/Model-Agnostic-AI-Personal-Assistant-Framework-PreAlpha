@@ -42,6 +42,8 @@ FRAMEWORK_ROOT = Path(__file__).resolve().parents[2]  # core/scripts/ -> core/ -
 WORKSPACES_DIR = FRAMEWORK_ROOT / "workspaces"
 CONTEXT_DIR = FRAMEWORK_ROOT / "core" / ".context"
 PROJECTS_REGISTRY = CONTEXT_DIR / "projects" / "_registry.md"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import workspace_config as workspace_cfg  # noqa: E402
 
 
 def parse_args():
@@ -62,7 +64,11 @@ def get_cwd() -> Path:
     return Path.cwd().resolve()
 
 
-def detect_workspace(cwd: Path, verbose: str) -> Optional[Dict[str, Any]]:
+def detect_workspace(
+    cwd: Path,
+    verbose: str,
+    repo_root: Path | None = None,
+) -> Optional[Dict[str, Any]]:
     """
     Detecta el workspace basado en cwd.
 
@@ -71,21 +77,19 @@ def detect_workspace(cwd: Path, verbose: str) -> Optional[Dict[str, Any]]:
     if verbose == "debug":
         print(f"[DEBUG] CWD: {cwd}", file=sys.stderr)
 
-    # Normalizar path
-    cwd_str = str(cwd)
-    workspaces_str = str(WORKSPACES_DIR)
+    root = Path(repo_root) if repo_root is not None else FRAMEWORK_ROOT
+    workspaces_dir = (root / "workspaces").resolve()
 
     if verbose == "debug":
-        print(f"[DEBUG] Workspaces dir: {workspaces_str}", file=sys.stderr)
+        print(f"[DEBUG] Workspaces dir: {workspaces_dir}", file=sys.stderr)
 
-    # Verificar si estamos dentro de workspaces/
-    if workspaces_str not in cwd_str:
+    try:
+        relative = cwd.resolve().relative_to(workspaces_dir)
+    except (OSError, ValueError):
         if verbose in ["normal", "debug"]:
-            print(f"[INFO] No estás dentro de {workspaces_str}", file=sys.stderr)
+            print(f"[INFO] No estás dentro de {workspaces_dir}", file=sys.stderr)
         return None
 
-    # Extraer nombre del workspace
-    relative = cwd.relative_to(WORKSPACES_DIR)
     parts = relative.parts
 
     if len(parts) == 0:
@@ -95,24 +99,42 @@ def detect_workspace(cwd: Path, verbose: str) -> Optional[Dict[str, Any]]:
             )
         return None
 
-    workspace_name = parts[0]
-    workspace_path = WORKSPACES_DIR / workspace_name
+    workspace_directory = parts[0]
+    workspace_path = workspaces_dir / workspace_directory
 
     if not workspace_path.exists():
         if verbose == "debug":
             print(f"[DEBUG] Workspace no existe: {workspace_path}", file=sys.stderr)
         return None
 
+    status, entries = workspace_cfg.load_user_config(root)
+    if status == "empty":
+        return None
+    if status == "present":
+        workspace_name = next(
+            (key for key, entry in entries.items()
+             if entry["dir"] == workspace_directory),
+            None,
+        )
+        if workspace_name is None:
+            return None
+    else:
+        workspace_name = workspace_directory
+
     return {
         "name": workspace_name,
-        "path": str(workspace_path.relative_to(FRAMEWORK_ROOT)),
+        "directory": workspace_directory,
+        "path": str(workspace_path.relative_to(root.resolve())),
         "detected_by": "cwd",
         "confidence": 1.0,
     }
 
 
 def detect_project(
-    cwd: Path, workspace: Dict[str, Any], verbose: str
+    cwd: Path,
+    workspace: Dict[str, Any],
+    verbose: str,
+    repo_root: Path | None = None,
 ) -> Optional[Dict[str, Any]]:
     """
     Detecta el proyecto basado en cwd.
@@ -125,7 +147,8 @@ def detect_project(
             file=sys.stderr,
         )
 
-    workspace_path = WORKSPACES_DIR / workspace["name"]
+    root = Path(repo_root) if repo_root is not None else FRAMEWORK_ROOT
+    workspace_path = root / workspace["path"]
     projects_dir = workspace_path / "projects"
 
     if not projects_dir.exists():
@@ -136,18 +159,14 @@ def detect_project(
             )
         return None
 
-    # Verificar si estamos dentro de projects/
-    cwd_str = str(cwd)
-    projects_str = str(projects_dir)
-
-    if projects_str not in cwd_str:
+    try:
+        relative = cwd.resolve().relative_to(projects_dir.resolve())
+    except (OSError, ValueError):
         if verbose == "debug":
-            print(f"[DEBUG] No estás dentro de {projects_str}", file=sys.stderr)
+            print(f"[DEBUG] No estás dentro de {projects_dir}", file=sys.stderr)
         return None
 
-    # Extraer nombre del proyecto
     try:
-        relative = cwd.relative_to(projects_dir)
         parts = relative.parts
 
         if len(parts) == 0:
@@ -170,7 +189,7 @@ def detect_project(
 
         return {
             "name": project_name,
-            "path": str(project_path.relative_to(FRAMEWORK_ROOT)),
+            "path": str(project_path.relative_to(root)),
             "detected_by": "cwd",
             "confidence": 1.0,
             "is_new": is_new,

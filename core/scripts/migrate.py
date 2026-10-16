@@ -56,7 +56,7 @@ PROTECTED_PREFIXES = (
     Path("core/.context/knowledge/interactions-index.json"),
     Path("data/user"),
     Path("data/wizard"),
-    Path("workspaces/content/projects"),
+    Path("workspaces"),
 )
 
 MIGRATIONS: Dict[str, Dict] = {

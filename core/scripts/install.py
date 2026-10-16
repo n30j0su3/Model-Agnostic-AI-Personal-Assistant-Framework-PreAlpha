@@ -34,6 +34,7 @@ REPO_ROOT = CORE_DIR.parent
 CONTEXT_DIR = CORE_DIR / ".context"
 sys.path.insert(0, str(SCRIPT_DIR))
 import version as framework_version  # noqa: E402
+import workspace_config as workspace_cfg  # noqa: E402
 
 CLI_COMMANDS = ["opencode", "claude", "gemini", "codex"]
 LOCAL_CLI_COMMANDS = ["ollama", "lms"]
@@ -143,8 +144,87 @@ def configure_preferences(repo_root):
     return lang, style
 
 
-def installation_directories() -> list[Path]:
-    return [
+def _default_workspace_entries() -> dict[str, dict[str, str]]:
+    """v0.4.0-compatible default when the user makes no selection."""
+    return {"content": {"dir": "content", "display": "Content"}}
+
+
+def _workspace_entries_from_args(args, parser) -> dict[str, dict[str, str]]:
+    raw_selection = args.workspaces
+    interactive_selection = (
+        raw_selection is None
+        and not args.non_interactive
+        and not args.json
+        and not args.dry_run
+    )
+    if interactive_selection:
+        print("\n  Workspaces disponibles: personal, professional, research, "
+              "content, development, homelab, otro/custom")
+        raw_selection = input("  Workspaces a crear [content]: ").strip() or "content"
+    if raw_selection is None:
+        raw_selection = "content"
+
+    entries: dict[str, dict[str, str]] = {}
+    for raw_key in (part.strip() for part in raw_selection.split(",")):
+        if not raw_key:
+            continue
+        key = workspace_cfg.normalize_key(raw_key)
+        if not workspace_cfg.safe_name(key):
+            parser.error(f"workspace inválido: {raw_key!r}")
+        if key == "content":
+            directory = "content"
+            display = "Content"
+        elif workspace_cfg.is_semantic_key(key):
+            directory = workspace_cfg.canonical_display(key)
+            display = directory
+        else:
+            custom_name = workspace_cfg.safe_name(raw_key)
+            if not custom_name:
+                parser.error(f"workspace custom inválido: {raw_key!r}")
+            directory = str(custom_name)
+            display = str(custom_name)
+        entries[key] = {"dir": directory, "display": display}
+
+    if not entries:
+        parser.error("--workspaces requiere al menos un workspace válido")
+
+    for assignment in args.workspace_name:
+        if "=" not in assignment:
+            parser.error("--workspace-name usa KEY=NAME")
+        raw_key, raw_name = assignment.split("=", 1)
+        key = workspace_cfg.normalize_key(raw_key)
+        if key not in entries:
+            parser.error(f"--workspace-name refiere un workspace no seleccionado: {raw_key}")
+        validated_name = workspace_cfg.safe_name(raw_name)
+        if not validated_name:
+            parser.error(f"nombre de workspace inválido: {raw_name!r}")
+        entries[key] = {
+            "dir": str(validated_name),
+            "display": str(validated_name),
+        }
+
+    if interactive_selection:
+        for key, entry in list(entries.items()):
+            chosen = input(
+                f"  Nombre de carpeta para {key} [{entry['dir']}]: "
+            ).strip()
+            if chosen:
+                validated_name = workspace_cfg.safe_name(chosen)
+                if not validated_name:
+                    parser.error(f"nombre de workspace inválido: {chosen!r}")
+                entries[key] = {
+                    "dir": str(validated_name),
+                    "display": str(validated_name),
+                }
+
+    return workspace_cfg.normalize_entries(entries)
+
+
+def installation_directories(
+    workspace_entries: dict[str, dict[str, str]] | None = None,
+) -> list[Path]:
+    entries = workspace_entries or _default_workspace_entries()
+    directories = [
         CONTEXT_DIR,
         CONTEXT_DIR / "sessions",
         CONTEXT_DIR / "codebase",
@@ -155,10 +235,14 @@ def installation_directories() -> list[Path]:
         CONTEXT_DIR / "knowledge" / "wiki",
         CORE_DIR / "agents" / "subagents",
         CORE_DIR / "skills" / "core",
-        REPO_ROOT / "workspaces" / "content" / "projects",
         REPO_ROOT / "docs",
         REPO_ROOT / "config",
     ]
+    directories.extend(
+        workspace_cfg.project_dir_for(entries, key, repo_root=REPO_ROOT)
+        for key in entries
+    )
+    return directories
 
 
 def main(argv=None):
@@ -178,7 +262,19 @@ def main(argv=None):
                         help="Print the installation plan without writing")
     parser.add_argument("--json", action="store_true",
                         help="Emit a machine-readable receipt on stdout")
+    parser.add_argument(
+        "--workspaces",
+        help="Comma-separated semantic workspaces to create (default: content)",
+    )
+    parser.add_argument(
+        "--workspace-name",
+        action="append",
+        default=[],
+        metavar="KEY=NAME",
+        help="Rename a selected workspace directory; repeatable",
+    )
     args = parser.parse_args(argv)
+    workspace_entries = _workspace_entries_from_args(args, parser)
 
     version = framework_version.canonical(REPO_ROOT)
     if args.dry_run:
@@ -189,8 +285,19 @@ def main(argv=None):
             "non_interactive": args.non_interactive,
             "no_browser": args.no_browser,
             "planned_directories": [
-                str(path.relative_to(REPO_ROOT)) for path in installation_directories()
+                str(path.relative_to(REPO_ROOT))
+                for path in installation_directories(workspace_entries)
             ],
+            "planned_workspace_directories": [
+                str(workspace_cfg.project_dir_for(
+                    workspace_entries, key, repo_root=REPO_ROOT
+                ).relative_to(REPO_ROOT))
+                for key in workspace_entries
+            ],
+            "planned_workspace_config": {
+                "schema": workspace_cfg.CONFIG_SCHEMA_VERSION,
+                "workspaces": workspace_entries,
+            },
             "writes": [],
         }
         if args.json:
@@ -241,9 +348,10 @@ def main(argv=None):
         check_optional_dependencies()
 
     # Ensure directories
-    dirs = installation_directories()
+    dirs = installation_directories(workspace_entries)
     for d in dirs:
         d.mkdir(parents=True, exist_ok=True)
+    workspace_cfg.save_user_config(workspace_entries, repo_root=REPO_ROOT)
     print_ok("Estructura de directorios verificada.")
 
     backlog = CONTEXT_DIR / "codebase" / "backlog.md"
@@ -302,6 +410,13 @@ Bienvenida. Este framework actúa como asistente personal para tareas diarias, i
 """
             master.write_text(default_content, encoding="utf-8")
             print_ok("MASTER.md creado con configuración por defecto.")
+
+    master_content = master.read_text(encoding="utf-8")
+    rendered_master = workspace_cfg.render_master_workspaces(
+        master_content, workspace_entries
+    )
+    if rendered_master != master_content:
+        master.write_text(rendered_master, encoding="utf-8", newline="")
 
     # Detect CLIs
     found = []
@@ -431,6 +546,7 @@ Bienvenida. Este framework actúa como asistente personal para tareas diarias, i
             "version": version,
             "default_cli": default_cli,
             "no_browser": args.no_browser,
+            "workspaces": workspace_entries,
         }, ensure_ascii=False))
     return 0
 
