@@ -27,8 +27,19 @@ sys.path.insert(0, str(SCRIPT_DIR))
 
 def _load(name):
     spec = importlib.util.spec_from_file_location(name, SCRIPT_DIR / f"{name}.py")
+    if spec is None or spec.loader is None:
+        raise ImportError(f"cannot load {name}")
     mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
+    previous = sys.modules.get(name)
+    sys.modules[name] = mod
+    try:
+        spec.loader.exec_module(mod)
+    except Exception:
+        if previous is None:
+            sys.modules.pop(name, None)
+        else:
+            sys.modules[name] = previous
+        raise
     return mod
 
 
@@ -95,6 +106,9 @@ class TestProviderAuthStatus:
 
 class TestGetFreeModelsAuthAware:
     """La lista free debe ser auth-aware: dicts {id, status} cred-first."""
+
+    def test_mocked_instance_is_the_one_select_free_model_uses(self):
+        assert sfm.oc_auth is oc_auth
 
     def _fake_catalog(self):
         return {

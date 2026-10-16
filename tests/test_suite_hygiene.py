@@ -54,8 +54,6 @@ def test_full_suite_green_and_does_not_mutate_checkout(tmp_path):
             "tests",
             "-q",
             "--ignore=tests/test_suite_hygiene.py",
-            "-k",
-            "not test_cred_first_ordering",
         ],
         cwd=ROOT,
         env=env,
