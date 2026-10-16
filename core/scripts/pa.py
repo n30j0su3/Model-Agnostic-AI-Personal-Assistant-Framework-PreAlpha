@@ -80,6 +80,8 @@ CODEBASE_DIR.mkdir(parents=True, exist_ok=True)
 # Add scripts dir to path for local imports
 sys.path.insert(0, str(SCRIPT_DIR))
 
+import version as framework_version
+
 # Optional memory bridge (best-effort)
 try:
     from session_bridge import SessionBridge
@@ -205,10 +207,14 @@ def set_title(title: str):
 
 # --- UI ---
 def print_banner():
+    display_version = framework_version.render(
+        framework_version.canonical(REPO_ROOT), "badge"
+    )
     branding_file = REPO_ROOT / "config" / "branding.txt"
     if branding_file.exists():
         try:
-            print(c(branding_file.read_text(encoding="utf-8"), Colors.HEADER))
+            branding = branding_file.read_text(encoding="utf-8")
+            print(c(branding.replace("{{VERSION}}", display_version), Colors.HEADER))
             return
         except Exception:
             pass
@@ -220,7 +226,7 @@ def print_banner():
     )
     print(
         c(
-           "║   FreakingJSON PA Framework — v0.4.0-beta          ║",
+           f"║   FreakingJSON PA Framework — {display_version:<21}║",
             f"{Colors.HEADER}{Colors.BOLD}",
         )
     )
@@ -1415,10 +1421,7 @@ def _save_profile(lang: str = "es", default_cli: str = "opencode"):
     """Save profile.md with current settings."""
     import platform as plat
 
-    version = "0.4.0-beta"
-    vf = REPO_ROOT / "VERSION"
-    if vf.exists():
-        version = vf.read_text(encoding="utf-8").strip()
+    version = framework_version.canonical(REPO_ROOT)
 
     profile = CONTEXT_DIR / "profile.md"
     profile.write_text(
@@ -1563,13 +1566,12 @@ def show_help():
 
 def show_cli_help():
     """Display CLI help and exit."""
-    version = "0.4.0-beta"
-    vf = REPO_ROOT / "VERSION"
-    if vf.exists():
-        version = vf.read_text(encoding="utf-8").strip()
+    display_version = framework_version.render(
+        framework_version.canonical(REPO_ROOT), "badge"
+    )
     
     print(f"""
-{c('PA Framework Control Panel', Colors.BOLD)} v{version}
+{c('PA Framework Control Panel', Colors.BOLD)} {display_version}
 
 {c('USO:', Colors.BOLD)}
   ./pa.sh [OPCIONES]
@@ -1738,8 +1740,11 @@ def main_menu():
 
 # --- ENTRY POINT ---
 def main():
+    display_version = framework_version.render(
+        framework_version.canonical(REPO_ROOT), "badge"
+    )
     parser = argparse.ArgumentParser(
-        description="FreakingJSON PA Framework Control Panel v0.4.0-beta",
+        description=f"FreakingJSON PA Framework Control Panel {display_version}",
         add_help=False,  # Custom help handler
     )
     parser.add_argument("--sync", action="store_true", help="Run sync and exit")
@@ -1756,11 +1761,7 @@ def main():
 
     # Handle --version
     if args.version:
-        version = "0.4.0-beta"
-        vf = REPO_ROOT / "VERSION"
-        if vf.exists():
-            version = vf.read_text(encoding="utf-8").strip()
-        print(f"FreakingJSON PA Framework v{version}")
+        print(f"FreakingJSON PA Framework {display_version}")
         sys.exit(0)
 
     # Handle --help

@@ -1,5 +1,6 @@
 # Framework Configuration
-# Version: v0.4.1-beta
+# Canonical source: VERSION (synchronized by version_updater.py)
+version: 0.4.1-beta
 
 evaluation:
   # Mode: full (all criteria) or simplified (core criteria only)

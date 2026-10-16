@@ -20,6 +20,27 @@ from pathlib import Path
 from typing import Optional
 
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPT_DIR))
+
+from version import normalize
+
+
+TARGETS = (
+    "README.md",
+    "AGENTS.md",
+    "dashboard.html",
+    "config/framework.yaml",
+    "core/scripts/pa.py",
+    "ROADMAP.md",
+    "config/branding.txt",
+)
+
+_VERSION_TEXT_RE = re.compile(
+    r"(?<![\w-])v?(\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?)(?![\w-])"
+)
+
+
 def get_root_dir() -> Path:
     """Get framework root directory."""
     return Path(__file__).resolve().parents[2]
@@ -44,8 +65,15 @@ def get_current_version(version_path: Optional[Path] = None) -> str:
     if not version_path.exists():
         raise FileNotFoundError(f"VERSION file not found: {version_path}")
 
-    content = version_path.read_text(encoding="utf-8").strip()
-    return content
+    return normalize(version_path.read_text(encoding="utf-8"))
+
+
+def parse_version_from_text(text: str) -> Optional[str]:
+    """Parse a standalone version token, never a shields.io/CSS class."""
+    if "--" in text:
+        return None
+    match = _VERSION_TEXT_RE.search(text)
+    return normalize(match.group(1)) if match else None
 
 
 def detect_version_in_file(file_path: Path, patterns: list) -> Optional[str]:
@@ -65,9 +93,12 @@ def detect_version_in_file(file_path: Path, patterns: list) -> Optional[str]:
     content = file_path.read_text(encoding="utf-8")
 
     for pattern in patterns:
-        match = re.search(pattern, content)
+        match = re.search(pattern, content, re.MULTILINE)
         if match:
-            return match.group(1)
+            try:
+                return normalize(match.group(1))
+            except ValueError:
+                continue
 
     return None
 
@@ -81,78 +112,34 @@ def detect_version_in_files() -> dict:
     """
     root = get_root_dir()
 
-    file_patterns = {
-        "README.md": {
-            "path": root / "README.md",
-            "patterns": [
-                r"v(\d+\.\d+\.\d+[a-z0-9-]*)",  # Badge URL or text
-            ],
-        },
-        "AGENTS.md": {
-            "path": root / "AGENTS.md",
-            "patterns": [
-                r"Version: v(\d+\.\d+\.\d+[a-z0-9-]*)",
-                r"Framework v(\d+\.\d+\.\d+[a-z0-9-]*)",
-                r"v(\d+\.\d+\.\d+[a-z0-9-]*)",
-            ],
-        },
-        "dashboard.html": {
-            "path": root / "dashboard.html",
-            "patterns": [
-                r"v(\d+\.\d+\.\d+[a-z0-9-]*)",
-            ],
-        },
-        "config/framework.yaml": {
-            "path": root / "config" / "framework.yaml",
-            "patterns": [
-                r"^version:\s*['\"]?(\d+\.\d+\.\d+[a-z0-9-]*)['\"]?",
-                r"# Version:\s*(\d+\.\d+\.\d+[a-z0-9-]*)",
-            ],
-        },
-        "core/scripts/pa.py": {
-            "path": root / "core" / "scripts" / "pa.py",
-            "patterns": [
-                r"Pre-Alpha (\d+\.\d+\.\d+[a-z0-9-]*)",
-                r"v(\d+\.\d+\.\d+[a-z0-9-]*)",
-                r'version = "(\d+\.\d+\.\d+[a-z0-9-]*)"',
-            ],
-        },
-        "ROADMAP.md": {
-            "path": root / "ROADMAP.md",
-            "patterns": [
-                r"v(\d+\.\d+\.\d+[a-z0-9-]*)",
-                r"Versión actual.*?v(\d+\.\d+\.\d+[a-z0-9-]*)",
-            ],
-        },
-        "README-technical.md": {
-            "path": root / "README-technical.md",
-            "patterns": [
-                r"v(\d+\.\d+\.\d+[a-z0-9-]*)",
-                r"release-v(\d+\.\d+\.\d+[a-z0-9-]*)",
-            ],
-        },
-        "GEMINI.md": {
-            "path": root / "GEMINI.md",
-            "patterns": [
-                r"v(\d+\.\d+\.\d+[a-z0-9-]*)",
-                r"Framework.*?v(\d+\.\d+\.\d+[a-z0-9-]*)",
-            ],
-        },
-        "config/branding.txt": {
-            "path": root / "config" / "branding.txt",
-            "patterns": [
-                r"v(\d+\.\d+\.\d+[a-z0-9-]*)",
-            ],
-        },
+    patterns_by_target = {
+        "README.md": [
+            r"Versión actual:\s*\*\*v?(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)\*\*",
+        ],
+        "AGENTS.md": [
+            r"^> \*\*Version: v?(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)\*\*",
+        ],
+        "dashboard.html": [
+            r"<title>PA Framework Command Center v?(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)</title>",
+        ],
+        "config/framework.yaml": [
+            r"^version:\s*['\"]?v?(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)['\"]?\s*$",
+        ],
+        "core/scripts/pa.py": [],
+        "ROADMAP.md": [
+            r"^\*\*Versión actual\*\*:\s*v?(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)\s*$",
+        ],
+        "config/branding.txt": [],
     }
 
     results = {}
-    for name, config in file_patterns.items():
-        detected = detect_version_in_file(config["path"], config["patterns"])
+    for name in TARGETS:
+        path = root / name
+        detected = detect_version_in_file(path, patterns_by_target[name])
         results[name] = {
-            "path": config["path"],
+            "path": path,
             "detected": detected,
-            "exists": config["path"].exists(),
+            "exists": path.exists(),
         }
 
     return results
@@ -199,38 +186,53 @@ def apply_changes(changes: list, new_version: str, dry_run: bool = False) -> int
     root = get_root_dir()
     updated = 0
 
+    token = r"\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?"
+    badge_version = new_version.replace("-", "--")
     file_replacements = {
         "README.md": [
-            (r"v\d+\.\d+\.\d+[a-z0-9-]*", f"v{new_version}"),
+            (
+                rf"(https://img\.shields\.io/badge/version-v){token}(-lime)",
+                lambda match: f"{match.group(1)}{badge_version}{match.group(2)}",
+            ),
+            (
+                rf"^(Ver `CHANGELOG\.md`\. Versión actual: \*\*)v?{token}(\.\*\*)$",
+                lambda match: f"{match.group(1)}v{new_version}{match.group(2)}",
+            ),
         ],
         "AGENTS.md": [
-            (r"Framework v\d+\.\d+\.\d+[a-z0-9-]*", f"Framework v{new_version}"),
+            (
+                rf"^(> \*\*Version: )v?{token}(\*\*.*)$",
+                lambda match: f"{match.group(1)}v{new_version}{match.group(2)}",
+            ),
         ],
         "dashboard.html": [
-            (r"v\d+\.\d+\.\d+[a-z0-9-]*", f"v{new_version}"),
+            (
+                rf"(<title>PA Framework Command Center )v?{token}(</title>)",
+                lambda match: f"{match.group(1)}v{new_version}{match.group(2)}",
+            ),
+            (
+                rf"(<p class=\"text-xs text-slate-400\">)v?{token}( <span id=\"build-id\")",
+                lambda match: f"{match.group(1)}v{new_version}{match.group(2)}",
+            ),
+            (
+                rf"(Framework )v?{token}( — 100% Local, 100% Privado)",
+                lambda match: f"{match.group(1)}v{new_version}{match.group(2)}",
+            ),
         ],
         "config/framework.yaml": [
-            (r"(# Version:)\s*\d+\.\d+\.\d+[a-z0-9-]*", f"\\1 {new_version}"),
+            (
+                rf"^(\s*version:\s*)['\"]?v?{token}['\"]?(\s*(?:#.*)?)$",
+                lambda match: f"{match.group(1)}{new_version}{match.group(2)}",
+            ),
         ],
-        "core/scripts/pa.py": [
-            (r"Pre-Alpha \d+\.\d+\.\d+[a-z0-9-]*", f"Pre-Alpha {new_version}"),
-            (r"v\d+\.\d+\.\d+[a-z0-9-]*", f"v{new_version}"),
-            (r'version = "\d+\.\d+\.\d+[a-z0-9-]*"', f'version = "{new_version}"'),
-        ],
+        "core/scripts/pa.py": [],
         "ROADMAP.md": [
-            (r"v\d+\.\d+\.\d+[a-z0-9-]*", f"v{new_version}"),
+            (
+                rf"^(\*\*Versión actual\*\*:\s*)v?{token}(\s*)$",
+                lambda match: f"{match.group(1)}v{new_version}{match.group(2)}",
+            ),
         ],
-        "README-technical.md": [
-            (r"v\d+\.\d+\.\d+[a-z0-9-]*", f"v{new_version}"),
-            (r"release-v\d+\.\d+\.\d+[a-z0-9-]*", f"release-v{new_version}"),
-        ],
-        "GEMINI.md": [
-            (r"Framework v\d+\.\d+\.\d+[a-z0-9-]*", f"Framework v{new_version}"),
-            (r"v\d+\.\d+\.\d+[a-z0-9-]*", f"v{new_version}"),
-        ],
-        "config/branding.txt": [
-            (r"v\d+\.\d+\.\d+[a-z0-9-]*", f"v{new_version}"),
-        ],
+        "config/branding.txt": [],
     }
 
     for file_name, old_ver, _ in changes:
@@ -245,7 +247,9 @@ def apply_changes(changes: list, new_version: str, dry_run: bool = False) -> int
 
         if file_name in file_replacements:
             for pattern, replacement in file_replacements[file_name]:
-                new_content = re.sub(pattern, replacement, new_content)
+                new_content = re.sub(
+                    pattern, replacement, new_content, flags=re.MULTILINE
+                )
 
         if new_content != content:
             file_path.write_text(new_content, encoding="utf-8")
@@ -375,7 +379,7 @@ def main():
 
     try:
         if args.version:
-            new_version = args.version
+            new_version = normalize(args.version)
             print(f"[INFO] Using override version: {new_version}")
         else:
             new_version = get_current_version()

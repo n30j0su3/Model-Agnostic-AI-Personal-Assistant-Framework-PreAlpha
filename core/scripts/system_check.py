@@ -24,6 +24,7 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
+
 from concurrent.futures import ThreadPoolExecutor, as_completed
 # Windows UTF-8 encoding fix (evita acentos corruptos)
 if sys.platform == "win32" and sys.stdout.isatty():
@@ -38,6 +39,10 @@ if sys.platform == "win32" and sys.stdout.isatty():
 
 # --- PATHS ---
 SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPT_DIR))
+
+import version as framework_version
+
 CORE_DIR = SCRIPT_DIR.parent
 REPO_ROOT = CORE_DIR.parent
 CONTEXT_DIR = CORE_DIR / ".context"
@@ -115,8 +120,8 @@ def check_version():
     vf = REPO_ROOT / "VERSION"
     if not vf.exists():
         return False, "VERSION no existe"
-    version = vf.read_text(encoding="utf-8").strip()
-    return True, f"Framework v{version}"
+    version = framework_version.canonical(REPO_ROOT)
+    return True, f"Framework {framework_version.render(version, 'badge')}"
 
 @register("profile", "Perfil de instalacion")
 def check_profile():
@@ -354,14 +359,16 @@ def print_report(results_data, elapsed):
     critical_errors = sum(1 for r in results_data if r["status"] is False and r["critical"])
 
     # Header
-    version = "?"
-    vf = REPO_ROOT / "VERSION"
-    if vf.exists():
-        version = vf.read_text(encoding="utf-8").strip()
+    try:
+        version = framework_version.render(
+            framework_version.canonical(REPO_ROOT), "badge"
+        )
+    except (FileNotFoundError, ValueError):
+        version = "unknown"
 
     print()
     print("=" * 58)
-    print(f"  PA Framework v{version} — System Health Check")
+    print(f"  PA Framework {version} — System Health Check")
     print(f"  {datetime.now().strftime('%Y-%m-%d %H:%M')}")
     print("=" * 58)
     print()
@@ -546,7 +553,7 @@ def main(argv=None):
     if args.json:
         output = {
             "timestamp": datetime.now().isoformat(),
-            "version": (REPO_ROOT / "VERSION").read_text(encoding="utf-8").strip() if (REPO_ROOT / "VERSION").exists() else "unknown",
+            "version": framework_version.canonical(REPO_ROOT) if (REPO_ROOT / "VERSION").exists() else "unknown",
             "elapsed_seconds": round(elapsed, 2),
             "checks": results_data,
             "summary": {
