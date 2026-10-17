@@ -25,7 +25,11 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import (
+    ThreadPoolExecutor,
+    TimeoutError as FuturesTimeoutError,
+    as_completed,
+)
 # Windows UTF-8 encoding fix (evita acentos corruptos)
 if sys.platform == "win32":
     try:
@@ -79,12 +83,13 @@ def print_info(msg):
 checks = []
 results = []
 
-def register(name, description, critical=True):
+def register(name, description, critical=True, quick=False):
     def decorator(func):
         checks.append({
             "name": name,
             "description": description,
             "critical": critical,
+            "quick": quick,
             "func": func,
         })
         return func
@@ -94,13 +99,13 @@ def register(name, description, critical=True):
 # CHECKS
 # ===========================================================================
 
-@register("python_version", "Python 3.11+")
+@register("python_version", "Python 3.11+", quick=True)
 def check_python():
     if sys.version_info >= (3, 11):
         return True, f"Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
     return False, f"Python {sys.version_info.major}.{sys.version_info.minor} < 3.11"
 
-@register("core_structure", "Estructura del framework")
+@register("core_structure", "Estructura del framework", quick=True)
 def check_core_structure():
     required = [
         CONTEXT_DIR,
@@ -115,7 +120,7 @@ def check_core_structure():
         return True, f"{len(required)} directorios OK"
     return False, f"Faltan: {', '.join(str(m) for m in missing)}"
 
-@register("version", "Archivo VERSION")
+@register("version", "Archivo VERSION", quick=True)
 def check_version():
     vf = REPO_ROOT / "VERSION"
     if not vf.exists():
@@ -123,14 +128,14 @@ def check_version():
     version = framework_version.canonical(REPO_ROOT)
     return True, f"Framework {framework_version.render(version, 'badge')}"
 
-@register("profile", "Perfil de instalacion")
+@register("profile", "Perfil de instalacion", quick=True)
 def check_profile():
     pf = CONTEXT_DIR / "profile.md"
     if pf.exists():
         return True, "profile.md presente"
     return False, "profile.md no encontrado"
 
-@register("master_context", "MASTER.md")
+@register("master_context", "MASTER.md", quick=True)
 def check_master():
     mf = CONTEXT_DIR / "MASTER.md"
     if mf.exists():
@@ -151,7 +156,7 @@ def check_quickstart():
         return True, "quick-start.md presente"
     return False, "quick-start.md no encontrado"
 
-@register("python_scripts", "Scripts base en core/scripts")
+@register("python_scripts", "Scripts base en core/scripts", quick=True)
 def check_scripts():
     essential = [
         "pa.py", "install.py", "update.py", "session_start.py",
@@ -234,7 +239,7 @@ def check_update_protected():
         return True, f"{len(lines)} paths protegidos"
     return "warn", "No encontrado (opcional)"
 
-@register("opencode_config", "opencode.jsonc")
+@register("opencode_config", "opencode.jsonc", quick=True)
 def check_opencode_config():
     oc = REPO_ROOT / "opencode.jsonc"
     if oc.exists():
@@ -242,14 +247,14 @@ def check_opencode_config():
         return True, f"OK ({size_kb} KB)"
     return "warn", "No encontrado (opcional)"
 
-@register("opencode_dir", ".opencode/ directorio")
+@register("opencode_dir", ".opencode/ directorio", quick=True)
 def check_opencode_dir():
     od = REPO_ROOT / ".opencode"
     if od.exists() and (od / "config.json").exists():
         return True, "Configurado"
     return "warn", "No configurado (opcional)"
 
-@register("dashboard", "Dashboard HTML")
+@register("dashboard", "Dashboard HTML", quick=True)
 def check_dashboard():
     dashboard = REPO_ROOT / "dashboard.html"
     tailwind = REPO_ROOT / "assets" / "tailwind.js"
@@ -320,44 +325,56 @@ def check_skills():
 # MAIN
 # ===========================================================================
 
-def run_all_checks(quick=False):
-    """Run all registered checks in parallel (ThreadPool)."""
+def run_all_checks(quick=False, timeout_seconds=30):
+    """Run selected checks concurrently and report in registration order."""
     start = time.time()
-    results_data = []
-
-    # Filter: quick mode solo critical checks
-    active_checks = [c for c in checks if not quick or c["critical"]]
+    active_checks = [c for c in checks if not quick or c.get("quick", False)]
+    results_by_index = {}
 
     with ThreadPoolExecutor(max_workers=8) as executor:
         future_map = {
-            executor.submit(c["func"]): c for c in active_checks
+            executor.submit(check["func"]): (index, check)
+            for index, check in enumerate(active_checks)
         }
-        for future in as_completed(future_map, timeout=30):
-            check = future_map[future]
-            try:
-                result = future.result()
-                if isinstance(result, tuple) and len(result) == 2:
-                    status, detail = result
-                else:
-                    status, detail = result, ""
-                results_data.append({
+        try:
+            completed = as_completed(future_map, timeout=timeout_seconds)
+            for future in completed:
+                index, check = future_map[future]
+                try:
+                    result = future.result()
+                    if isinstance(result, tuple) and len(result) == 2:
+                        status, detail = result
+                    else:
+                        status, detail = result, ""
+                except Exception as exc:
+                    status, detail = False, f"Error: {exc}"
+                results_by_index[index] = {
                     "name": check["name"],
                     "description": check["description"],
                     "status": status,
                     "detail": detail,
                     "critical": check["critical"],
-                })
-            except Exception as e:
-                results_data.append({
-                    "name": check["name"],
-                    "description": check["description"],
-                    "status": False,
-                    "detail": f"Error: {e}",
-                    "critical": check["critical"],
-                })
+                }
+        except FuturesTimeoutError:
+            pass
+
+        for future, (index, check) in future_map.items():
+            if index in results_by_index:
+                continue
+            future.cancel()
+            results_by_index[index] = {
+                "name": check["name"],
+                "description": check["description"],
+                "status": False,
+                "detail": f"Timeout after {timeout_seconds:g}s",
+                "critical": check["critical"],
+            }
 
     elapsed = time.time() - start
-    return results_data, elapsed
+    ordered_results = [
+        results_by_index[index] for index in sorted(results_by_index)
+    ]
+    return ordered_results, elapsed
 
 
 def print_report(results_data, elapsed):
@@ -525,6 +542,7 @@ def auto_fix():
     else:
         print(c(f"  [FIX] {fixed} exitosas, {failed} fallos", Colors.RED))
     print()
+    return failed == 0
 
 
 def main(argv=None):
@@ -535,7 +553,7 @@ def main(argv=None):
     parser.add_argument("--quiet-first-run", action="store_true",
                         help="Modo silencioso para auto-heal de primer arranque (session_start)")
     parser.add_argument("--json", action="store_true", help="Salida JSON")
-    parser.add_argument("--quick", action="store_true", help="Solo checks criticos")
+    parser.add_argument("--quick", action="store_true", help="Solo checks rapidos declarados")
     args = parser.parse_args(argv)
 
     if args.fix:
@@ -545,13 +563,13 @@ def main(argv=None):
             import contextlib
             buf = io.StringIO()
             with contextlib.redirect_stdout(buf):
-                auto_fix()
+                fix_succeeded = auto_fix()
             created = [l for l in buf.getvalue().splitlines() if "Creado" in l or "creado" in l]
             for l in created:
                 print(l)
         else:
-            auto_fix()
-        return 0
+            fix_succeeded = auto_fix()
+        return 0 if fix_succeeded else 1
 
     results_data, elapsed = run_all_checks(quick=args.quick)
     critical_errors = sum(
@@ -573,7 +591,7 @@ def main(argv=None):
                 "critical_errors": critical_errors,
             },
         }
-        print(json.dumps(output, indent=2, ensure_ascii=False))
+        print(json.dumps(output, indent=2, ensure_ascii=True, sort_keys=True))
     else:
         print_report(results_data, elapsed)
 

@@ -23,12 +23,39 @@ Author: PA Framework Team
 
 import json
 import os
+import sys
 import time
 from pathlib import Path
 from functools import wraps
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Callable, Dict, List, Optional, Union
 from dataclasses import dataclass, field
+
+
+def _configure_console_streams() -> None:
+    """Keep Unicode diagnostics printable on legacy Windows/codepage streams."""
+    for stream in (sys.stdout, sys.stderr):
+        encoding = getattr(stream, "encoding", None) or "utf-8"
+        needs_fallback = sys.platform == "win32"
+        try:
+            "✅".encode(encoding)
+        except (LookupError, UnicodeEncodeError):
+            needs_fallback = True
+        if not needs_fallback:
+            continue
+        reconfigure = getattr(stream, "reconfigure", None)
+        if not callable(reconfigure):
+            continue
+        try:
+            kwargs = {"errors": "replace"}
+            if sys.platform == "win32":
+                kwargs["encoding"] = "utf-8"
+            reconfigure(**kwargs)
+        except ValueError:
+            pass
+
+
+_configure_console_streams()
 
 
 # --- PATHS ---
