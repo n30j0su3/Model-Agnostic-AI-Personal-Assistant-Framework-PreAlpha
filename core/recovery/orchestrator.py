@@ -16,8 +16,9 @@ from __future__ import annotations
 import json
 import logging
 from datetime import datetime
+from functools import partial
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Sequence
 
 try:
     # Standard package import (works when project root is on sys.path)
@@ -47,6 +48,7 @@ logger = logging.getLogger(__name__)
 
 _CORE_DIR = Path(__file__).resolve().parent.parent
 _PLAYBOOKS_DIR = _CORE_DIR / ".context" / "knowledge" / "playbooks"
+_DEFAULT_WRITE_ROOTS = (_CORE_DIR.parent / "data", _CORE_DIR / ".context")
 
 # Canonical metadata for the nine recovery actions that actually exist.
 # A playbook ID is publishable only when it has both registry metadata and an
@@ -168,21 +170,31 @@ def _action_encoding(context: dict) -> bool:
     return False
 
 
-def _action_file_not_found(context: dict) -> bool:
-    """PB-002: Attempt to create missing file or directory."""
+def _action_file_not_found(
+    context: dict, *, allowed_write_roots: Sequence[Path] = ()
+) -> bool:
+    """PB-002: Create a missing path only inside an explicit mutable root."""
     path = context.get("file_path")
-    if path:
-        p = Path(path)
-        try:
-            if p.suffix:  # looks like a file
-                p.parent.mkdir(parents=True, exist_ok=True)
-                p.touch(exist_ok=True)
-            else:  # directory
-                p.mkdir(parents=True, exist_ok=True)
-            return True
-        except Exception:
-            return False
-    return False
+    if not path or not allowed_write_roots:
+        return False
+
+    p = Path(path).expanduser()
+    if not p.is_absolute():
+        p = _CORE_DIR.parent / p
+    p = p.resolve()
+    roots = tuple(Path(root).expanduser().resolve() for root in allowed_write_roots)
+    if not any(p == root or root in p.parents for root in roots):
+        return False
+
+    try:
+        if p.suffix:  # looks like a file
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.touch(exist_ok=True)
+        else:  # directory
+            p.mkdir(parents=True, exist_ok=True)
+        return True
+    except OSError:
+        return False
 
 
 def _action_json_parse(context: dict) -> bool:
@@ -319,9 +331,19 @@ class RecoveryOrchestrator:
             ``index.json``.
     """
 
-    def __init__(self, playbooks_dir: Optional[Path] = None):
+    def __init__(
+        self,
+        playbooks_dir: Optional[Path] = None,
+        allowed_write_roots: Optional[Sequence[Path]] = None,
+    ):
         self.playbooks_dir = playbooks_dir or _PLAYBOOKS_DIR
         self._actions: dict[str, Callable[[dict], bool]] = dict(_BUILTIN_ACTIONS)
+        roots = _DEFAULT_WRITE_ROOTS if allowed_write_roots is None else allowed_write_roots
+        self._allowed_write_roots = tuple(Path(root).resolve() for root in roots)
+        self._actions["PB-002"] = partial(
+            _action_file_not_found,
+            allowed_write_roots=self._allowed_write_roots,
+        )
         self._playbook_index: list[dict] = []
         self._history: list[dict] = []
         self._load_index()

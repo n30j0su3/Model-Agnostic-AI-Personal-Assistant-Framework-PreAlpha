@@ -75,9 +75,12 @@ def tmp_playbooks_dir(tmp_path):
 
 
 @pytest.fixture
-def orchestrator(tmp_playbooks_dir):
-    """Return a RecoveryOrchestrator pointed at the temp playbooks dir."""
-    return RecoveryOrchestrator(playbooks_dir=tmp_playbooks_dir)
+def orchestrator(tmp_playbooks_dir, tmp_path):
+    """Return an orchestrator with an explicit test-only write root."""
+    return RecoveryOrchestrator(
+        playbooks_dir=tmp_playbooks_dir,
+        allowed_write_roots=[tmp_path],
+    )
 
 
 # ===================================================================
@@ -262,6 +265,41 @@ class TestExecutePlaybook:
         )
         assert result["status"] == "success"
         assert target.exists()
+
+    def test_pb002_rejects_paths_outside_explicit_write_roots(
+        self, tmp_playbooks_dir, tmp_path
+    ):
+        allowed_root = tmp_path / "allowed"
+        outside = tmp_path / "outside" / "blocked.txt"
+        orchestrator = RecoveryOrchestrator(
+            playbooks_dir=tmp_playbooks_dir,
+            allowed_write_roots=[allowed_root],
+        )
+
+        result = orchestrator.execute_playbook(
+            "PB-002", {"file_path": str(outside)}
+        )
+
+        assert result["status"] == "failed"
+        assert not outside.exists()
+
+    def test_pb002_creates_file_inside_explicit_write_root(
+        self, tmp_playbooks_dir, tmp_path
+    ):
+        allowed_root = tmp_path / "allowed"
+        target = allowed_root / "nested" / "created.txt"
+        orchestrator = RecoveryOrchestrator(
+            playbooks_dir=tmp_playbooks_dir,
+            allowed_write_roots=[allowed_root],
+        )
+
+        result = orchestrator.execute_playbook(
+            "PB-002", {"file_path": str(target)}
+        )
+
+        assert result["status"] == "success"
+        assert target.exists()
+
 
     def test_execute_pb003_json_cleanup(self, orchestrator):
         bad_json = '\ufeff{"a": 1,}'
