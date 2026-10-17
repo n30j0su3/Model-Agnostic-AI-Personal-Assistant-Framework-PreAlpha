@@ -192,29 +192,27 @@ class SessionStore:
         Returns:
             Session object with messages loaded
         """
-        if session_id:
-            existing = self.get_session(session_id)
-            if existing and existing.user_id == user_id:
-                return existing
-        
-        # Create new session
         new_id = session_id or str(uuid.uuid4())
         now = time.time()
-        
+
+        # Preserve immutable creation data and accumulated metadata/messages when
+        # a caller resumes an existing ID. The WHERE clause prevents a caller
+        # from taking over an ID owned by another user.
         self._conn.execute(
-            "INSERT OR REPLACE INTO sessions (session_id, user_id, created_at, last_activity, metadata) "
-            "VALUES (?, ?, ?, ?, '{}')",
+            "INSERT INTO sessions (session_id, user_id, created_at, last_activity, metadata) "
+            "VALUES (?, ?, ?, ?, '{}') "
+            "ON CONFLICT(session_id) DO UPDATE SET last_activity = excluded.last_activity "
+            "WHERE sessions.user_id = excluded.user_id",
             (new_id, user_id, now, now),
         )
         self._conn.commit()
-        
-        return Session(
-            session_id=new_id,
-            user_id=user_id,
-            messages=[],
-            created_at=now,
-            last_activity=now,
-        )
+
+        persisted = self.get_session(new_id)
+        if persisted is None:
+            raise RuntimeError(f"session was not persisted: {new_id}")
+        if persisted.user_id != user_id:
+            raise ValueError("session_id belongs to a different user")
+        return persisted
     
     def get_session(self, session_id: str) -> Optional[Session]:
         """Retrieve session by ID with all messages."""
@@ -252,6 +250,90 @@ class SessionStore:
                 sessions.append(session)
         
         return sessions
+
+    def update_metadata(
+        self,
+        session_id: str,
+        key: Optional[str] = None,
+        value: Any = None,
+        *,
+        updates: Optional[Dict[str, Any]] = None,
+    ) -> bool:
+        """Merge metadata into a persisted session without replacing prior keys."""
+        merged_updates = dict(updates or {})
+        if key is not None:
+            merged_updates[key] = value
+        if not merged_updates:
+            return False
+
+        row = self._conn.execute(
+            "SELECT metadata FROM sessions WHERE session_id = ?",
+            (session_id,),
+        ).fetchone()
+        if row is None:
+            return False
+
+        metadata = json.loads(row["metadata"] or "{}")
+        metadata.update(merged_updates)
+        self._conn.execute(
+            "UPDATE sessions SET metadata = ?, last_activity = ? WHERE session_id = ?",
+            (json.dumps(metadata, ensure_ascii=False), time.time(), session_id),
+        )
+        self._conn.commit()
+        return True
+
+    def search(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
+        """Search message content and session metadata using a stable result shape."""
+        normalized_query = query.strip().lower()
+        if not normalized_query or limit <= 0:
+            return []
+
+        like_query = f"%{normalized_query}%"
+        rows = self._conn.execute(
+            "SELECT session_id, role, content, metadata, timestamp "
+            "FROM session_messages WHERE LOWER(content) LIKE ? "
+            "ORDER BY timestamp DESC LIMIT ?",
+            (like_query, limit),
+        ).fetchall()
+        results: List[Dict[str, Any]] = [
+            {
+                "session_id": row["session_id"],
+                "role": row["role"],
+                "content": row["content"],
+                "metadata": json.loads(row["metadata"] or "{}"),
+            }
+            for row in rows
+        ]
+
+        remaining = limit - len(results)
+        if remaining <= 0:
+            return results
+
+        metadata_rows = self._conn.execute(
+            "SELECT session_id, metadata FROM sessions "
+            "WHERE LOWER(metadata) LIKE ? ORDER BY last_activity DESC",
+            (like_query,),
+        ).fetchall()
+        for row in metadata_rows:
+            metadata = json.loads(row["metadata"] or "{}")
+            for metadata_key, metadata_value in metadata.items():
+                if (
+                    normalized_query not in metadata_key.lower()
+                    and normalized_query not in str(metadata_value).lower()
+                ):
+                    continue
+                results.append(
+                    {
+                        "session_id": row["session_id"],
+                        "type": "metadata",
+                        "key": metadata_key,
+                        "value": metadata_value,
+                    }
+                )
+                remaining -= 1
+                if remaining == 0:
+                    return results
+        return results
     
     def _load_messages(self, session_id: str) -> List[SessionMessage]:
         """Load all messages for a session."""
@@ -493,11 +575,15 @@ class SessionStore:
         return result
     
     def repair(self) -> Dict[str, Any]:
-        """Auto-repair common issues. Returns repair report."""
-        report = {"fixed_orphans": 0, "fixed_empty": 0, "vacuumed": False}
-        
+        """Repair common SQLite issues and report every failure explicitly."""
+        report: Dict[str, Any] = {
+            "fixed_orphans": 0,
+            "fixed_empty": 0,
+            "vacuumed": False,
+            "errors": [],
+        }
+
         try:
-            # Remove orphan messages
             self._conn.execute(
                 "DELETE FROM session_messages WHERE session_id NOT IN "
                 "(SELECT session_id FROM sessions)"
@@ -505,26 +591,31 @@ class SessionStore:
             report["fixed_orphans"] = self._conn.execute(
                 "SELECT changes()"
             ).fetchone()[0]
-            
-            # Remove sessions older than 7 days with no messages
+
             cutoff = time.time() - (7 * 24 * 3600)
             self._conn.execute(
                 "DELETE FROM sessions WHERE last_activity < ? "
-                "AND session_id NOT IN (SELECT DISTINCT session_id FROM session_messages)"
+                "AND session_id NOT IN (SELECT DISTINCT session_id FROM session_messages)",
+                (cutoff,),
             )
             report["fixed_empty"] = self._conn.execute(
                 "SELECT changes()"
             ).fetchone()[0]
-            
-            # Vacuum to reclaim space
+            self._conn.commit()
+        except Exception as exc:
+            try:
+                self._conn.rollback()
+            except Exception:
+                pass
+            report["errors"].append(f"{type(exc).__name__}: {exc}")
+            return report
+
+        try:
             self._conn.execute("VACUUM")
             report["vacuumed"] = True
-            
-            self._conn.commit()
-            
-        except Exception:
-            pass
-        
+        except Exception as exc:
+            report["errors"].append(f"{type(exc).__name__}: {exc}")
+
         return report
     
     def backup(self, backup_path: Path = None) -> bool:

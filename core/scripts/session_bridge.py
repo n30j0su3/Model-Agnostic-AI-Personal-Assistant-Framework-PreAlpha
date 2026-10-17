@@ -130,17 +130,16 @@ class SessionBridge:
             base_metadata.update(metadata)
         
         if self.store:
-            # Use SQLite SessionStore (correct API: get_or_create)
             session_obj = self.store.get_or_create(
-                user_id="default_user",  # Can be overridden via metadata
-                channel="cli"
+                user_id="default_user",
+                channel="cli",
             )
             self.current_session = session_obj.session_id
-            
-            # Update metadata if provided
-            if metadata:
-                session_obj.metadata.update(base_metadata)
-            
+            if not self.store.update_metadata(
+                self.current_session,
+                updates=base_metadata,
+            ):
+                raise RuntimeError("session metadata could not be persisted")
             if user_input:
                 self.store.add_message(
                     session_id=self.current_session,
@@ -154,10 +153,13 @@ class SessionBridge:
             self._session_metadata = base_metadata
             self._save_fallback_session(session_id, base_metadata, user_input)
         
+        if self.current_session is None:
+            raise RuntimeError("session ID was not initialized")
+
         # Log session start
-        self._log_event("SESSION_START", session_id)
+        self._log_event("SESSION_START", self.current_session)
         
-        return session_id
+        return self.current_session
     
     def add_message(self, role: str, content: str, metadata: Optional[Dict] = None) -> bool:
         """
@@ -231,11 +233,12 @@ class SessionBridge:
         
         # Update session metadata
         if self.store:
-            self.store.update_metadata(
+            if not self.store.update_metadata(
                 session_id=self.current_session,
                 key=f"project_{project_name.lower()}",
                 value=project_path
-            )
+            ):
+                return False
         else:
             self._session_metadata[f"project_{project_name.lower()}"] = project_path
         
@@ -267,15 +270,14 @@ class SessionBridge:
             )
         
         if self.store:
-            # SessionStore doesn't have close_session - sessions auto-managed via decay()
-            # Mark session end by updating metadata
-            try:
-                session_obj = self.store.get_session(self.current_session)
-                if session_obj:
-                    session_obj.metadata["status"] = "closed"
-                    session_obj.metadata["end_time"] = datetime.now().isoformat()
-            except Exception:
-                pass  # Ignore close errors
+            if not self.store.update_metadata(
+                self.current_session,
+                updates={
+                    "status": "closed",
+                    "end_time": datetime.now().isoformat(),
+                },
+            ):
+                return False
         else:
             # Fallback: mark session as closed
             self._close_fallback_session(self.current_session)
