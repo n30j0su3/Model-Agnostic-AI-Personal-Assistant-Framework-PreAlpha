@@ -6,7 +6,7 @@
 
 **Tu Asistente AI Personal. Tu Conocimiento. Tu Control.**
 
-[![Version](https://img.shields.io/badge/version-v0.4.0--beta-lime)]()
+[![Version](https://img.shields.io/badge/version-v0.4.1--beta-lime)]()
 [![Python](https://mod-rect.vercel.app/Python.svg)]( 3.11%2B)
 [![License](https://img.shields.io/badge/license-MIT-lime)]()
 

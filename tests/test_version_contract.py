@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -145,3 +146,48 @@ def test_yaml_update_changes_only_top_level_version_key(tmp_path, monkeypatch):
     assert content.splitlines()[0] == "version: 0.4.1-beta"
     assert "note: preserve v9.9.9" in content
     assert "# Version: v0.4.0-beta documentation only" in content
+
+
+def test_canonical_version_is_declared_on_current_public_surfaces():
+    canonical = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+    badge = canonical.replace("-", "--")
+    surfaces = {
+        "README.md": [
+            f"badge/version-v{badge}-lime",
+            f"Versión actual: **v{canonical}**",
+        ],
+        "README_en.md": [
+            f"# Model-Agnostic AI Personal Assistant Framework v{canonical}",
+            f"Current candidate: **v{canonical}**",
+        ],
+        "docs/README.md": [
+            f"# Personal Assistant Framework — v{canonical}",
+        ],
+        "AGENTS.md": [
+            f"**Version: v{canonical}**",
+        ],
+    }
+
+    for relative, expected_tokens in surfaces.items():
+        text = (ROOT / relative).read_text(encoding="utf-8")
+        for token in expected_tokens:
+            assert token in text, f"{relative} missing current marker: {token}"
+
+    changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    first_release = next(
+        line for line in changelog.splitlines() if line.startswith("## ")
+    )
+    assert f"v{canonical}" in first_release
+
+
+def test_changelog_release_headers_are_unique():
+    changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    versions = re.findall(
+        r"^##\s+\[?v?(\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?)\]?\b",
+        changelog,
+        flags=re.MULTILINE,
+    )
+    duplicates = sorted(
+        version for version in set(versions) if versions.count(version) > 1
+    )
+    assert duplicates == []

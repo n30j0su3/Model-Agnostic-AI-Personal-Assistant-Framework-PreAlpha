@@ -1,8 +1,26 @@
 # Changelog
 
-## v0.4.1-beta (2026-08-19) — r2: feedback N30
+## [v0.4.1-beta] - 2026-10-17 (RC6 publication candidate)
 
-### Cambio de enfoque: NADA se bloquea, todos los modelos utilizables
+### RC6 publication hardening
+
+- The public release builder now uses a semantic allowlist for
+  `core/.context/`; generated knowledge, session, memory, migration, workspace,
+  and `.opencode` state are excluded even if accidentally tracked.
+- Public package tests execute against the staged tree and prove the exact
+  22-member context allowlist plus fresh-extract regeneration of local state.
+- Recovery file creation is contained to explicit write roots; error records
+  redact secrets/home paths and rotate as a bounded JSON + Markdown pair.
+- Linux cron ownership uses exact begin/end markers and preserves unrelated
+  entries; the destructive deprecated uninstaller was removed.
+- Windows receipt paths are POSIX-normalized and an already-running OpenCode
+  port can no longer bypass the minimum-version gate.
+- **Publication status:** candidate only. Cross-platform CI, native Windows QA,
+  and final N30 approval remain required before merge, tag, or release.
+
+### 2026-08-19 — r2: feedback N30
+
+#### Cambio de enfoque: NADA se bloquea, todos los modelos utilizables
 
 **Feedback N30**: "la solución no es bloquear los otros modelos configurados,
 eso es lo que buscamos facilidad para los usuarios, lo que necesitamos es que
@@ -26,9 +44,9 @@ el modelo/credencial detectados funcionen bien al lanzarse en la sesión de IA".
 - Labels del dashboard actualizados: "Todos los modelos utilizables —
   proveedores con credenciales + free".
 
-## v0.4.1-beta (2026-08-19)
+### 2026-08-19 — Initial beta fixes
 
-### Fix crítico: credenciales opencode detectadas pero no usadas (bug N30)
+#### Fix crítico: credenciales opencode detectadas pero no usadas (bug N30)
 
 **Síntoma reportado**: en un Windows con opencode ya instalado y credenciales
 minimax configuradas, el framework detectaba las credenciales en el CLI de
@@ -97,7 +115,7 @@ suite total 68 passed / 1 preexistente fallando por fechas hardcodeadas
 
 
 
-## [v0.4.0-beta] - 2026-08-15 (Fresh Install Impecable + Ecosistema)
+### Release consolidada — Fresh Install Impecable + Ecosistema
 
 > Release consolidado del plan de mejora 2026-08 (4 fases). Sin breaking changes de API;
 > los datos del usuario (sesiones, memoria, backlog, workspaces) se preservan al actualizar.

@@ -1,6 +1,10 @@
-# Model-Agnostic AI Personal Assistant Framework v0.4.0-beta
+# Model-Agnostic AI Personal Assistant Framework v0.4.1-beta
 
 > "Your Personal AI Assistant. Your Knowledge. Your Control."
+
+> Current candidate: **v0.4.1-beta** — local certification in progress. The
+> latest published release remains **v0.4.0-beta** until the cross-platform and
+> human approval gates are complete.
 
 [![Release](https://img.shields.io/badge/release-v0.4.0-beta)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.4.0-beta)
 [![Instagram](https://img.shields.io/badge/Instagram-%40freakingjson-E4405F?logo=instagram&logoColor=white)](https://instagram.com/freakingjson)

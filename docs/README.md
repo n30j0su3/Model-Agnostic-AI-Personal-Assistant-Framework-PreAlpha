@@ -1,4 +1,4 @@
-# Personal Assistant Framework — Pre-Alpha 0.2.2-prealpha
+# Personal Assistant Framework — v0.4.1-beta
 
 > Framework model-agnostic para gestionar asistentes AI personales con contexto local.
 
