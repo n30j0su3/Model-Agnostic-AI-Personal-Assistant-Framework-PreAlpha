@@ -198,11 +198,9 @@ PUBLIC_CONTEXT_ALLOWLIST = (
     "core/.context/codebase/backlog.seed.md",
     "core/.context/knowledge/.gitkeep",
     "core/.context/knowledge/README.md",
-    "core/.context/knowledge/agents-index.json",
     "core/.context/knowledge/learning/.gitkeep",
     "core/.context/knowledge/prompts/.gitkeep",
     "core/.context/knowledge/self-healing/.gitkeep",
-    "core/.context/knowledge/skills-index.json",
     "core/.context/knowledge/wiki/README.md",
     "core/.context/knowledge/wiki/comparisons/.gitkeep",
     "core/.context/knowledge/wiki/concepts/.gitkeep",
@@ -251,6 +249,8 @@ def test_no_private_runtime_surface_is_tracked_or_packaged(release_repo: Path):
     assert "core/.context/knowledge/learning/discoveries.md" in gitignore
     assert "core/.context/knowledge/prompts/registry.json" in gitignore
     assert "core/.context/knowledge/sessions-index.json" in gitignore
+    assert "core/.context/knowledge/agents-index.json" in gitignore
+    assert "core/.context/knowledge/skills-index.json" in gitignore
     assert "core/.context/knowledge/insights/error-analysis.md" in gitignore
     assert ".opencode/*.bak*" in gitignore
 
@@ -328,6 +328,12 @@ def test_fresh_extract_regenerates_local_runtime_state(tmp_path: Path, release_r
         "HOME": str(tmp_path / "home"),
         "USERPROFILE": str(tmp_path / "home"),
     }
+    runtime_indexes = [
+        extracted / "core/.context/knowledge/agents-index.json",
+        extracted / "core/.context/knowledge/skills-index.json",
+    ]
+    for path in runtime_indexes:
+        assert not path.exists(), path
     fixed = subprocess.run(
         [sys.executable, "core/scripts/system_check.py", "--fix", "--quiet-first-run"],
         cwd=extracted,
@@ -344,6 +350,8 @@ def test_fresh_extract_regenerates_local_runtime_state(tmp_path: Path, release_r
         context / "profile.md",
         context / "codebase/backlog.md",
         context / "knowledge/sessions-index.json",
+        context / "knowledge/agents-index.json",
+        context / "knowledge/skills-index.json",
         context / "memory/context_injection.md",
     ]
     for path in generated:
@@ -351,6 +359,12 @@ def test_fresh_extract_regenerates_local_runtime_state(tmp_path: Path, release_r
     index = json.loads((context / "knowledge/sessions-index.json").read_text(encoding="utf-8"))
     assert index.get("total_sessions") == 0
     assert index.get("sessions") == []
+    agents = json.loads((context / "knowledge/agents-index.json").read_text(encoding="utf-8"))
+    skills = json.loads((context / "knowledge/skills-index.json").read_text(encoding="utf-8"))
+    assert agents.get("total_agents", 0) > 0
+    assert isinstance(agents.get("agents"), list)
+    assert skills.get("total_skills", 0) > 0
+    assert isinstance(skills.get("skills"), list)
     assert (context / "memory/context_injection.md").read_text(
         encoding="utf-8"
     ).startswith("# Context Injection")

@@ -80,6 +80,8 @@ core/.context/knowledge/learning/best-practices.md
 core/.context/knowledge/learning/discoveries.md
 core/.context/knowledge/prompts/registry.json
 core/.context/knowledge/sessions-index.json
+core/.context/knowledge/agents-index.json
+core/.context/knowledge/skills-index.json
 core/.context/knowledge/insights/error-analysis.md
 core/.context/.cache/
 # Backups locales de configuración opencode

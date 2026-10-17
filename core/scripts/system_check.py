@@ -511,6 +511,35 @@ def auto_fix():
             print_error(f"kb_init.py fallo: {e}")
             failed += 1
 
+    # 2.5. Regenerar índices públicos derivados; nunca se distribuyen precomputados.
+    for indexer_name, label in (
+        ("agents_indexer.py", "Índice de agentes"),
+        ("skills_indexer.py", "Índice de skills"),
+    ):
+        indexer = SCRIPT_DIR / indexer_name
+        if not indexer.exists():
+            print_error(f"No se encontró {indexer_name}")
+            failed += 1
+            continue
+        try:
+            result = subprocess.run(
+                [sys.executable, str(indexer)],
+                capture_output=True,
+                text=True,
+                timeout=60,
+                cwd=REPO_ROOT,
+            )
+            if result.returncode == 0:
+                print_ok(f"{label} regenerado")
+                fixed += 1
+            else:
+                detail = (result.stderr or result.stdout).strip()
+                print_error(f"{indexer_name} falló: {detail}")
+                failed += 1
+        except Exception as e:
+            print_error(f"{indexer_name} falló: {e}")
+            failed += 1
+
     # 3. Ejecutar migrate.py --apply si hay pendientes
     migrate = SCRIPT_DIR / "migrate.py"
     if migrate.exists():
