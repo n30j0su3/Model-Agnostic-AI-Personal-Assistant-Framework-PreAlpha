@@ -17,6 +17,18 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _sandbox_ignore(directory: str, names: list[str]) -> set[str]:
+    """Ignore root runtime data without dropping nested skill assets."""
+    ignored = set(
+        shutil.ignore_patterns(
+            ".git", ".pytest_cache", "__pycache__", "*.pyc"
+        )(directory, names)
+    )
+    if Path(directory).resolve() == ROOT.resolve() and "data" in names:
+        ignored.add("data")
+    return ignored
+
+
 def subprocess_text_encoding() -> str:
     """Decode captured child output with the encoding requested for that child."""
     requested = os.environ.get("PYTHONIOENCODING", "").partition(":")[0]
@@ -55,9 +67,7 @@ def repo_extract(tmp_path):
             ROOT,
             destination,
             dirs_exist_ok=True,
-            ignore=shutil.ignore_patterns(
-                ".git", ".pytest_cache", "__pycache__", "*.pyc", "data"
-            ),
+            ignore=_sandbox_ignore,
         )
         return destination
     in_git = subprocess.run(
@@ -72,9 +82,7 @@ def repo_extract(tmp_path):
             ROOT,
             destination,
             dirs_exist_ok=True,
-            ignore=shutil.ignore_patterns(
-                ".git", ".pytest_cache", "__pycache__", "*.pyc", "data"
-            ),
+            ignore=_sandbox_ignore,
         )
         return destination
 
