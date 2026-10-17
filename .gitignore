@@ -7,7 +7,9 @@ __pycache__/
 *.pyc
 
 # User data (sessions, memory, model selections, wizard state, logs)
-data/
+# /data/ is anchored to the repo root: nested skill assets such as
+# core/skills/core/ui-ux-pro-max/data/** stay public.
+/data/
 data/*.db
 data/*.log
 data/bridge.log
@@ -25,8 +27,9 @@ workspaces/
 # Generated dashboard data (regenerar con generate_dashboard_data.py)
 dashboard-data.js
 
-# Auto-generated wiki content (regenerar con wiki_populate.py)
-wiki/
+# Auto-generated wiki content (regenerar con wiki_populate.py) — root-only:
+# core/.context/knowledge/wiki/ scaffolding is public and must stay tracked.
+/wiki/
 
 # OS files
 .DS_Store
@@ -62,12 +65,25 @@ opencode.jsonc.local
 .coverage
 htmlcov/
 .coverage.*
-# Datos personales (no incluir en ZIP público)
-core/.context/memory/
-core/.context/knowledge/users/
+# Datos personales / estado runtime (no incluir en repo ni ZIP públicos).
+# core/.context se publica por allowlist exacta en build_release.py:
+# lo que no esté en CONTEXT_PUBLIC_PATHS se excluye fail-closed.
+core/.context/memory/**
+core/.context/knowledge/users/**
+core/.context/knowledge/errors/**
+core/.context/.migration_state.json
+core/.context/knowledge_base.json
 core/.context/knowledge/interactions-index.json
+core/.context/knowledge/knowledge-index.json
 core/.context/knowledge/last_mined.json
+core/.context/knowledge/learning/best-practices.md
+core/.context/knowledge/learning/discoveries.md
+core/.context/knowledge/prompts/registry.json
+core/.context/knowledge/sessions-index.json
+core/.context/knowledge/insights/error-analysis.md
 core/.context/.cache/
+# Backups locales de configuración opencode
+.opencode/*.bak*
 # Archivos temporales de desarrollo
 README-UPDATE-*.md
 TEST-INSTRUCTIONS-*.md

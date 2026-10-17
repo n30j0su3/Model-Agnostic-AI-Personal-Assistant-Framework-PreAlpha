@@ -192,6 +192,168 @@ def test_extracted_package_installer_dry_run(tmp_path: Path, release_repo: Path)
     assert report["version"] == "0.4.1-beta"
 
 
+PUBLIC_CONTEXT_ALLOWLIST = (
+    "core/.context/.gitkeep",
+    "core/.context/MASTER.template.md",
+    "core/.context/codebase/backlog.seed.md",
+    "core/.context/knowledge/.gitkeep",
+    "core/.context/knowledge/README.md",
+    "core/.context/knowledge/agents-index.json",
+    "core/.context/knowledge/learning/.gitkeep",
+    "core/.context/knowledge/prompts/.gitkeep",
+    "core/.context/knowledge/self-healing/.gitkeep",
+    "core/.context/knowledge/skills-index.json",
+    "core/.context/knowledge/wiki/README.md",
+    "core/.context/knowledge/wiki/comparisons/.gitkeep",
+    "core/.context/knowledge/wiki/concepts/.gitkeep",
+    "core/.context/knowledge/wiki/entities/.gitkeep",
+    "core/.context/knowledge/wiki/queries/.gitkeep",
+    "core/.context/knowledge/wiki/raw/extracts/.gitkeep",
+    "core/.context/knowledge/wiki/raw/inputs/.gitkeep",
+    "core/.context/knowledge/wiki/raw/observations/.gitkeep",
+    "core/.context/navigation.md",
+    "core/.context/opencode-reference.md",
+    "core/.context/profile.template.md",
+    "core/.context/quick-start.md",
+)
+
+
+def context_members(names: list[str]) -> list[str]:
+    return sorted(name for name in names if name.startswith("core/.context/"))
+
+
+def test_context_ships_exact_public_allowlist(tmp_path: Path, release_repo: Path):
+    builder = load_builder()
+    package = builder.build_release_zip(tmp_path / "dist", repo_root=release_repo)
+    with zipfile.ZipFile(package) as archive:
+        assert context_members(archive.namelist()) == sorted(PUBLIC_CONTEXT_ALLOWLIST)
+        for name in PUBLIC_CONTEXT_ALLOWLIST:
+            assert name in archive.namelist(), name
+
+
+def test_no_private_runtime_surface_is_tracked_or_packaged(release_repo: Path):
+    builder = load_builder()
+    files, _excluded = builder.archive_files(release_repo, "HEAD")
+    for name in files:
+        assert not builder.is_denied_context_path(name), name
+        assert ".bak" not in Path(name).name.lower(), name
+    with open(ROOT / ".gitignore", encoding="utf-8") as handle:
+        gitignore = handle.read()
+    assert "core/.context/memory/**" in gitignore
+    assert "core/.context/knowledge/users/**" in gitignore
+    assert "core/.context/knowledge/errors/**" in gitignore
+    assert "core/.context/.migration_state.json" in gitignore
+    assert "core/.context/knowledge_base.json" in gitignore
+    assert "core/.context/knowledge/interactions-index.json" in gitignore
+    assert "core/.context/knowledge/knowledge-index.json" in gitignore
+    assert "core/.context/knowledge/last_mined.json" in gitignore
+    assert "core/.context/knowledge/learning/best-practices.md" in gitignore
+    assert "core/.context/knowledge/learning/discoveries.md" in gitignore
+    assert "core/.context/knowledge/prompts/registry.json" in gitignore
+    assert "core/.context/knowledge/sessions-index.json" in gitignore
+    assert "core/.context/knowledge/insights/error-analysis.md" in gitignore
+    assert ".opencode/*.bak*" in gitignore
+
+
+def test_root_data_ignored_but_nested_skill_data_kept(tmp_path: Path, release_repo: Path):
+    builder = load_builder()
+    tracked_root = subprocess.run(
+        ["git", "ls-files", "data/"],
+        cwd=release_repo,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.splitlines()
+    assert tracked_root == []
+    nested_asset = "core/skills/core/ui-ux-pro-max/data/colors.csv"
+    tracked_nested = subprocess.run(
+        ["git", "ls-files", nested_asset],
+        cwd=release_repo,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.splitlines()
+    assert tracked_nested == [nested_asset]
+    assert builder.is_denied_path("data/dashboard.token")
+    assert not builder.is_denied_path(nested_asset)
+    package = builder.build_release_zip(tmp_path / "dist", repo_root=release_repo)
+    with zipfile.ZipFile(package) as archive:
+        names = archive.namelist()
+    assert not any(name == "data" or name.startswith("data/") for name in names)
+    assert nested_asset in names
+
+
+def test_accidentally_tracked_private_file_never_reaches_zip(
+    tmp_path: Path, release_repo: Path
+):
+    builder = load_builder()
+    leak = release_repo / "core/.context/memory/session.json"
+    leak.parent.mkdir(parents=True, exist_ok=True)
+    leak.write_text('{"secret": "local-only"}\n', encoding="utf-8")
+    subprocess.run(["git", "add", "-f", "core/.context/memory/session.json"], cwd=release_repo, check=True)
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            "user.name=PA Release Tests",
+            "-c",
+            "user.email=release-tests@example.invalid",
+            "commit",
+            "-qm",
+            "accidental private tracking fixture",
+        ],
+        cwd=release_repo,
+        check=True,
+    )
+    package = builder.build_release_zip(tmp_path / "dist", repo_root=release_repo)
+    with zipfile.ZipFile(package) as archive:
+        names = archive.namelist()
+        assert "core/.context/memory/session.json" not in names
+        assert context_members(names) == sorted(PUBLIC_CONTEXT_ALLOWLIST)
+        manifest = json.loads(archive.read(builder.MANIFEST_NAME))
+    assert "core/.context/memory/session.json" in manifest["excluded"]
+
+
+def test_fresh_extract_regenerates_local_runtime_state(tmp_path: Path, release_repo: Path):
+    package = load_builder().build_release_zip(tmp_path / "dist", repo_root=release_repo)
+    extracted = tmp_path / "candidate"
+    with zipfile.ZipFile(package) as archive:
+        archive.extractall(extracted)
+    env = {
+        **os.environ,
+        "HOME": str(tmp_path / "home"),
+        "USERPROFILE": str(tmp_path / "home"),
+    }
+    fixed = subprocess.run(
+        [sys.executable, "core/scripts/system_check.py", "--fix", "--quiet-first-run"],
+        cwd=extracted,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    assert fixed.returncode == 0, fixed.stderr or fixed.stdout
+
+    context = extracted / "core/.context"
+    generated = [
+        context / "MASTER.md",
+        context / "profile.md",
+        context / "codebase/backlog.md",
+        context / "knowledge/sessions-index.json",
+        context / "memory/context_injection.md",
+    ]
+    for path in generated:
+        assert path.is_file(), path
+    index = json.loads((context / "knowledge/sessions-index.json").read_text(encoding="utf-8"))
+    assert index.get("total_sessions") == 0
+    assert index.get("sessions") == []
+    assert (context / "memory/context_injection.md").read_text(
+        encoding="utf-8"
+    ).startswith("# Context Injection")
+    seeded_backlog = (context / "codebase/backlog.seed.md").read_text(encoding="utf-8")
+    assert (context / "codebase/backlog.md").read_text(encoding="utf-8") == seeded_backlog
+
+
 def test_workflow_declares_only_supported_blocking_lanes():
     workflow = (ROOT / ".github" / "workflows" / "release-gates.yml").read_text(encoding="utf-8")
     readme = (ROOT / "README.md").read_text(encoding="utf-8")

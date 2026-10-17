@@ -63,6 +63,38 @@ DENIED_NAMES = {
     "README-simple.md",
     "VALIDATION-CHECKLIST.md",
 }
+# RC6-1 semantic privacy frontier: ``core/.context`` ships an exact public
+# allowlist (templates, seeds, .gitkeep scaffolding, static docs/indexes).
+# Any tracked path under core/.context outside this set is private runtime
+# state and fails closed: excluded from the package and recorded in the
+# manifest, even if it was committed by accident.
+CONTEXT_PUBLIC_PREFIX = "core/.context/"
+CONTEXT_PUBLIC_PATHS = frozenset(
+    {
+        "core/.context/.gitkeep",
+        "core/.context/MASTER.template.md",
+        "core/.context/codebase/backlog.seed.md",
+        "core/.context/knowledge/.gitkeep",
+        "core/.context/knowledge/README.md",
+        "core/.context/knowledge/agents-index.json",
+        "core/.context/knowledge/learning/.gitkeep",
+        "core/.context/knowledge/prompts/.gitkeep",
+        "core/.context/knowledge/self-healing/.gitkeep",
+        "core/.context/knowledge/skills-index.json",
+        "core/.context/knowledge/wiki/README.md",
+        "core/.context/knowledge/wiki/comparisons/.gitkeep",
+        "core/.context/knowledge/wiki/concepts/.gitkeep",
+        "core/.context/knowledge/wiki/entities/.gitkeep",
+        "core/.context/knowledge/wiki/queries/.gitkeep",
+        "core/.context/knowledge/wiki/raw/extracts/.gitkeep",
+        "core/.context/knowledge/wiki/raw/inputs/.gitkeep",
+        "core/.context/knowledge/wiki/raw/observations/.gitkeep",
+        "core/.context/navigation.md",
+        "core/.context/opencode-reference.md",
+        "core/.context/profile.template.md",
+        "core/.context/quick-start.md",
+    }
+)
 LOCAL_USER = b"freaking" + b"json"
 LOCAL_PATH_NEEDLES = (
     b"/home/" + LOCAL_USER,
@@ -89,12 +121,19 @@ def sha256(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+def is_denied_context_path(path: str) -> bool:
+    """Fail-closed semantic allowlist for the core/.context runtime root."""
+    return path.startswith(CONTEXT_PUBLIC_PREFIX) and path not in CONTEXT_PUBLIC_PATHS
+
+
 def is_denied_path(path: str) -> bool:
     normalized = PurePosixPath(path)
     parts = normalized.parts
     if not parts or normalized.is_absolute() or ".." in parts:
         return True
     if normalized.name == MANIFEST_NAME:
+        return True
+    if is_denied_context_path(path):
         return True
     if parts[0] in DENIED_ROOTS or DENIED_PARTS.intersection(parts):
         return True

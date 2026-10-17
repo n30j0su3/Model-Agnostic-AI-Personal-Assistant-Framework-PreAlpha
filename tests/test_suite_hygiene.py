@@ -15,6 +15,13 @@ ROOT = Path(__file__).resolve().parents[1]
 SESSIONS_INDEX = ROOT / "core/.context/knowledge/sessions-index.json"
 
 
+def _sessions_index_bytes():
+    """RC6: runtime state is untracked+ignored; guard only what exists."""
+    if SESSIONS_INDEX.exists():
+        return SESSIONS_INDEX.read_bytes()
+    return None
+
+
 def checkout_state():
     status = subprocess.run(
         ["git", "status", "--porcelain", "--untracked-files=all"],
@@ -39,7 +46,7 @@ def checkout_state():
 
 def test_full_suite_green_and_does_not_mutate_checkout(tmp_path):
     before_status = checkout_state()
-    before_index = SESSIONS_INDEX.read_bytes()
+    before_index = _sessions_index_bytes()
     home = tmp_path / "nested-home"
     home.mkdir()
     env = {
@@ -66,7 +73,7 @@ def test_full_suite_green_and_does_not_mutate_checkout(tmp_path):
         timeout=180,
     )
     after_status = checkout_state()
-    after_index = SESSIONS_INDEX.read_bytes()
+    after_index = _sessions_index_bytes()
 
     assert result.returncode == 0, (result.stdout + result.stderr)[-4000:]
     assert after_index == before_index, "suite mutated tracked sessions-index.json"
