@@ -168,6 +168,76 @@ PATTERN_THRESHOLDS = {
     "burst_threshold": 5,      # Errors within time_window to count as burst
 }
 
+DEFAULT_MAX_ENTRIES = 500
+LOG_HEADER = """# Error Log
+
+> Auto-generated error log for PA Framework
+> Part of Error Recovery System (PRP-007)
+
+---
+
+"""
+
+_SENSITIVE_FIELD_KEYS = {
+    "authorization",
+    "apikey",
+    "password",
+    "secret",
+    "token",
+    "accesstoken",
+    "refreshtoken",
+}
+_SECRET_PATTERNS = (
+    (re.compile(r"(?i)\bBearer\s+[^\s,;]+"), "Bearer [REDACTED]"),
+    (
+        re.compile(
+            r"(?i)\b(api[_-]?key|access[_-]?token|refresh[_-]?token|token|password|secret)"
+            r"(\s*[:=]\s*)([^\s,;]+)"
+        ),
+        r"\1\2[REDACTED]",
+    ),
+    (
+        re.compile(
+            r"\b(?:sk-[A-Za-z0-9_-]{8,}|ghp_[A-Za-z0-9]{20,}|"
+            r"github_pat_[A-Za-z0-9_]{20,})\b"
+        ),
+        "[REDACTED]",
+    ),
+    (
+        re.compile(
+            r"-----BEGIN [^-\n]*PRIVATE KEY-----.*?"
+            r"-----END [^-\n]*PRIVATE KEY-----",
+            re.DOTALL,
+        ),
+        "[REDACTED PRIVATE KEY]",
+    ),
+)
+
+
+def _redact_text(value: str) -> str:
+    """Remove common secrets and normalize local home prefixes."""
+    redacted = re.sub(r"(?<!\w)/(?:home|Users)/[^/\s]+", "~", value)
+    redacted = re.sub(r"(?i)\b[A-Z]:\\Users\\[^\\\s]+", "~", redacted)
+    for pattern, replacement in _SECRET_PATTERNS:
+        redacted = pattern.sub(replacement, redacted)
+    return redacted
+
+
+def _redact_value(value: Any, field_name: str = "") -> Any:
+    """Return a recursively redacted copy suitable for persistent logs."""
+    normalized = re.sub(r"[^a-z0-9]", "", field_name.lower())
+    if normalized in _SENSITIVE_FIELD_KEYS:
+        return "[REDACTED]"
+    if isinstance(value, dict):
+        return {key: _redact_value(item, str(key)) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_redact_value(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_redact_value(item) for item in value)
+    if isinstance(value, str):
+        return _redact_text(value)
+    return value
+
 
 class Colors:
     HEADER = "\033[95m"
@@ -207,15 +277,23 @@ class ErrorLogger:
         log_file: Markdown log file path
     """
 
-    def __init__(self, errors_dir: Optional[Path] = None):
+    def __init__(
+        self,
+        errors_dir: Optional[Path] = None,
+        max_entries: int = DEFAULT_MAX_ENTRIES,
+    ):
         """
         Initialize ErrorLogger with custom or default paths.
 
         Args:
             errors_dir: Optional custom directory for error logs.
                        Defaults to core/.context/knowledge/errors/
+            max_entries: Maximum retained entries in JSON and Markdown logs.
         """
+        if not isinstance(max_entries, int) or max_entries < 1:
+            raise ValueError("max_entries must be a positive integer")
         self.errors_dir = errors_dir or ERRORS_DIR
+        self.max_entries = max_entries
         self.index_file = self.errors_dir / "index.json"
         self.log_file = self.errors_dir / "error-log.md"
         self._ensure_directories()
@@ -243,17 +321,9 @@ class ErrorLogger:
 
     def _write_log_header(self) -> None:
         """Write initial header to Markdown log file."""
-        header = """# Error Log
-
-> Auto-generated error log for PA Framework
-> Part of Error Recovery System (PRP-007)
-
----
-
-"""
         try:
             with open(self.log_file, "w", encoding="utf-8") as f:
-                f.write(header)
+                f.write(LOG_HEADER)
         except Exception as e:
             safe_print(c(f"[ERROR] Failed to write log header: {e}", Colors.RED))
 
@@ -304,6 +374,14 @@ class ErrorLogger:
                 f.write(entry)
         except Exception as e:
             safe_print(c(f"[ERROR] Failed to append to log: {e}", Colors.RED))
+
+    def _rewrite_log(self, errors: List[Dict]) -> None:
+        """Rewrite Markdown from the bounded canonical JSON entries."""
+        try:
+            content = LOG_HEADER + "".join(self._format_md_entry(item) for item in errors)
+            self.log_file.write_text(content, encoding="utf-8")
+        except OSError as e:
+            safe_print(c(f"[ERROR] Failed to rotate log: {e}", Colors.RED))
 
     def _format_md_entry(self, error_data: Dict) -> str:
         """
@@ -373,28 +451,35 @@ class ErrorLogger:
         error_id = self._generate_error_id()
         timestamp = self._generate_timestamp()
 
-        error_type = error_data.get("type", "Unknown")
+        error_type = _redact_value(str(error_data.get("type", "Unknown")))
         playbook_suggestion = self._get_playbook_suggestion(error_type)
 
         complete_error = {
             "id": error_id,
             "timestamp": timestamp,
             "type": error_type,
-            "message": error_data.get("message", ""),
-            "file": error_data.get("file", ""),
+            "message": _redact_value(error_data.get("message", ""), "message"),
+            "file": _redact_value(error_data.get("file", ""), "file"),
             "line": error_data.get("line", 0),
-            "context": error_data.get("context", ""),
+            "context": _redact_value(error_data.get("context", ""), "context"),
             "resolved": False,
             "resolved_at": None,
             "playbook_suggestion": playbook_suggestion,
         }
 
         index_data = self._read_index()
-        index_data["errors"].append(complete_error)
+        errors = index_data.setdefault("errors", [])
+        errors.append(complete_error)
+        rotated = len(errors) > self.max_entries
+        if rotated:
+            index_data["errors"] = errors[-self.max_entries:]
         index_data["last_updated"] = timestamp
         self._write_index(index_data)
 
-        self._append_to_log(complete_error)
+        if rotated:
+            self._rewrite_log(index_data["errors"])
+        else:
+            self._append_to_log(complete_error)
 
         safe_print(c(f"[LOGGED] Error {error_id} - {error_type}", Colors.YELLOW))
 
@@ -793,7 +878,7 @@ class ErrorLogger:
                     bursts.append({
                         "start": window_start.isoformat(),
                         "count": len(window_errors),
-                        "types": list(set(
+                        "types": sorted(set(
                             e.get("type", "Unknown") for e in window_errors
                         )),
                     })

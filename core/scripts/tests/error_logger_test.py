@@ -100,6 +100,51 @@ class TestHelpersAndInitialization:
 
 
 class TestLoggingAndResolveFlows:
+    def test_log_error_redacts_secrets_and_local_home_paths(self, logger):
+        secret = "sk-live-do-not-persist-123456789"
+        error_id = logger.log_error(
+            {
+                "type": "RuntimeError",
+                "message": f"Bearer {secret} failed at /home/alice/private/app.py",
+                "file": "/home/alice/private/app.py",
+                "line": 9,
+                "context": {
+                    "authorization": f"Bearer {secret}",
+                    "note": "password=hunter2 in C:\\Users\\Alice\\private\\cfg.ini",
+                },
+            }
+        )
+
+        saved_text = json.dumps(logger.get_error_by_id(error_id), ensure_ascii=False)
+        markdown = logger.log_file.read_text(encoding="utf-8")
+        for persisted in (saved_text, markdown):
+            assert secret not in persisted
+            assert "hunter2" not in persisted
+            assert "/home/alice/" not in persisted
+            assert "C:\\Users\\Alice\\" not in persisted
+            assert "[REDACTED]" in persisted
+        assert "~/private/app.py" in saved_text
+
+    def test_log_rotation_bounds_json_and_markdown(self, tmp_path):
+        logger = ErrorLogger(errors_dir=tmp_path / "rotating", max_entries=2)
+        ids = [
+            logger.log_error(
+                {
+                    "type": "RuntimeError",
+                    "message": f"rotation-message-{index}",
+                    "file": "app.py",
+                    "line": index,
+                }
+            )
+            for index in range(3)
+        ]
+
+        assert [item["id"] for item in logger.get_all_errors()] == ids[-2:]
+        markdown = logger.log_file.read_text(encoding="utf-8")
+        assert "rotation-message-0" not in markdown
+        assert "rotation-message-1" in markdown
+        assert "rotation-message-2" in markdown
+
     def test_log_error_writes_json_and_markdown(self, logger):
         error_id = logger.log_error(
             {
@@ -391,6 +436,18 @@ class TestDetectPattern:
         assert result["risk_level"] == "critical"
         assert any("Error burst" in pattern for pattern in result["patterns_found"])
         assert any("Hot file: net.py" in pattern for pattern in result["patterns_found"])
+
+    def test_burst_types_are_unique_and_sorted(self):
+        error_types = ["ZuluError", "AlphaError", "EchoError", "BravoError", "DeltaError"]
+        errors = [
+            _make_error(error_type, minutes_ago=index)
+            for index, error_type in enumerate(error_types)
+        ]
+
+        result = self.logger.detect_pattern(errors)
+
+        assert result["bursts"]
+        assert result["bursts"][0]["types"] == sorted(set(error_types))
 
     def test_detect_pattern_ignores_invalid_timestamps(self):
         errors = [
