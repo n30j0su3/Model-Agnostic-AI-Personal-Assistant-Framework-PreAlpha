@@ -57,6 +57,32 @@ def test_dashboard_has_mobile_and_docs_bootstrap_contract():
     assert "assets/chart.umd.js" in html
 
 
+def test_active_navigation_contrast_and_semantics():
+    html = (ROOT / "dashboard.html").read_text(encoding="utf-8")
+    primary_nav = re.search(
+        r'<nav id="primary-nav".*?</nav>', html, re.DOTALL
+    )
+    assert primary_nav is not None
+    visible_nav_buttons = [
+        tag
+        for tag in re.findall(r"<button\b[^>]*data-page=\"[^\"]+\"[^>]*>", primary_nav.group(0))
+        if 'aria-hidden="true"' not in tag
+    ]
+    assert visible_nav_buttons
+    assert all('aria-label="' in tag for tag in visible_nav_buttons)
+    assert "btn.setAttribute('aria-current', isActive ? 'page' : 'false')" in html
+    assert "btn.classList.toggle('text-slate-950', isActive)" in html
+
+    tabs = re.search(r'<div[^>]*id="framework-tabs".*?</div>', html, re.DOTALL)
+    assert tabs is not None
+    assert 'role="tablist"' in tabs.group(0)
+    tab_buttons = re.findall(r"<button\b[^>]*class=\"fw-tab-btn[^>]*>", tabs.group(0))
+    assert len(tab_buttons) == 4
+    assert all('role="tab"' in tag for tag in tab_buttons)
+    assert "btn.setAttribute('aria-selected', String(isActive))" in html
+    assert "btn.classList.add('bg-lime-500', 'text-slate-950')" in html
+
+
 def test_dashboard_four_viewports_live():
     url = os.environ.get("PA_DASHBOARD_URL")
     port = os.environ.get("PA_CDP_PORT")

@@ -392,17 +392,17 @@
                     <button id="lang-toggle" class="px-3 py-1.5 text-xs rounded-lg border border-slate-700 hover:border-lime-400/60 bg-slate-900/70" aria-label="Toggle language">ES/EN</button>
                     
                     <nav id="primary-nav" class="flex items-center gap-1">
-                        <button onclick="router.navigate('home')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="home" title="Inicio">
+                        <button onclick="router.navigate('home')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="home" title="Inicio" aria-label="Inicio">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                             </svg>
                         </button>
-                        <button onclick="router.navigate('sessions')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="sessions" title="Sesiones">
+                        <button onclick="router.navigate('sessions')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="sessions" title="Sesiones" aria-label="Sesiones">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
                             </svg>
                         </button>
-                        <button onclick="router.navigate('internals')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="internals" title="Framework">
+                        <button onclick="router.navigate('internals')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="internals" title="Framework" aria-label="Framework">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
                             </svg>
@@ -413,17 +413,17 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 3h3M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/>
                             </svg>
                         </button>
-                        <button onclick="router.navigate('modelo')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="modelo" title="Modelo">
+                        <button onclick="router.navigate('modelo')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="modelo" title="Modelo" aria-label="Modelo">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
                             </svg>
                         </button>
-                        <button onclick="router.navigate('docs')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="docs" title="Documentación">
+                        <button onclick="router.navigate('docs')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="docs" title="Documentación" aria-label="Documentación">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
                             </svg>
                         </button>
-                        <button onclick="router.navigate('about')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="about" title="Acerca de">
+                        <button onclick="router.navigate('about')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="about" title="Acerca de" aria-label="Acerca de">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
@@ -952,7 +952,8 @@
                 document.querySelectorAll('.nav-btn').forEach(btn => {
                     const isActive = btn.dataset.page === this.currentPage;
                     btn.classList.toggle('bg-lime-400', isActive);
-                    btn.classList.toggle('text-white', isActive);
+                    btn.classList.toggle('text-slate-950', isActive);
+                    btn.setAttribute('aria-current', isActive ? 'page' : 'false');
                 });
             },
 
@@ -1317,11 +1318,11 @@
                         <h1 class="text-3xl font-bold mb-8">${t('internals_title')}</h1>
                         
                         <!-- Tabs -->
-                        <div class="flex gap-2 mb-6 border-b border-slate-800 pb-2" id="framework-tabs">
-                            <button onclick="app.switchFrameworkTab('overview')" class="fw-tab-btn px-4 py-2 bg-lime-500 text-white rounded-lg text-sm font-medium transition-colors neon-glow" data-tab="overview">${t('tab_overview')}</button>
-                            <button onclick="app.switchFrameworkTab('workflow')" class="fw-tab-btn px-4 py-2 hover:bg-slate-800 text-slate-300 rounded-lg text-sm font-medium transition-colors" data-tab="workflow">${t('tab_workflow')}</button>
-                            <button onclick="app.switchFrameworkTab('skills')" class="fw-tab-btn px-4 py-2 hover:bg-slate-800 text-slate-300 rounded-lg text-sm font-medium transition-colors" data-tab="skills">${t('tab_skills')}</button>
-                            <button onclick="app.switchFrameworkTab('agents')" class="fw-tab-btn px-4 py-2 hover:bg-slate-800 text-slate-300 rounded-lg text-sm font-medium transition-colors" data-tab="agents">${t('tab_agents')}</button>
+                        <div class="flex gap-2 mb-6 border-b border-slate-800 pb-2" id="framework-tabs" role="tablist" aria-label="Framework Internals">
+                            <button onclick="app.switchFrameworkTab('overview')" class="fw-tab-btn px-4 py-2 bg-lime-500 text-slate-950 rounded-lg text-sm font-medium transition-colors neon-glow" data-tab="overview" role="tab" aria-selected="true">${t('tab_overview')}</button>
+                            <button onclick="app.switchFrameworkTab('workflow')" class="fw-tab-btn px-4 py-2 hover:bg-slate-800 text-slate-300 rounded-lg text-sm font-medium transition-colors" data-tab="workflow" role="tab" aria-selected="false">${t('tab_workflow')}</button>
+                            <button onclick="app.switchFrameworkTab('skills')" class="fw-tab-btn px-4 py-2 hover:bg-slate-800 text-slate-300 rounded-lg text-sm font-medium transition-colors" data-tab="skills" role="tab" aria-selected="false">${t('tab_skills')}</button>
+                            <button onclick="app.switchFrameworkTab('agents')" class="fw-tab-btn px-4 py-2 hover:bg-slate-800 text-slate-300 rounded-lg text-sm font-medium transition-colors" data-tab="agents" role="tab" aria-selected="false">${t('tab_agents')}</button>
                         </div>
 
                         <!-- Tab: Overview -->
@@ -2700,12 +2701,14 @@
                 
                 // Update button styles
                 document.querySelectorAll('.fw-tab-btn').forEach(btn => {
-                    if (btn.dataset.tab === tabName) {
+                    const isActive = btn.dataset.tab === tabName;
+                    btn.setAttribute('aria-selected', String(isActive));
+                    if (isActive) {
                         btn.classList.remove('hover:bg-slate-800', 'text-slate-300');
-                        btn.classList.add('bg-lime-500', 'text-white');
+                        btn.classList.add('bg-lime-500', 'text-slate-950');
                     } else {
                         btn.classList.add('hover:bg-slate-800', 'text-slate-300');
-                        btn.classList.remove('bg-lime-500', 'text-white');
+                        btn.classList.remove('bg-lime-500', 'text-slate-950');
                     }
                 });
                 
