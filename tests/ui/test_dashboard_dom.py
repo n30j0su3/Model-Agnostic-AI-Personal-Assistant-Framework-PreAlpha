@@ -83,6 +83,21 @@ def test_active_navigation_contrast_and_semantics():
     assert "btn.classList.add('bg-lime-500', 'text-slate-950')" in html
 
 
+def test_lime_action_buttons_use_dark_text_for_wcag_contrast():
+    html = (ROOT / "dashboard.html").read_text(encoding="utf-8")
+    lime_buttons = [
+        tag
+        for tag in re.findall(r"<button\b[^>]*>", html)
+        if re.search(r"\bbg-lime-(?:400|500|600)\b", tag)
+    ]
+
+    assert lime_buttons
+    assert all(re.search(r"\btext-slate-(?:900|950)\b", tag) for tag in lime_buttons), lime_buttons
+    assert re.findall(
+        r"\bbg-lime-(?:400|500|600)\b[^'\"}]*\btext-white\b", html
+    ) == []
+
+
 def test_dashboard_four_viewports_live():
     url = os.environ.get("PA_DASHBOARD_URL")
     port = os.environ.get("PA_CDP_PORT")

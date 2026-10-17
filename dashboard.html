@@ -459,7 +459,7 @@
                     
                     <!-- Botones de acción -->
                     <div class="flex flex-wrap justify-center gap-4 animate-slide-up" style="animation-delay: 0.3s">
-                        <button onclick="quickStart()" class="group px-8 py-4 bg-lime-500 hover:bg-lime-400 text-white font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-lime-400/25 flex items-center gap-3 neon-glow">
+                        <button onclick="quickStart()" class="group px-8 py-4 bg-lime-500 hover:bg-lime-400 text-slate-950 font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-lime-400/25 flex items-center gap-3 neon-glow">
                             <svg class="w-6 h-6 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                             </svg>
@@ -1008,7 +1008,7 @@
                             </p>
                             
                             <div class="flex flex-wrap justify-center gap-4">
-                                <button onclick="app.startFramework()" class="px-8 py-4 bg-lime-500 hover:bg-lime-400 text-white font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-lime-400/25 flex items-center gap-2 neon-glow">
+                                <button onclick="app.startFramework()" class="px-8 py-4 bg-lime-500 hover:bg-lime-400 text-slate-950 font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-lime-400/25 flex items-center gap-2 neon-glow">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                                     </svg>
@@ -1235,7 +1235,7 @@
                     <!-- Sidebar -->
                     <aside class="w-72 bg-slate-900 border-r border-slate-800 flex flex-col hidden lg:flex">
                         <div class="p-4 border-b border-slate-800">
-                            <button onclick="app.startFramework()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-lime-500 hover:bg-lime-400 text-white rounded-lg transition-colors font-medium neon-glow">
+                            <button onclick="app.startFramework()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-lg transition-colors font-medium neon-glow">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>
@@ -1423,7 +1423,7 @@
                                     <h4 class="font-medium">Referencias de implementación</h4>
                                     <p class="text-sm text-slate-400">INIT protocol, memory pipeline y arquitectura wiki.</p>
                                 </div>
-                                <button onclick="modalManager.showBuiltinDoc('workflow')" class="px-4 py-2 bg-lime-500 hover:bg-lime-400 text-white rounded-lg text-sm font-medium transition-colors">Ver detalle</button>
+                                <button onclick="modalManager.showBuiltinDoc('workflow')" class="px-4 py-2 bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-lg text-sm font-medium transition-colors">Ver detalle</button>
                             </div>
                         </div>
 
@@ -1448,7 +1448,7 @@
                                 `).join('') : `
                                     <div class="col-span-full p-6 bg-slate-900 border border-slate-800 rounded-xl text-center">
                                         <p class="text-slate-400 mb-3">No se encontraron skills indexadas.</p>
-                                        <button onclick="app.runIndexer()" class="px-4 py-2 bg-lime-500 hover:bg-lime-400 rounded-lg text-sm font-medium text-white">Generar índice de skills</button>
+                                        <button onclick="app.runIndexer()" class="px-4 py-2 bg-lime-500 hover:bg-lime-400 rounded-lg text-sm font-medium text-slate-950">Generar índice de skills</button>
                                     </div>
                                 `}
                             </div>
@@ -1580,7 +1580,7 @@
                     <h2 class="text-xl font-semibold text-white mb-4">${t('modelo_current')}</h2>
                     <div id="modelo-current" class="text-lime-400 font-mono text-lg mb-4">Cargando…</div>
                     
-                    <button id="modelo-detect-btn" onclick="modeloPage.detect()" class="px-6 py-3 bg-lime-500 hover:bg-lime-400 text-white rounded-lg transition-colors flex items-center gap-2">
+                    <button id="modelo-detect-btn" onclick="modeloPage.detect()" class="px-6 py-3 bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-lg transition-colors flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
@@ -1593,7 +1593,7 @@
                     <select id="modelo-select" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-lime-400 mb-4">
                         <option value="">${t('modelo_select_ph')}</option>
                     </select>
-                    <button id="modelo-save-btn" onclick="modeloPage.save()" class="px-6 py-3 bg-lime-500 hover:bg-lime-400 text-white rounded-lg transition-colors flex items-center gap-2">
+                    <button id="modelo-save-btn" onclick="modeloPage.save()" class="px-6 py-3 bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-lg transition-colors flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                         </svg>
@@ -2463,7 +2463,7 @@
                         </div>
                         
                         <div class="flex flex-col sm:flex-row gap-4">
-                            <button onclick="app.startFramework()" class="px-8 py-3 bg-lime-500 hover:bg-lime-400 text-white font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-lime-400/25 flex items-center gap-2 neon-glow">
+                            <button onclick="app.startFramework()" class="px-8 py-3 bg-lime-500 hover:bg-lime-400 text-slate-950 font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-lime-400/25 flex items-center gap-2 neon-glow">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                                 </svg>
@@ -2497,7 +2497,7 @@
                             Aún no hay skills indexadas.
                         </p>
                         
-                        <button onclick="app.runIndexer()" class="mt-6 px-6 py-3 bg-lime-500 hover:bg-lime-400 text-white font-semibold rounded-xl transition-all neon-glow">
+                        <button onclick="app.runIndexer()" class="mt-6 px-6 py-3 bg-lime-500 hover:bg-lime-400 text-slate-950 font-semibold rounded-xl transition-all neon-glow">
                             Ejecutar Indexer de Skills
                         </button>
                     </div>
@@ -3211,7 +3211,7 @@
                     `).join('')}
                     <div class="flex-1"></div>
                     ${step.buttons.filter(b => b.action !== 'prev').map(b => `
-                        <button onclick="wizardAction('${b.action}')" class="px-6 py-2.5 ${b.primary ? 'bg-lime-500 hover:bg-lime-400 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white'} rounded-lg transition-colors">
+                        <button onclick="wizardAction('${b.action}')" class="px-6 py-2.5 ${b.primary ? 'bg-lime-500 hover:bg-lime-400 text-slate-950' : 'bg-slate-800 hover:bg-slate-700 text-white'} rounded-lg transition-colors">
                             ${b.text}
                         </button>
                     `).join('')}
