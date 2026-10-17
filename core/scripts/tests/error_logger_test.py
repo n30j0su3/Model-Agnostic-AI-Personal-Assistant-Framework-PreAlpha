@@ -3,7 +3,6 @@
 
 import json
 import sys
-import types
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -130,7 +129,7 @@ class TestLoggingAndResolveFlows:
                 "type": "RuntimeError",
                 "message": "boom",
                 "resolved": True,
-                "playbook_suggestion": "PB-015",
+                "playbook_suggestion": "PB-004",
             }
         )
         assert "[OK] ERR-1" in entry
@@ -256,7 +255,7 @@ class TestSuggestRecovery:
 
     def test_suggest_network(self):
         result = self.logger.suggest_recovery("network")
-        assert result["playbook_id"] == "PB-NET-RETRY"
+        assert result["playbook_id"] == "PB-004"
         assert result["category"] == "network"
 
     def test_suggest_file_system(self):
@@ -265,7 +264,8 @@ class TestSuggestRecovery:
 
     def test_suggest_data_integrity(self):
         result = self.logger.suggest_recovery("data_integrity")
-        assert result["playbook_id"] == "PB-DATA-VALIDATE"
+        assert result["playbook_id"] is None
+        assert "Manual investigation" in result["strategy"]
 
     def test_suggest_unknown_category(self):
         result = self.logger.suggest_recovery("unknown_category")
@@ -274,49 +274,37 @@ class TestSuggestRecovery:
 
 
 class TestTriggerPlaybook:
-    def test_trigger_playbook_via_orchestrator(self, logger, monkeypatch):
-        class FakeOrchestrator:
-            def execute_playbook(self, playbook_id):
-                return {"ok": True, "playbook_id": playbook_id}
-
-        fake_module = types.SimpleNamespace(RecoveryOrchestrator=FakeOrchestrator)
-        monkeypatch.setitem(sys.modules, "recovery_orchestrator", fake_module)
-
-        result = logger.trigger_playbook("PB-NET-RETRY")
+    def test_trigger_playbook_via_canonical_orchestrator(self, logger):
+        result = logger.trigger_playbook(
+            "PB-004",
+            {"retry_count": 0, "max_retries": 1},
+        )
 
         assert result["triggered"] is True
-        assert result["status"] == "executed"
-        assert result["details"]["ok"] is True
+        assert result["status"] == "success"
+        assert result["details"]["status"] == "success"
 
-    def test_trigger_playbook_script_fallback(self, logger, tmp_path, monkeypatch):
+    def test_unknown_playbook_does_not_use_script_fallback(self, logger, tmp_path, monkeypatch):
         recovery_dir = tmp_path / "recovery"
         recovery_dir.mkdir()
-        script = recovery_dir / "pb-net-retry.py"
+        script = recovery_dir / "pb-015.py"
         script.write_text("# test script\n", encoding="utf-8")
 
-        monkeypatch.delitem(sys.modules, "recovery_orchestrator", raising=False)
         monkeypatch.setattr(_el, "SCRIPT_DIR", tmp_path)
 
-        result = logger.trigger_playbook("PB-NET-RETRY")
+        unknown_id = "PB-" + "015"
+        result = logger.trigger_playbook(unknown_id)
 
-        assert result["triggered"] is True
-        assert result["status"] == "pending"
-        assert result["script_path"] == str(script)
+        assert result["triggered"] is False
+        assert result["status"] == "no_action"
+        assert "script_path" not in result
 
-    def test_trigger_playbook_manual_fallback_after_orchestrator_error(self, logger, monkeypatch):
-        class BrokenOrchestrator:
-            def execute_playbook(self, playbook_id):
-                raise RuntimeError("orchestrator boom")
-
-        fake_module = types.SimpleNamespace(RecoveryOrchestrator=BrokenOrchestrator)
-        monkeypatch.setitem(sys.modules, "recovery_orchestrator", fake_module)
-        monkeypatch.setattr(_el, "SCRIPT_DIR", Path(logger.errors_dir.parent))
-
+    def test_unknown_playbook_is_honest_no_action(self, logger):
         result = logger.trigger_playbook("PB-ANY")
 
         assert result["triggered"] is False
-        assert result["status"] == "pending"
-        assert "queued for manual execution" in result["message"]
+        assert result["status"] == "no_action"
+        assert "No action registered" in result["message"]
 
 
 class TestDetectPattern:

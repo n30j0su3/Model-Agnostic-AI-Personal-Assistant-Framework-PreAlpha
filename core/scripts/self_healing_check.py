@@ -24,20 +24,24 @@ from typing import Dict, List, Optional
 # Framework paths
 FRAMEWORK_ROOT = Path(__file__).parent.parent
 ERROR_LOG_PATH = FRAMEWORK_ROOT / ".context" / "knowledge" / "errors" / "error-log.json"
-PLAYBOOKS_DIR = FRAMEWORK_ROOT.parent / "playbooks"
 
-# Playbook mapping
-PLAYBOOK_MAP = {
-    "FileNotFoundError": "PB-002-file-not-found",
-    "KeyError": "PB-003-key-error",
-    "ValueError": "PB-004-value-error",
-    "ModuleNotFoundError": "PB-005-module-not-found",
-    "ImportError": "PB-006-import-error",
-    "PermissionError": "PB-007-permission-error",
-    "ConnectionError": "PB-008-connection-error",
-    "TimeoutError": "PB-009-timeout-error",
-    "Unknown": "PB-001-general"
-}
+try:
+    from core.recovery.orchestrator import (
+        ERROR_TYPE_TO_PLAYBOOK,
+        RecoveryOrchestrator,
+        resolve_playbook_for_error_type,
+    )
+except ModuleNotFoundError:
+    project_root = FRAMEWORK_ROOT.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+    from core.recovery.orchestrator import (
+        ERROR_TYPE_TO_PLAYBOOK,
+        RecoveryOrchestrator,
+        resolve_playbook_for_error_type,
+    )
+
+PLAYBOOK_MAP = dict(ERROR_TYPE_TO_PLAYBOOK)
 
 # Known fixes for common errors
 KNOWN_FIXES = {
@@ -59,7 +63,6 @@ class SelfHealingCheck:
     
     def __init__(self):
         self.error_log_path = ERROR_LOG_PATH
-        self.playbooks_dir = PLAYBOOKS_DIR
         
         # Ensure error log exists
         self.error_log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -204,45 +207,29 @@ class SelfHealingCheck:
         return fixed
     
     def _trigger_playbook(self, error: Dict) -> Dict:
-        """Trigger appropriate recovery playbook"""
-        
+        """Execute the canonical action for an exact error type."""
         error_type = error.get("type", "Unknown")
-        playbook_id = PLAYBOOK_MAP.get(error_type, "PB-001-general")
-        
-        playbook_path = self.playbooks_dir / f"{playbook_id}.md"
-        
-        result = {
+        playbook_id = resolve_playbook_for_error_type(error_type)
+        if playbook_id is None:
+            return {
+                "error_id": error.get("id"),
+                "error_type": error_type,
+                "playbook_id": None,
+                "status": "unavailable",
+                "message": f"No executable recovery action for {error_type}",
+            }
+
+        context = dict(error.get("context") or {})
+        context.setdefault("retry_count", 0)
+        result = RecoveryOrchestrator().execute_playbook(playbook_id, context)
+        return {
             "error_id": error.get("id"),
             "error_type": error_type,
             "playbook_id": playbook_id,
-            "playbook_path": str(playbook_path),
-            "status": "triggered"
+            "status": result["status"],
+            "message": result["message"],
+            "details": result,
         }
-        
-        if playbook_path.exists():
-            playbook_content = playbook_path.read_text()
-            print(f"[HEALING] Triggering playbook: {playbook_id}")
-            
-            # Parse playbook steps
-            steps = self._parse_playbook_steps(playbook_content)
-            
-            result["steps"] = steps
-            result["status"] = "loaded"
-        else:
-            print(f"[HEALING] Playbook not found: {playbook_id}")
-            result["status"] = "not_found"
-        
-        return result
-    
-    def _parse_playbook_steps(self, content: str) -> List[str]:
-        """Parse playbook steps from markdown"""
-        
-        steps = []
-        for line in content.split("\n"):
-            if line.startswith("1.") or line.startswith("2.") or line.startswith("3."):
-                steps.append(line.strip())
-        
-        return steps
     
     def _mark_error_resolved(self, error_id: str):
         """Mark error as resolved in log"""

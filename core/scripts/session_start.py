@@ -31,6 +31,7 @@ from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
 import hashlib
+import importlib
 
 # --- CONTEXT LOADER (v2.2.0) ---
 from context_loader import ContextLoader, TokenBudgetTracker, estimate_tokens
@@ -45,6 +46,28 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 import workspace_config as workspace_cfg  # noqa: E402
+
+_FrameworkGuardian = None
+try:
+    _guardian_module = importlib.import_module("framework_guardian")
+    _FrameworkGuardian = getattr(_guardian_module, "FrameworkGuardian")
+except (ImportError, AttributeError):
+    pass
+
+
+def framework_enforcement_status() -> dict:
+    """Return enforcement availability without activating a guardian."""
+    if _FrameworkGuardian is not None:
+        return {
+            "available": True,
+            "status": "available",
+            "reason": "Framework Guardian is installed",
+        }
+    return {
+        "available": False,
+        "status": "unavailable",
+        "reason": "Framework Guardian is not installed",
+    }
 
 # Add memory to sys.path for session_memory imports
 if str(MEMORY_DIR) not in sys.path:
@@ -563,7 +586,7 @@ def check_vitals_integrity():
 
     vitals_script = SCRIPT_DIR / "vitals_guardian.py"
     if not vitals_script.exists():
-        return True, []
+        return False, ["Vitals Guardian unavailable"]
 
     try:
         # Ejecutar check sin output para ser rápido
@@ -584,8 +607,8 @@ def check_vitals_integrity():
             return False, issues[:5]  # Máximo 5 issues
 
         return True, []
-    except:
-        return True, []  # Si falla, no bloquear inicio
+    except Exception as exc:
+        return False, [f"Vitals Guardian check failed: {type(exc).__name__}"]
 
 
 def show_vitals_status():
@@ -1321,20 +1344,25 @@ status: active
 
     # === OPTIONAL: Framework Enforcement Check ===
     if not args.skip_validation:
-        try:
-            from framework_guardian import FrameworkGuardian
-
-            guardian = FrameworkGuardian()
+        status = framework_enforcement_status()
+        if _FrameworkGuardian is None:
+            safe_print(
+                c(
+                    f"[ENFORCEMENT] {status['status']}: {status['reason']}",
+                    Colors.YELLOW,
+                )
+            )
+        else:
+            guardian = _FrameworkGuardian()
             results = guardian.run_validation(timing="session-start")
             if any(not r.passed for r in results):
                 safe_print(
                     c(
-                        "[ENFORCEMENT] Some checks failed. Run: python framework_guardian.py --timing session-start",
+                        "[ENFORCEMENT] Some checks failed. Run: "
+                        "python framework_guardian.py --timing session-start",
                         Colors.YELLOW,
                     )
                 )
-        except ImportError:
-            pass  # Guardian not available, continue
 
     return 0
 

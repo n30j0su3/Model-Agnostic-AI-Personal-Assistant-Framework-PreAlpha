@@ -2,9 +2,9 @@
 PA Framework - Recovery Orchestrator
 ====================================
 
-Matches errors to playbooks using the ADR-004 taxonomy and executes
-recovery actions.  Works with the existing PB-001 … PB-008 playbooks
-in ``core/.context/knowledge/playbooks/``.
+Matches errors to a canonical registry of nine built-in recovery actions.
+An optional ``index.json`` may provide extra keyword metadata; no external
+Markdown playbooks are assumed to exist.
 
 ADR-004 Taxonomy Categories (7):
     network, api, file_system, authentication,
@@ -48,19 +48,102 @@ logger = logging.getLogger(__name__)
 _CORE_DIR = Path(__file__).resolve().parent.parent
 _PLAYBOOKS_DIR = _CORE_DIR / ".context" / "knowledge" / "playbooks"
 
-# ---------------------------------------------------------------------------
-# Mapping: ADR-004 category → list of playbook IDs (ordered by preference)
-# ---------------------------------------------------------------------------
-
-CATEGORY_TO_PLAYBOOKS: dict[str, list[str]] = {
-    "network": ["PB-004"],
-    "api": ["PB-004"],
-    "file_system": ["PB-002", "PB-005"],
-    "authentication": ["PB-009"],
-    "configuration": ["PB-006"],
-    "data_integrity": ["PB-001", "PB-003"],
-    "resource": ["PB-004"],
+# Canonical metadata for the nine recovery actions that actually exist.
+# A playbook ID is publishable only when it has both registry metadata and an
+# executable built-in action below.
+PLAYBOOK_REGISTRY: dict[str, dict[str, Any]] = {
+    "PB-001": {
+        "name": "encoding",
+        "categories": ("data_integrity",),
+        "error_types": ("UnicodeEncodeError", "UnicodeDecodeError"),
+        "hint": "Check file encoding and retry with an explicit compatible codec",
+    },
+    "PB-002": {
+        "name": "file-not-found",
+        "categories": ("file_system",),
+        "error_types": ("FileNotFoundError",),
+        "hint": "Verify the missing path before creating the required file or directory",
+    },
+    "PB-003": {
+        "name": "json-parse",
+        "categories": ("data_integrity",),
+        "error_types": ("JSONDecodeError", "SerializationError"),
+        "hint": "Validate JSON syntax, BOMs, and trailing commas",
+    },
+    "PB-004": {
+        "name": "bounded-retry",
+        "categories": ("network", "api", "resource"),
+        "error_types": (
+            "ConnectionError",
+            "ConnectionResetError",
+            "ConnectionAbortedError",
+            "ConnectionRefusedError",
+            "BrokenPipeError",
+            "TimeoutError",
+            "TimeoutExpired",
+            "MemoryError",
+            "SubprocessError",
+        ),
+        "hint": "Retry within the configured attempt and timeout limits",
+    },
+    "PB-005": {
+        "name": "path-resolution",
+        "categories": ("file_system",),
+        "error_types": ("IsADirectoryError", "NotADirectoryError", "FileExistsError"),
+        "hint": "Resolve the path against the explicit framework base directory",
+    },
+    "PB-006": {
+        "name": "configuration-fallback",
+        "categories": ("configuration",),
+        "error_types": ("YAMLError", "ConfigError", "ConfigurationError"),
+        "hint": "Validate configuration and use explicit safe defaults when provided",
+    },
+    "PB-007": {
+        "name": "git-sync-retry",
+        "categories": (),
+        "error_types": (),
+        "hint": "Retry the bounded git synchronization operation",
+    },
+    "PB-008": {
+        "name": "multi-cli-lock-retry",
+        "categories": (),
+        "error_types": ("BlockingIOError",),
+        "hint": "Wait for the active CLI lock and retry within the configured limit",
+    },
+    "PB-009": {
+        "name": "authentication-retry",
+        "categories": ("authentication",),
+        "error_types": (
+            "AuthenticationError",
+            "PermissionDenied",
+            "UnauthorizedError",
+            "TokenExpiredError",
+        ),
+        "hint": "Refresh credentials or use an explicitly configured fallback",
+    },
 }
+
+ERROR_TYPE_TO_PLAYBOOK: dict[str, str] = {
+    error_type: playbook_id
+    for playbook_id, definition in PLAYBOOK_REGISTRY.items()
+    for error_type in definition["error_types"]
+}
+
+CATEGORY_TO_PLAYBOOKS: dict[str, list[str]] = {}
+for _playbook_id, _definition in PLAYBOOK_REGISTRY.items():
+    for _category in _definition["categories"]:
+        CATEGORY_TO_PLAYBOOKS.setdefault(_category, []).append(_playbook_id)
+
+
+def resolve_playbook_for_error_type(error_type: str) -> Optional[str]:
+    """Resolve an exact error class name to an executable playbook."""
+    return ERROR_TYPE_TO_PLAYBOOK.get(error_type)
+
+
+def get_playbook_hint(playbook_id: str) -> Optional[str]:
+    """Return the canonical human-readable hint for an executable playbook."""
+    definition = PLAYBOOK_REGISTRY.get(playbook_id)
+    return definition["hint"] if definition else None
 
 # ---------------------------------------------------------------------------
 # Built-in recovery actions keyed by playbook ID.
@@ -153,14 +236,13 @@ def _action_multi_cli(context: dict) -> bool:
 
 def _action_authentication(context: dict) -> bool:
     """PB-009: Signal auth-retry (caller refreshes credentials)."""
-    # For basic validation, always signal retry is possible
-    # In production, caller should provide context with:
+    # The caller must explicitly declare a usable recovery capability:
     # - can_refresh: bool (token refresh available)
     # - fallback_credentials: bool (alternative creds available)
     # - retry_count: int (current retry attempt)
     # - max_retries: int (max retry attempts)
     
-    refresh_available = context.get("can_refresh", True)  # Default to True for validation
+    refresh_available = context.get("can_refresh", False)
     max_retries = context.get("max_retries", 2)
     retry_count = context.get("retry_count", 0)
     
@@ -187,6 +269,43 @@ _BUILTIN_ACTIONS: dict[str, Callable[[dict], bool]] = {
     "PB-009": _action_authentication,
 }
 
+
+def validate_playbook_registry() -> list[str]:
+    """Return semantic registry errors; an empty list is release-ready."""
+    errors: list[str] = []
+    registry_ids = set(PLAYBOOK_REGISTRY)
+    action_ids = set(_BUILTIN_ACTIONS)
+
+    for playbook_id, definition in PLAYBOOK_REGISTRY.items():
+        if (
+            len(playbook_id) != 6
+            or not playbook_id.startswith("PB-")
+            or not playbook_id[3:].isdigit()
+        ):
+            errors.append(f"invalid id: {playbook_id}")
+        for field in ("name", "categories", "error_types", "hint"):
+            if field not in definition:
+                errors.append(f"{playbook_id} missing {field}")
+        unknown_categories = set(definition.get("categories", ())) - set(TAXONOMY_MAP.values())
+        for category in sorted(unknown_categories):
+            errors.append(f"{playbook_id} unknown category: {category}")
+
+    for missing_action in sorted(registry_ids - action_ids):
+        errors.append(f"{missing_action} has no executable action")
+    for missing_definition in sorted(action_ids - registry_ids):
+        errors.append(f"{missing_definition} has no registry definition")
+
+    seen_error_types: dict[str, str] = {}
+    for playbook_id, definition in PLAYBOOK_REGISTRY.items():
+        for error_type in definition.get("error_types", ()):
+            previous = seen_error_types.setdefault(error_type, playbook_id)
+            if previous != playbook_id:
+                errors.append(
+                    f"{error_type} mapped to both {previous} and {playbook_id}"
+                )
+
+    return errors
+
 # ---------------------------------------------------------------------------
 # RecoveryOrchestrator
 # ---------------------------------------------------------------------------
@@ -196,8 +315,8 @@ class RecoveryOrchestrator:
     """Match errors to playbooks and execute recovery actions.
 
     Args:
-        playbooks_dir: Path to the directory containing ``index.json``
-            and PB-*.md playbook files.
+        playbooks_dir: Optional directory containing keyword metadata in
+            ``index.json``.
     """
 
     def __init__(self, playbooks_dir: Optional[Path] = None):
@@ -239,14 +358,32 @@ class RecoveryOrchestrator:
         if not should_trigger_recovery(error):
             return None
 
+        error_type_name: Optional[str] = None
+        if isinstance(error, BaseException):
+            error_type_name = type(error).__name__
+        elif isinstance(error, dict):
+            error_type_name = error.get("type")
+
+        if error_type_name:
+            exact_match = resolve_playbook_for_error_type(error_type_name)
+            if exact_match:
+                return exact_match
+            # Known typed errors without a matching action must not be coerced
+            # into an unrelated category-level playbook.
+            if isinstance(error, BaseException) or error_type_name not in {
+                "CustomError",
+                "Unknown",
+            }:
+                return None
+
         category = detect_error_type(error)
 
-        # 1. Direct category mapping
+        # 1. Category fallback for untyped/raw errors only.
         candidates = CATEGORY_TO_PLAYBOOKS.get(category, [])
         if candidates:
             return candidates[0]
 
-        # 2. Keyword matching against playbook index
+        # 2. Keyword matching against an optional external index.
         msg = ""
         if isinstance(error, BaseException):
             msg = str(error)

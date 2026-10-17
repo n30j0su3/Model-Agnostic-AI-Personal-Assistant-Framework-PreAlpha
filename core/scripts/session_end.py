@@ -97,6 +97,21 @@ except ImportError:
     pass
 
 
+def framework_enforcement_status() -> dict:
+    """Return an honest capability status without activating a guardian."""
+    if _enforcement_available:
+        return {
+            "available": True,
+            "status": "available",
+            "reason": "Framework Guardian is installed",
+        }
+    return {
+        "available": False,
+        "status": "unavailable",
+        "reason": "Framework Guardian is not installed",
+    }
+
+
 class Colors:
     HEADER = "\033[95m"
     BLUE = "\033[94m"
@@ -707,6 +722,14 @@ def close(
                         safe_print(c(f"    Fix: {r.fix_suggestion}", Colors.DIM))
         except ImportError:
             pass
+    elif not skip_error_recovery and not _silent_mode:
+        status = framework_enforcement_status()
+        safe_print(
+            c(
+                f"[ENFORCEMENT] {status['status']}: {status['reason']}",
+                Colors.YELLOW,
+            )
+        )
 
     knowledge_stats = {"available": False}
 

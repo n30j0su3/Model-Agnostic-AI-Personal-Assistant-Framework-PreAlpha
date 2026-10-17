@@ -48,26 +48,26 @@ ERRORS_DIR = KNOWLEDGE_DIR / "errors"
 ERROR_INDEX_FILE = ERRORS_DIR / "index.json"
 ERROR_LOG_MD = ERRORS_DIR / "error-log.md"
 
-PLAYBOOK_MAPPING = {
-    "UnicodeEncodeError": "PB-001",
-    "UnicodeDecodeError": "PB-001",
-    "FileNotFoundError": "PB-002",
-    "PermissionError": "PB-003",
-    "KeyError": "PB-004",
-    "ValueError": "PB-005",
-    "TypeError": "PB-006",
-    "AttributeError": "PB-007",
-    "ImportError": "PB-008",
-    "ModuleNotFoundError": "PB-008",
-    "ConnectionError": "PB-009",
-    "TimeoutError": "PB-010",
-    "OSError": "PB-011",
-    "IOError": "PB-011",
-    "JSONDecodeError": "PB-012",
-    "IndexError": "PB-013",
-    "ZeroDivisionError": "PB-014",
-    "RuntimeError": "PB-015",
-}
+try:
+    from core.recovery.orchestrator import (
+        CATEGORY_TO_PLAYBOOKS,
+        ERROR_TYPE_TO_PLAYBOOK,
+        RecoveryOrchestrator,
+        get_playbook_hint,
+    )
+except ModuleNotFoundError:
+    project_root = Path(__file__).resolve().parents[2]
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+    from core.recovery.orchestrator import (
+        CATEGORY_TO_PLAYBOOKS,
+        ERROR_TYPE_TO_PLAYBOOK,
+        RecoveryOrchestrator,
+        get_playbook_hint,
+    )
+
+# Backward-compatible public name backed by the canonical executable registry.
+PLAYBOOK_MAPPING = dict(ERROR_TYPE_TO_PLAYBOOK)
 
 # ─── ADR-004 Error Classification Taxonomy (v2.0.0) ───────────────────────
 # Maps keyword patterns to error category per ADR-004 taxonomy.
@@ -150,43 +150,14 @@ ERROR_CATEGORIES = {
     },
 }
 
-# Mapping from error category to suggested recovery strategy/playbook
-CATEGORY_RECOVERY_MAP = {
-    "network": {
-        "playbook_id": "PB-NET-RETRY",
-        "strategy": "Retry with exponential backoff; check connectivity; verify DNS",
-        "severity": "medium",
-    },
-    "api": {
-        "playbook_id": "PB-API-FALLBACK",
-        "strategy": "Check API status; validate request; use cached response",
-        "severity": "medium",
-    },
-    "file_system": {
-        "playbook_id": "PB-FS-RECOVER",
-        "strategy": "Verify path; check encoding; ensure disk space; fix permissions",
-        "severity": "high",
-    },
-    "authentication": {
-        "playbook_id": "PB-AUTH-REFRESH",
-        "strategy": "Refresh token; re-authenticate; check credentials rotation",
-        "severity": "critical",
-    },
-    "configuration": {
-        "playbook_id": "PB-CFG-VALIDATE",
-        "strategy": "Validate config schema; check env vars; restore defaults",
-        "severity": "high",
-    },
-    "data_integrity": {
-        "playbook_id": "PB-DATA-VALIDATE",
-        "strategy": "Validate input; check schema; sanitize data; restore backup",
-        "severity": "high",
-    },
-    "resource": {
-        "playbook_id": "PB-RES-OPTIMIZE",
-        "strategy": "Free resources; reduce load; scale up; restart service",
-        "severity": "critical",
-    },
+CATEGORY_SEVERITY = {
+    "network": "medium",
+    "api": "medium",
+    "file_system": "high",
+    "authentication": "critical",
+    "configuration": "high",
+    "data_integrity": "high",
+    "resource": "critical",
 }
 
 # Pattern detection thresholds
@@ -557,26 +528,9 @@ class ErrorLogger:
         error_type = error_data.get("type", "Unknown")
         playbook_id = self._get_playbook_suggestion(error_type)
 
-        hints = {
-            "PB-001": f"{playbook_id}: Check file encoding with chardet, use detected encoding",
-            "PB-002": f"{playbook_id}: Verify file path exists, check permissions",
-            "PB-003": f"{playbook_id}: Check file/directory permissions, run as admin if needed",
-            "PB-004": f"{playbook_id}: Verify dict key exists, use .get() with default",
-            "PB-005": f"{playbook_id}: Validate input values, add type checking",
-            "PB-006": f"{playbook_id}: Check variable types, add type conversion",
-            "PB-007": f"{playbook_id}: Verify object has attribute, use hasattr()",
-            "PB-008": f"{playbook_id}: Install missing package, check import path",
-            "PB-009": f"{playbook_id}: Check network connection, add retry logic",
-            "PB-010": f"{playbook_id}: Increase timeout, add async handling",
-            "PB-011": f"{playbook_id}: Check file handles, close resources properly",
-            "PB-012": f"{playbook_id}: Validate JSON syntax, use try/except for parsing",
-            "PB-013": f"{playbook_id}: Check list length before accessing index",
-            "PB-014": f"{playbook_id}: Add zero check before division",
-            "PB-015": f"{playbook_id}: Review error context, add proper error handling",
-        }
-
-        if playbook_id and playbook_id in hints:
-            return hints[playbook_id]
+        hint = get_playbook_hint(playbook_id) if playbook_id else None
+        if playbook_id and hint:
+            return f"{playbook_id}: {hint}"
 
         return f"No playbook available for {error_type}. Manual investigation required."
 
@@ -698,106 +652,50 @@ class ErrorLogger:
             >>> logger = ErrorLogger()
             >>> result = logger.suggest_recovery("network")
             >>> print(result["playbook_id"])
-            'PB-NET-RETRY'
+            'PB-004'
         """
-        if error_class in CATEGORY_RECOVERY_MAP:
-            result = dict(CATEGORY_RECOVERY_MAP[error_class])
-            result["category"] = error_class
-            return result
+        candidates = CATEGORY_TO_PLAYBOOKS.get(error_class, [])
+        if len(candidates) == 1:
+            playbook_id = candidates[0]
+            return {
+                "playbook_id": playbook_id,
+                "strategy": get_playbook_hint(playbook_id),
+                "severity": CATEGORY_SEVERITY.get(error_class, "unknown"),
+                "category": error_class,
+            }
 
         return {
             "playbook_id": None,
-            "strategy": "No automated recovery available. Manual investigation required.",
-            "severity": "unknown",
+            "strategy": (
+                "No unambiguous automated recovery available. "
+                "Manual investigation required."
+            ),
+            "severity": CATEGORY_SEVERITY.get(error_class, "unknown"),
             "category": error_class,
         }
 
-    def trigger_playbook(self, playbook_id: str) -> Dict[str, Any]:
-        """
-        Trigger a recovery playbook via the recovery orchestrator.
-
-        Attempts to integrate with the recovery orchestrator if available.
-        Falls back gracefully with a logged suggestion if the orchestrator
-        is not yet implemented.
-
-        Args:
-            playbook_id: The playbook identifier to trigger
-                        (e.g., 'PB-NET-RETRY', 'PB-001', etc.)
-
-        Returns:
-            Dictionary with trigger result:
-            - triggered: Whether the playbook was actually executed
-            - playbook_id: The playbook that was requested
-            - status: 'executed', 'pending', or 'unavailable'
-            - message: Human-readable status message
-
-        Example:
-            >>> logger = ErrorLogger()
-            >>> result = logger.trigger_playbook("PB-NET-RETRY")
-            >>> print(result["status"])
-            'pending'
-        """
+    def trigger_playbook(
+        self,
+        playbook_id: str,
+        context: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """Execute a registered playbook and preserve the orchestrator status."""
+        exec_result = RecoveryOrchestrator().execute_playbook(playbook_id, context)
+        triggered = exec_result["status"] != "no_action"
         result: Dict[str, Any] = {
-            "triggered": False,
+            "triggered": triggered,
             "playbook_id": playbook_id,
-            "status": "unavailable",
-            "message": "",
+            "status": exec_result["status"],
+            "message": exec_result["message"],
+            "details": exec_result,
         }
-
-        # Attempt to import and use recovery orchestrator
-        try:
-            # Try core recovery orchestrator
-            from recovery_orchestrator import RecoveryOrchestrator
-            orchestrator = RecoveryOrchestrator()
-            exec_result = orchestrator.execute_playbook(playbook_id)
-            result["triggered"] = True
-            result["status"] = "executed"
-            result["message"] = f"Playbook {playbook_id} executed successfully"
-            result["details"] = exec_result
-            safe_print(c(
-                f"[PLAYBOOK] Triggered {playbook_id} via recovery orchestrator",
-                Colors.GREEN
-            ))
-            return result
-        except ImportError:
-            pass
-        except Exception as e:
-            result["message"] = f"Orchestrator error: {e}"
-            result["status"] = "error"
-
-        # Fallback: Try script-based playbook execution
-        try:
-            playbook_path = (
-                SCRIPT_DIR / "recovery" / f"{playbook_id.lower()}.py"
+        color = Colors.GREEN if exec_result["status"] == "success" else Colors.YELLOW
+        safe_print(
+            c(
+                f"[PLAYBOOK] {playbook_id}: {exec_result['status']}",
+                color,
             )
-            if playbook_path.exists():
-                result["triggered"] = True
-                result["status"] = "pending"
-                result["message"] = (
-                    f"Playbook script found at {playbook_path}. "
-                    f"Manual execution required."
-                )
-                result["script_path"] = str(playbook_path)
-                safe_print(c(
-                    f"[PLAYBOOK] Script available: {playbook_path}",
-                    Colors.YELLOW
-                ))
-                return result
-        except Exception:
-            pass
-
-        # Graceful fallback — log the suggestion
-        result["status"] = "pending"
-        result["triggered"] = False
-        result["message"] = (
-            f"Recovery orchestrator not available. "
-            f"Playbook {playbook_id} queued for manual execution."
         )
-        safe_print(c(
-            f"[PLAYBOOK] {playbook_id} — orchestrator not available, "
-            f"queued for manual execution",
-            Colors.YELLOW
-        ))
         return result
 
     def detect_pattern(self, error_history: Optional[List[Dict]] = None) -> Dict[str, Any]:
@@ -1093,18 +991,15 @@ def suggest_recovery(error_class: str) -> Dict[str, Any]:
     return logger.suggest_recovery(error_class)
 
 
-def trigger_playbook(playbook_id: str) -> Dict[str, Any]:
-    """
-    Convenience function to trigger a recovery playbook.
-
-    Args:
-        playbook_id: Playbook identifier.
-
-    Returns:
-        Trigger result dictionary.
-    """
+def trigger_playbook(
+    playbook_id: str,
+    context: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Convenience function to execute a registered recovery playbook."""
     logger = ErrorLogger()
-    return logger.trigger_playbook(playbook_id)
+    if context is None:
+        return logger.trigger_playbook(playbook_id)
+    return logger.trigger_playbook(playbook_id, context)
 
 
 def detect_pattern(error_history: Optional[List[Dict]] = None) -> Dict[str, Any]:
@@ -1181,8 +1076,8 @@ if __name__ == "__main__":
     print(f"  unknown -> {rec_unknown['playbook_id']}")
 
     print(c("\n[TEST 9] Triggering playbook...", Colors.CYAN))
-    trig = logger.trigger_playbook("PB-NET-RETRY")
-    print(f"  PB-NET-RETRY -> status={trig['status']}, triggered={trig['triggered']}")
+    trig = logger.trigger_playbook("PB-004", {"retry_count": 0, "max_retries": 1})
+    print(f"  PB-004 -> status={trig['status']}, triggered={trig['triggered']}")
 
     print(c("\n[TEST 10] Detecting patterns...", Colors.CYAN))
     analysis = logger.detect_pattern()
