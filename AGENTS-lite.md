@@ -29,4 +29,4 @@ Referencia completa: `docs/MEMORY-ARCHITECTURE.md`
 python core/scripts/session_end.py
 ```
 
-> Documento completo: `AGENTS-full.md`
+> Router operativo: `AGENTS.md` · Documentación: `docs/README.md`

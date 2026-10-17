@@ -963,7 +963,7 @@ def print_session_start(parallel_data: dict = None):
             print(f"   Temas recientes: {topics_str}")
     else:
         print(c("\n[KNOWLEDGE] Base de Conocimiento:", Colors.BOLD + Colors.CYAN))
-        print("   No inicializado (ejecutar: python core/scripts/kb-init.py)")
+        print("   No inicializado (ejecutar: python core/scripts/kb_init.py)")
 
     # Pendientes
     print(c(f"\n[PENDING] Pendientes Heredados: ", Colors.BOLD + Colors.YELLOW), end="")

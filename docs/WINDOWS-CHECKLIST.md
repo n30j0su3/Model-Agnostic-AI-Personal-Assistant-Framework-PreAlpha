@@ -202,14 +202,14 @@ py -3.11 core\scripts\migrate.py --status
 
 Validar:
 
-- El primer apply crea un snapshot en `data\rollback\`.
+- El primer apply crea un directorio snapshot en `data\backups\pre-migration-<timestamp>`.
 - El segundo apply es idempotente y no duplica la migración.
 - Perfil, sesiones y datos del usuario siguen presentes.
 
 Rollback, usando la ruta exacta del snapshot generado:
 
 ```powershell
-py -3.11 core\scripts\rollback.py --snapshot data\rollback\<snapshot>.tar.gz --json
+py -3.11 core\scripts\rollback.py --snapshot data\backups\pre-migration-<timestamp> --json
 ```
 
 Validar que las superficies administradas regresan al estado anterior y que los

@@ -7,9 +7,9 @@ Inicializa la estructura de la Knowledge Base del framework.
 Crea los archivos necesarios si no existen.
 
 Uso:
-    python core/scripts/kb-init.py
-    python core/scripts/kb-init.py --check    # Solo verificar estado
-    python core/scripts/kb-init.py --force     # Forzar recrear estructura
+    python core/scripts/kb_init.py
+    python core/scripts/kb_init.py --check    # Solo verificar estado
+    python core/scripts/kb_init.py --force     # Forzar recrear estructura
 
 Autor: FreakingJSON-PA Framework
 Version: 1.0.0
@@ -242,7 +242,7 @@ def print_status(status: dict):
         print(c("\n[KB] Knowledge Base completamente inicializada", Colors.GREEN))
     else:
         print(
-            c("\n[KB] Ejecuta: python core/scripts/kb-init.py --force", Colors.YELLOW)
+            c("\n[KB] Ejecuta: python core/scripts/kb_init.py --force", Colors.YELLOW)
         )
 
     return all_ok

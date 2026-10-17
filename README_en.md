@@ -24,7 +24,7 @@
 
 **v0.3.8-alpha** - Update reliability and public release refresh
 - Fixed context initialization error
-- `kb-init.py` script to initialize Knowledge Base
+- `kb_init.py` script to initialize Knowledge Base
 - `codebase/` and `knowledge/` structures created automatically
 - Compatible with upgrades from previous versions
 - Framework release packaging workflow

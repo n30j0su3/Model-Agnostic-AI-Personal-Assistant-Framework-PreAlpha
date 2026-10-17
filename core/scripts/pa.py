@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FreakingJSON PA Framework — Control Panel v0.4.0-beta
+FreakingJSON PA Framework — Control Panel
 Menú reorganizado: 7+1 opciones principales.
 
 Creator: FreakingJSON (instagram.com/freakingjson, freakingjson.com)

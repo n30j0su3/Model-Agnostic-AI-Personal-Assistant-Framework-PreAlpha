@@ -51,7 +51,7 @@ python core/scripts/version_updater.py → Sync versions
 | **Tier 1** | `AGENTS.md` | Router operativo |
 | **Tier 2** | `core/.context/MASTER.md` | User config & preferences |
 | **Tier 3** | `core/agents/pa-assistant.md` | Agent workflow |
-| **Tier 4** | `AGENTS-full.md` | Complete documentation |
+| **Tier 4** | `docs/README.md` | Documentation index |
 
 ### Phase 3 modules
 
@@ -84,7 +84,7 @@ python core/scripts/session_end.py
 
 ## 📖 EXTENDED DOCUMENTATION
 
-- **Full docs**: `AGENTS-full.md` — Complete initialization protocol, CORE processes, enforcement system
+- **Full docs**: `docs/README.md` — Documentation index, setup and operating guides
 - **Quick menu**: `python core/scripts/pa.py` — Interactive menu (el equipo spec)
 
 ---

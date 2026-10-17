@@ -6,7 +6,7 @@
 > **"True knowledge transcends to the public."**
 
 [![Release](https://img.shields.io/badge/release-v0.1.0--alpha-blue)](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases/tag/v0.1.3-prealpha)
-[![Changelog](https://img.shields.io/badge/changelog-keep%20a%20changelog-green)](./CHANGELOG.md)
+[![Changelog](https://img.shields.io/badge/changelog-keep%20a%20changelog-green)](../../CHANGELOG.md)
 [![Instagram](https://img.shields.io/badge/Instagram-%40freakingjson-E4405F?logo=instagram&logoColor=white)](https://instagram.com/freakingjson)
 [![Linktree](https://img.shields.io/badge/Linktree-@freakingjson-43E55C?logo=linktree&logoColor=white)](https://linktr.ee/freakingjson)
 [![Blog](https://img.shields.io/badge/Blog-freakingjson.com-FFA500?logo=firefoxbrowser&logoColor=white)](https://freakingjson.com)
@@ -28,7 +28,7 @@
 - 22 skills incluidas, 5 agentes desplegados
 - Framework core stabilization and memory pipeline system
 
-📄 [Ver Changelog](./CHANGELOG.md) | 🏷️ [Ver Releases](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases)
+📄 [Ver Changelog](../../CHANGELOG.md) | 🏷️ [Ver Releases](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases)
 
 ---
 
@@ -77,7 +77,7 @@
    Edita `.context/MASTER.md` con tus preferencias.
 4. **Inicializar KB**:
    ```bash
-   python scripts/kb-init.py
+   python core/scripts/kb_init.py
    ```
 
 ## 🎛 Panel de Control (Opcional)
@@ -169,7 +169,7 @@ Comandos:
    setx GEMINI_API_KEY "<TU_API_KEY>"
    ```
 5. **Prueba cada CLI** con un comando simple (por ejemplo `--version` o un prompt corto).
-6. **Inicializa KB** ejecutando `python scripts/kb-init.py` si aun no lo hiciste.
+6. **Inicializa KB** ejecutando `python core/scripts/kb_init.py` si aun no lo hiciste.
 7. **Valida la configuracion LLM** con el instalador:
    ```bash
    python scripts/install.py --llm

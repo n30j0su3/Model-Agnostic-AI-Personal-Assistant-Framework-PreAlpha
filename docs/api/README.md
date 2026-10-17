@@ -148,7 +148,7 @@ Any changes to frozen APIs require:
 
 ## Related Documentation
 
-- [AGENTS-full.md](../AGENTS-full.md) — Full framework documentation
+- [Documentation index](../README.md) — Framework guides and references
 - [CHANGELOG.md](../../CHANGELOG.md) — Version history
 - [ROADMAP.md](../../ROADMAP.md) — Development roadmap
 
