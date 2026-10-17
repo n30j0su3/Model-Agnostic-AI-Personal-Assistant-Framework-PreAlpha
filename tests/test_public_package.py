@@ -283,6 +283,10 @@ def test_root_data_ignored_but_nested_skill_data_kept(tmp_path: Path, release_re
     assert nested_asset in names
 
 
+def test_public_source_omits_dangerous_deprecated_uninstaller(release_repo: Path):
+    assert not (release_repo / "core/scripts/deprecated/uninstall.py").exists()
+
+
 def test_accidentally_tracked_private_file_never_reaches_zip(
     tmp_path: Path, release_repo: Path
 ):

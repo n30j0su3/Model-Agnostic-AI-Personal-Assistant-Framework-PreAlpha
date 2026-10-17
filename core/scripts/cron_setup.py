@@ -28,6 +28,7 @@ Cross-platform: Windows, Linux, macOS
 import sys
 import os
 import platform
+import shlex
 import subprocess
 import tempfile
 from pathlib import Path
@@ -65,6 +66,51 @@ CRON_JOBS = [
         "description": "Populate wiki with new content"
     }
 ]
+
+CRON_BLOCK_BEGIN = "# >>> PA Framework managed jobs >>>"
+CRON_BLOCK_END = "# <<< PA Framework managed jobs <<<"
+
+
+def _strip_pa_managed_cron(current: str) -> str:
+    """Remove only PA-owned marked or legacy cron entries."""
+    lines = current.splitlines(keepends=True)
+    kept = []
+    in_managed_block = False
+    index = 0
+    job_scripts = {job["name"]: Path(job["script"]).name for job in CRON_JOBS}
+
+    while index < len(lines):
+        line = lines[index]
+        stripped = line.strip()
+        if stripped == CRON_BLOCK_BEGIN:
+            in_managed_block = True
+            index += 1
+            continue
+        if in_managed_block:
+            if stripped == CRON_BLOCK_END:
+                in_managed_block = False
+            index += 1
+            continue
+        if stripped == "# PA Framework Crons":
+            index += 1
+            continue
+
+        matched_legacy = False
+        for job_name, script_name in job_scripts.items():
+            if stripped != f"# {job_name}" or index + 1 >= len(lines):
+                continue
+            next_line = lines[index + 1]
+            if script_name in next_line and "--run" in next_line:
+                index += 2
+                matched_legacy = True
+                break
+        if matched_legacy:
+            continue
+
+        kept.append(line)
+        index += 1
+
+    return "".join(kept)
 
 
 class CronSetup:
@@ -158,65 +204,58 @@ class CronSetup:
         return results
     
     def _setup_linux(self) -> Dict:
-        """Configure Linux crontab"""
-        
+        """Configure one exact PA-owned crontab block."""
         results = {"platform": "Linux", "tasks": []}
-        
-        # Get current crontab
-        try:
-            current_crontab = subprocess.run(
-                ["crontab", "-l"],
-                capture_output=True,
-                text=True
-            ).stdout
-        except:
-            current_crontab = ""
-        
-        new_entries = []
-        
+        current_result = subprocess.run(
+            ["crontab", "-l"],
+            capture_output=True,
+            text=True,
+        )
+        if current_result.returncode not in (0, 1):
+            return {
+                "platform": "Linux",
+                "tasks": [],
+                "success": False,
+                "error": current_result.stderr or "unable to read crontab",
+            }
+        current_crontab = current_result.stdout if current_result.returncode == 0 else ""
+        unmanaged = _strip_pa_managed_cron(current_crontab)
+        if unmanaged and not unmanaged.endswith("\n"):
+            unmanaged += "\n"
+
+        block_lines = [CRON_BLOCK_BEGIN]
         for job in CRON_JOBS:
-            script_path = str(job["script"])
+            script_path = shlex.quote(str(job["script"]))
+            python_path = shlex.quote(self.python_path)
             interval = job["interval_minutes"]
-            
-            # Cron format: */5 * * * * command
-            cron_entry = f"*/{interval} * * * * {self.python_path} {script_path} --run"
-            
-            # Check if already in crontab
-            if job["name"] in current_crontab or cron_entry in current_crontab:
-                print(f"[CRON] ✓ Already exists: {job['name']}")
-                results["tasks"].append({
-                    "name": job["name"],
-                    "status": "existing",
-                    "entry": cron_entry
-                })
-            else:
-                # Add comment with job name
-                entry_with_comment = f"# {job['name']}\n{cron_entry}\n"
-                new_entries.append(entry_with_comment)
-                print(f"[CRON] ✓ Adding: {job['name']} (every {interval} min)")
-                results["tasks"].append({
-                    "name": job["name"],
-                    "status": "created",
-                    "entry": cron_entry
-                })
-        
-        # Append new entries to crontab
-        if new_entries:
-            new_crontab = current_crontab + "\n# PA Framework Crons\n" + "".join(new_entries)
-            
-            try:
-                subprocess.run(
-                    ["crontab", "-"],
-                    input=new_crontab,
-                    capture_output=True,
-                    text=True
-                )
-                print("[CRON] ✓ Crontab updated")
-            except Exception as e:
-                print(f"[CRON] ✗ Failed to update crontab: {e}")
-                results["success"] = False
-                return results
-        
+            cron_entry = f"*/{interval} * * * * {python_path} {script_path} --run"
+            block_lines.extend((f"# {job['name']}", cron_entry))
+            results["tasks"].append({
+                "name": job["name"],
+                "status": "created",
+                "entry": cron_entry,
+            })
+        block_lines.append(CRON_BLOCK_END)
+        new_crontab = unmanaged + "\n".join(block_lines) + "\n"
+
+        if new_crontab != current_crontab:
+            write_result = subprocess.run(
+                ["crontab", "-"],
+                input=new_crontab,
+                capture_output=True,
+                text=True,
+            )
+            if write_result.returncode != 0:
+                return {
+                    "platform": "Linux",
+                    "tasks": results["tasks"],
+                    "success": False,
+                    "error": write_result.stderr or "crontab rejected update",
+                }
+        else:
+            for task in results["tasks"]:
+                task["status"] = "existing"
+
         results["success"] = True
         return results
     
@@ -393,24 +432,36 @@ class CronSetup:
                 results["removed"].append(job["name"])
                 
         elif self.platform == "Linux":
-            # Remove PA Framework entries from crontab
-            current_crontab = subprocess.run(
+            current_result = subprocess.run(
                 ["crontab", "-l"],
                 capture_output=True,
-                text=True
-            ).stdout
-            
-            lines = current_crontab.split("\n")
-            filtered = [l for l in lines if "pa-framework" not in l.lower() and not any(j["name"] in l for j in CRON_JOBS)]
-            
-            subprocess.run(
-                ["crontab", "-"],
-                input="\n".join(filtered),
-                capture_output=True,
-                text=True
+                text=True,
             )
-            results["removed"] = [j["name"] for j in CRON_JOBS]
-            
+            if current_result.returncode not in (0, 1):
+                return {
+                    "platform": "Linux",
+                    "removed": [],
+                    "success": False,
+                    "error": current_result.stderr or "unable to read crontab",
+                }
+            current_crontab = current_result.stdout if current_result.returncode == 0 else ""
+            filtered = _strip_pa_managed_cron(current_crontab)
+            if filtered != current_crontab:
+                write_result = subprocess.run(
+                    ["crontab", "-"],
+                    input=filtered,
+                    capture_output=True,
+                    text=True,
+                )
+                if write_result.returncode != 0:
+                    return {
+                        "platform": "Linux",
+                        "removed": [],
+                        "success": False,
+                        "error": write_result.stderr or "crontab rejected update",
+                    }
+                results["removed"] = [job["name"] for job in CRON_JOBS]
+            results["success"] = True
         elif self.platform == "Darwin":
             launch_agents_dir = Path.home() / "Library" / "LaunchAgents"
             
