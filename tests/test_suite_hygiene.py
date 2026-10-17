@@ -8,6 +8,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from conftest import subprocess_text_encoding
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SESSIONS_INDEX = ROOT / "core/.context/knowledge/sessions-index.json"
@@ -19,6 +21,7 @@ def checkout_state():
         cwd=ROOT,
         capture_output=True,
         text=True,
+        encoding=subprocess_text_encoding(),
     )
     if status.returncode == 0:
         return ("git", status.stdout.strip())
@@ -59,6 +62,7 @@ def test_full_suite_green_and_does_not_mutate_checkout(tmp_path):
         env=env,
         capture_output=True,
         text=True,
+        encoding=subprocess_text_encoding(),
         timeout=180,
     )
     after_status = checkout_state()

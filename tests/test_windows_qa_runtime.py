@@ -61,54 +61,55 @@ def _write_legacy(root: Path, model: str, agent: str = "FreakingJSON") -> None:
     )
 
 
-def _fake_opencode(monkeypatch, output: str, code: int = 0, tag: str = "base"):
-    """Script ejecutable 'opencode' falso: imprime output y sale con code."""
-    base = Path(f"/tmp/qawin-{tag}")
-    fake = base / "opencode"
-    base.mkdir(parents=True, exist_ok=True)
-    script = f"#!/usr/bin/env python3\nimport sys\nprint({output!r})\nsys.exit({code})\n"
-    fake.write_text(script, encoding="utf-8")
-    fake.chmod(0o755)
-    return fake
+def _stub_opencode_version(monkeypatch, output: str, code: int = 0) -> str:
+    """Mock only the OpenCode version subprocess boundary."""
+    executable = "opencode-test"
+
+    def fake_run(argv, **_kwargs):
+        assert argv == [executable, "--version"]
+        return sfm.subprocess.CompletedProcess(argv, code, output + "\n", "")
+
+    monkeypatch.setattr(sfm.subprocess, "run", fake_run)
+    return executable
 
 
 # ------------------------------------------------------- version gate -------
 
 def test_version_1_17_9_rejected(monkeypatch):
-    fake = _fake_opencode(monkeypatch, "opencode 1.17.9 (build xyz)")
+    fake = _stub_opencode_version(monkeypatch, "opencode 1.17.9 (build xyz)")
     ok, msg = sfm.enforce_opencode_version(exe=str(fake))
     assert ok is False
     assert "npm install -g opencode-ai@latest" in msg
 
 
 def test_version_1_18_0_accepted(monkeypatch):
-    fake = _fake_opencode(monkeypatch, "opencode 1.18.0")
+    fake = _stub_opencode_version(monkeypatch, "opencode 1.18.0")
     ok, msg = sfm.enforce_opencode_version(exe=str(fake))
     assert ok is True, msg
 
 
 def test_version_newer_accepted(monkeypatch):
-    fake = _fake_opencode(monkeypatch, "opencode 1.20.3 (build ok)")
+    fake = _stub_opencode_version(monkeypatch, "opencode 1.20.3 (build ok)")
     ok, msg = sfm.enforce_opencode_version(exe=str(fake))
     assert ok is True, msg
 
 
 def test_version_malformed_rejected(monkeypatch):
-    fake = _fake_opencode(monkeypatch, "opencode version unknown??")
+    fake = _stub_opencode_version(monkeypatch, "opencode version unknown??")
     ok, msg = sfm.enforce_opencode_version(exe=str(fake))
     assert ok is False
     assert "npm install -g opencode-ai@latest" in msg
 
 
 def test_version_nonzero_exit_rejected(monkeypatch):
-    fake = _fake_opencode(monkeypatch, "1.18.0", code=1, tag="fail")
+    fake = _stub_opencode_version(monkeypatch, "1.18.0", code=1)
     ok, msg = sfm.enforce_opencode_version(exe=str(fake))
     assert ok is False
     assert "npm install -g opencode-ai@latest" in msg
 
 
 def test_outdated_gate_spawns_no_serve(monkeypatch):
-    fake = _fake_opencode(monkeypatch, "1.17.9", tag="oldsrv")
+    fake = _stub_opencode_version(monkeypatch, "1.17.9")
 
     def _no_popen(*a, **k):
         raise AssertionError("gate debe fallar antes de spawn")
@@ -241,7 +242,7 @@ def test_api_models_free_endpoint_uses_free_only(tmp_path, monkeypatch):
 
 def test_manual_opencode_uses_argv_no_shell(tmp_path, monkeypatch):
     monkeypatch.setattr(pa, "REPO_ROOT", tmp_path)
-    fake = _fake_opencode(monkeypatch, "1.20.3", tag="manual")
+    fake = _stub_opencode_version(monkeypatch, "1.20.3")
     seen = {}
 
     def fake_run(argv, cwd=None, check=False, **k):
@@ -267,7 +268,7 @@ def test_manual_opencode_uses_argv_no_shell(tmp_path, monkeypatch):
 
 def test_manual_opencode_nonzero_returns_to_menu(tmp_path, monkeypatch):
     monkeypatch.setattr(pa, "REPO_ROOT", tmp_path)
-    fake = _fake_opencode(monkeypatch, "1.20.3", tag="crash")
+    fake = _stub_opencode_version(monkeypatch, "1.20.3")
     printed = []
     monkeypatch.setattr(pa, "print_warn", lambda m: printed.append(m))
     monkeypatch.setattr(pa.shutil, "which",
@@ -288,7 +289,7 @@ def test_manual_opencode_nonzero_returns_to_menu(tmp_path, monkeypatch):
 
 def test_manual_opencode_outdated_gate_blocks_launch(tmp_path, monkeypatch):
     monkeypatch.setattr(pa, "REPO_ROOT", tmp_path)
-    fake = _fake_opencode(monkeypatch, "1.17.9", tag="old")
+    fake = _stub_opencode_version(monkeypatch, "1.17.9")
 
     def no_spawn(*a, **k):
         raise AssertionError("no debe spawnear con gate desactualizado")
@@ -301,7 +302,7 @@ def test_manual_opencode_outdated_gate_blocks_launch(tmp_path, monkeypatch):
 
 
 def test_auto_opencode_outdated_gate_blocks_launch(tmp_path, monkeypatch):
-    fake = _fake_opencode(monkeypatch, "1.17.9", tag="old-auto")
+    fake = _stub_opencode_version(monkeypatch, "1.17.9")
     monkeypatch.setattr(pa.shutil, "which",
                         lambda n: str(fake) if n == "opencode" else None)
     calls = {"gate": 0, "spawn": 0}
@@ -326,7 +327,7 @@ def test_launch_tui_uses_selection_not_legacy(tmp_path, monkeypatch):
     monkeypatch.setattr(ds, "REPO_ROOT", tmp_path)
     _write_legacy(tmp_path, "opencode/big-pickle")
     _write_selection(tmp_path, "opencode/glm-5.3-free")
-    fake = _fake_opencode(monkeypatch, "1.20.3", tag="tui")
+    fake = _stub_opencode_version(monkeypatch, "1.20.3")
     spawned = {}
 
     def fake_popen(argv, **k):
@@ -358,7 +359,7 @@ def test_launch_tui_uses_selection_not_legacy(tmp_path, monkeypatch):
 
 def test_dashboard_opencode_ensure_gate_blocks_serve(tmp_path, monkeypatch):
     import dashboard_server as ds
-    fake = _fake_opencode(monkeypatch, "1.17.9", tag="ensure")
+    fake = _stub_opencode_version(monkeypatch, "1.17.9")
     monkeypatch.setattr(ds, "opencode_installed", lambda: str(fake))
 
     def no_spawn(*a, **k):
@@ -373,7 +374,7 @@ def test_dashboard_opencode_ensure_gate_blocks_serve(tmp_path, monkeypatch):
 
 
 def test_select_free_model_ensure_gate_blocks_serve(monkeypatch):
-    fake = _fake_opencode(monkeypatch, "1.17.9", tag="sfm")
+    fake = _stub_opencode_version(monkeypatch, "1.17.9")
     monkeypatch.setattr(sfm.shutil, "which",
                         lambda n: str(fake) if n == "opencode" else None)
 

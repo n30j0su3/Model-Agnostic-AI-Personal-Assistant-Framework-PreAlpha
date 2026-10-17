@@ -46,6 +46,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import workspace_config as workspace_cfg  # noqa: E402
 
 
+def _relative_posix(path, root) -> str:
+    """Serialize contract paths independently of the host path separator."""
+    return path.relative_to(root).as_posix()
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Detecta workspace y proyecto activo")
     parser.add_argument("--json", action="store_true", help="Output en formato JSON")
@@ -124,7 +129,7 @@ def detect_workspace(
     return {
         "name": workspace_name,
         "directory": workspace_directory,
-        "path": str(workspace_path.relative_to(root.resolve())),
+        "path": _relative_posix(workspace_path, root.resolve()),
         "detected_by": "cwd",
         "confidence": 1.0,
     }
@@ -189,7 +194,7 @@ def detect_project(
 
         return {
             "name": project_name,
-            "path": str(project_path.relative_to(root)),
+            "path": _relative_posix(project_path, root),
             "detected_by": "cwd",
             "confidence": 1.0,
             "is_new": is_new,

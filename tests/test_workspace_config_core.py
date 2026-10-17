@@ -30,6 +30,8 @@ from pathlib import Path
 
 import pytest
 
+from conftest import assert_private_file
+
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = ROOT / "core" / "scripts" / "workspace_config.py"
 
@@ -313,9 +315,7 @@ def test_save_user_config_atomic_0600_and_roundtrip(repo):
     assert returned == {"professional": {"dir": "Trabajo", "display": "Trabajo"}}
 
     destination = repo / "data" / "user" / "workspaces.json"
-    assert destination.is_file()
-    mode = destination.stat().st_mode & 0o777
-    assert mode == 0o600
+    assert_private_file(destination)
 
     # Atomic write: no temporary siblings left behind.
     siblings = sorted(p.name for p in destination.parent.iterdir())

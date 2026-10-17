@@ -13,6 +13,8 @@ from urllib.parse import urlencode
 
 import pytest
 
+from conftest import assert_private_file
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "core" / "scripts"
@@ -278,7 +280,7 @@ def test_skills_toggle_preserves_unknown_keys_and_sets_private_mode(tmp_path, mo
     data = json.loads(config_path.read_text(encoding="utf-8"))
     assert status == 200
     assert data["enabled_skills"] == [] and data["language"] == "es" and data["custom_key"] == "keep"
-    assert config_path.stat().st_mode & 0o777 == 0o600
+    assert_private_file(config_path)
     assert any(target == config_path for _source, target in replacements)
     assert not list(config_path.parent.glob(".config.json.*.tmp"))
 

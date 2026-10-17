@@ -57,7 +57,7 @@ python core/scripts/session-start.py
 
 ## 📋 AGENT ROUTER
 Agent routing info here.
-""")
+""", encoding="utf-8")
         
         # Create MASTER.md (Tier 1)
         master = context_dir / "MASTER.md"
@@ -65,11 +65,11 @@ Agent routing info here.
 ## Preferences
 - Language: es
 - Style: concise
-""")
+""", encoding="utf-8")
         
         # Create profile.md (Tier 1)
         profile = context_dir / "profile.md"
-        profile.write_text("# User Profile\nName: Test User\n")
+        profile.write_text("# User Profile\nName: Test User\n", encoding="utf-8")
         
         # Create sessions-index.json (Tier 1)
         sessions_index = knowledge_dir / "sessions-index.json"
@@ -78,29 +78,37 @@ Agent routing info here.
                 {"id": "2026-04-16", "summary": "Test session"},
                 {"id": "2026-04-15", "summary": "Previous session"}
             ]
-        }))
+        }), encoding="utf-8")
         
         # Create session files (Tier 2)
         for i, date in enumerate(["2026-04-16", "2026-04-15", "2026-04-14"]):
             session_file = sessions_dir / f"{date}.md"
-            session_file.write_text(f"# Session {date}\n\nWork done on {date}.\n" * 10)
+            session_file.write_text(
+                f"# Session {date}\n\nWork done on {date}.\n" * 10,
+                encoding="utf-8",
+            )
             # Set mtime to make ordering work
             mtime = time.time() - (i * 86400)
             os.utime(session_file, (mtime, mtime))
         
         # Create playbook (Tier 2)
         playbook = playbooks_dir / "PB-001-test.md"
-        playbook.write_text("# PB-001: Test Playbook\n\nRecovery steps here.\n")
+        playbook.write_text(
+            "# PB-001: Test Playbook\n\nRecovery steps here.\n",
+            encoding="utf-8",
+        )
         
         # Create templates (Tier 3)
         template = context_dir / "MASTER.template.md"
-        template.write_text("# Template\n\nTemplate content.\n")
+        template.write_text("# Template\n\nTemplate content.\n", encoding="utf-8")
         
         quick_start = context_dir / "quick-start.md"
-        quick_start.write_text("# Quick Start\n\nGetting started guide.\n")
+        quick_start.write_text(
+            "# Quick Start\n\nGetting started guide.\n", encoding="utf-8"
+        )
         
         nav = context_dir / "navigation.md"
-        nav.write_text("# Navigation\n\nFile navigation info.\n")
+        nav.write_text("# Navigation\n\nFile navigation info.\n", encoding="utf-8")
         
         yield repo_root
 
@@ -449,7 +457,7 @@ class TestContextLoader:
         # Create large AGENTS-lite
         agents_lite = temp_repo / "AGENTS-lite.md"
         large_content = "x" * 10000  # Much larger than 500 tokens
-        agents_lite.write_text(large_content)
+        agents_lite.write_text(large_content, encoding="utf-8")
         
         result = loader.load_tier(0)
         
@@ -549,7 +557,7 @@ class TestContextLoaderEdgeCases:
         """Corrupted JSON should be handled gracefully."""
         # Corrupt sessions-index.json
         sessions_index = temp_repo / "core" / ".context" / "knowledge" / "sessions-index.json"
-        sessions_index.write_text("not valid json {{{")
+        sessions_index.write_text("not valid json {{{", encoding="utf-8")
         
         loader = ContextLoader(repo_root=temp_repo)
         

@@ -9,6 +9,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from conftest import subprocess_text_encoding
+
 
 def file_hashes(root: Path) -> dict[str, str]:
     result = {}
@@ -34,6 +36,7 @@ def run_installer(root: Path, *flags: str) -> subprocess.CompletedProcess[str]:
         stdin=subprocess.DEVNULL,
         capture_output=True,
         text=True,
+        encoding=subprocess_text_encoding(),
         timeout=180,
     )
 

@@ -6,6 +6,8 @@ import os
 import sys
 from pathlib import Path
 
+from conftest import assert_private_file
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "core" / "scripts"
@@ -18,8 +20,7 @@ def test_token_is_created_with_private_permissions(tmp_path):
     server, _ = dashboard_server.make_server(repo_root=tmp_path)
     try:
         token_file = tmp_path / "data" / "dashboard.token"
-        assert token_file.is_file()
-        assert token_file.stat().st_mode & 0o777 == 0o600
+        assert_private_file(token_file)
         token = token_file.read_text(encoding="utf-8").strip()
         assert len(token) >= 32
         assert server.current_token() == token

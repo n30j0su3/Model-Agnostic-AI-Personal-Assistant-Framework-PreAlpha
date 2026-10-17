@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import os
 import subprocess
 import sys
 from pathlib import Path
+
+from conftest import assert_private_file
 
 
 def load_module(name: str, path: Path):
@@ -72,7 +73,7 @@ def test_save_selection_does_not_touch_tracked_files(repo_extract):
     selection = repo_extract / "data/user/model-selection.json"
     assert state["model"] == "opencode/test-free"
     assert json.loads(selection.read_text(encoding="utf-8"))["model"] == "opencode/test-free"
-    assert os.stat(selection).st_mode & 0o777 == 0o600
+    assert_private_file(selection)
     assert config.read_bytes() == before_config
     assert git_status(repo_extract) == before_status
 

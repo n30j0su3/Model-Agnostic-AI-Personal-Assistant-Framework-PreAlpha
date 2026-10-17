@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import io
+import locale
 import os
 import shutil
+import stat
 import subprocess
 import tarfile
 from pathlib import Path
@@ -13,6 +15,19 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def subprocess_text_encoding() -> str:
+    """Decode captured child output with the encoding requested for that child."""
+    requested = os.environ.get("PYTHONIOENCODING", "").partition(":")[0]
+    return requested or locale.getpreferredencoding(False)
+
+
+def assert_private_file(path: Path, *, platform: str | None = None) -> None:
+    """Assert POSIX mode locally; native Windows ACL has a separate gate."""
+    assert path.is_file()
+    if (platform or os.name) == "posix":
+        assert stat.S_IMODE(path.stat().st_mode) == 0o600
 
 
 @pytest.fixture(autouse=True)
@@ -34,11 +49,23 @@ def repo_extract(tmp_path):
     """Extract the current staged tree into a writable temporary directory."""
     destination = tmp_path / "repo-extract"
     destination.mkdir()
+    git_executable = shutil.which("git")
+    if git_executable is None:
+        shutil.copytree(
+            ROOT,
+            destination,
+            dirs_exist_ok=True,
+            ignore=shutil.ignore_patterns(
+                ".git", ".pytest_cache", "__pycache__", "*.pyc", "data"
+            ),
+        )
+        return destination
     in_git = subprocess.run(
-        ["git", "rev-parse", "--is-inside-work-tree"],
+        [git_executable, "rev-parse", "--is-inside-work-tree"],
         cwd=ROOT,
         capture_output=True,
         text=True,
+        encoding=subprocess_text_encoding(),
     )
     if in_git.returncode != 0:
         shutil.copytree(
@@ -52,14 +79,15 @@ def repo_extract(tmp_path):
         return destination
 
     tree = subprocess.run(
-        ["git", "write-tree"],
+        [git_executable, "write-tree"],
         cwd=ROOT,
         capture_output=True,
         text=True,
+        encoding=subprocess_text_encoding(),
         check=True,
     ).stdout.strip()
     archive = subprocess.run(
-        ["git", "archive", tree],
+        [git_executable, "archive", tree],
         cwd=ROOT,
         capture_output=True,
         check=True,

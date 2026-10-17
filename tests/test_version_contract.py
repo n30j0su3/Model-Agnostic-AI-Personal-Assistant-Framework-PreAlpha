@@ -8,6 +8,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from conftest import subprocess_text_encoding
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "core" / "scripts"
@@ -53,6 +55,7 @@ def test_cli_and_fallback_banner_never_render_double_v(tmp_path, monkeypatch, ca
             env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
             capture_output=True,
             text=True,
+            encoding=subprocess_text_encoding(),
             check=False,
         )
         assert result.returncode == 0, result.stderr

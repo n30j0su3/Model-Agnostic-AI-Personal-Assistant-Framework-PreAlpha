@@ -48,6 +48,13 @@ jobs:
         run: pa.bat --help
       - name: Full test suite
         run: python -m pytest tests core/scripts/tests -q
+      - name: Windows cp1252 compatibility
+        if: runner.os == 'Windows'
+        env:
+          PYTHONIOENCODING: cp1252
+          PYTHONUTF8: "0"
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: python -m pytest tests core/scripts/tests -q
 
   browser-gate:
     name: Browser gate · ${{ matrix.label }}

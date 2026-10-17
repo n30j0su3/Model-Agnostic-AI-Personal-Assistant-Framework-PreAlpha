@@ -83,7 +83,7 @@ python core/scripts/session-start.py
 
 ## AGENT ROUTER
 Agent routing info here.
-""")
+""", encoding="utf-8")
 
         # Create MASTER.md (Tier 1)
         master = context_dir / "MASTER.md"
@@ -91,11 +91,11 @@ Agent routing info here.
 ## Preferences
 - Language: es
 - Style: concise
-""")
+""", encoding="utf-8")
 
         # Create profile.md (Tier 1)
         profile = context_dir / "profile.md"
-        profile.write_text("# User Profile\nName: Test User\n")
+        profile.write_text("# User Profile\nName: Test User\n", encoding="utf-8")
 
         # Create sessions-index.json (Tier 1)
         sessions_index = knowledge_dir / "sessions-index.json"
@@ -106,18 +106,23 @@ Agent routing info here.
                 {"id": "2026-04-15", "title": "Previous session", "summary": "Implemented ADR-001", "topics": ["ADR", "design"]},
                 {"id": "2026-04-14", "title": "Older session", "summary": "Fixed bugs", "topics": ["bugs", "testing"]},
             ]
-        }))
+        }), encoding="utf-8")
 
         # Create session files (Tier 2)
         for i, date in enumerate(["2026-04-16", "2026-04-15", "2026-04-14"]):
             session_file = sessions_dir / f"{date}.md"
-            session_file.write_text(f"# Session {date}\n\nWork done on {date}.\n")
+            session_file.write_text(
+                f"# Session {date}\n\nWork done on {date}.\n", encoding="utf-8"
+            )
             mtime = time.time() - (i * 86400)
             os.utime(session_file, (mtime, mtime))
 
         # Create recordatorios.md for pending count
         recordatorios = codebase_dir / "recordatorios.md"
-        recordatorios.write_text("- [ ] Task 1\n- [ ] Task 2\n- [x] Done task\n- [ ] Task 3\n")
+        recordatorios.write_text(
+            "- [ ] Task 1\n- [ ] Task 2\n- [x] Done task\n- [ ] Task 3\n",
+            encoding="utf-8",
+        )
 
         yield repo_root
 
@@ -488,7 +493,7 @@ class TestRunParallelChecks:
         skills_dir.mkdir(parents=True, exist_ok=True)
         test_skill = skills_dir / "test-skill"
         test_skill.mkdir(exist_ok=True)
-        (test_skill / "SKILL.md").write_text("# Test Skill")
+        (test_skill / "SKILL.md").write_text("# Test Skill", encoding="utf-8")
 
         patches = _patch_paths(temp_repo)
         with ExitStack() as stack:

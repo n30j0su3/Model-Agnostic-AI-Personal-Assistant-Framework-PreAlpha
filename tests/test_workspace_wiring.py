@@ -8,6 +8,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from conftest import assert_private_file, subprocess_text_encoding
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "core" / "scripts"
@@ -46,6 +48,7 @@ def run_installer(root: Path, *flags: str) -> subprocess.CompletedProcess[str]:
         stdin=subprocess.DEVNULL,
         capture_output=True,
         text=True,
+        encoding=subprocess_text_encoding(),
         timeout=180,
     )
 
@@ -97,7 +100,7 @@ def test_installer_creates_only_selected_and_persists_0600(repo_extract):
     payload = json.loads(config_path.read_text(encoding="utf-8"))
     assert set(payload["workspaces"]) == {"professional", "research"}
     assert payload["workspaces"]["professional"]["dir"] == "Trabajo"
-    assert config_path.stat().st_mode & 0o777 == 0o600
+    assert_private_file(config_path)
 
 
 def test_installer_default_remains_legacy_content_compatible(repo_extract):

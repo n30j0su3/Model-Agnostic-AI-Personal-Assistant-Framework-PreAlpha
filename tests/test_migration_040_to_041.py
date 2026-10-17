@@ -13,6 +13,8 @@ from pathlib import Path
 
 import pytest
 
+from conftest import subprocess_text_encoding
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -39,6 +41,7 @@ def make_candidate_from_040(tmp_path: Path) -> Path:
         cwd=ROOT,
         capture_output=True,
         text=True,
+        encoding=subprocess_text_encoding(),
         check=True,
     ).stdout.strip()
     extract_archive(tree, root)
@@ -74,6 +77,7 @@ def run(root: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
         },
         capture_output=True,
         text=True,
+        encoding=subprocess_text_encoding(),
         timeout=180,
     )
 
@@ -89,6 +93,7 @@ def test_migrate_full_roundtrip_is_idempotent(tmp_path):
         cwd=ROOT,
         capture_output=True,
         text=True,
+        encoding=subprocess_text_encoding(),
     )
     if git_check.returncode != 0:
         pytest.skip("v0.4.0 tag fixture requires Git history")

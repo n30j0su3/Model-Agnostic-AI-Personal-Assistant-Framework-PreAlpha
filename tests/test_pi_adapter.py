@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import json
-import os
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
+
+from conftest import assert_private_file
 
 
 SCRIPTS = Path(__file__).resolve().parents[1] / "core/scripts"
@@ -114,7 +115,7 @@ def test_wizard_requires_explicit_choice_and_preserves_default(tmp_path):
 
     assert settings.get("runtime") == "pi"
     assert settings.backup()["previous"] == "opencode"
-    assert os.stat(settings.path).st_mode & 0o777 == 0o600
+    assert_private_file(settings.path)
 
 
 def test_wizard_rejects_unknown_runtime(tmp_path):
