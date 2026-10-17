@@ -5,6 +5,8 @@
 
 workspaces
 data/user
+data/sessions.db
+data/user_memory.db
 core/.context/MASTER.md
 core/.context/profile.md
 core/.context/navigation.md

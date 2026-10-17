@@ -433,6 +433,8 @@ def apply_migration(version: str, force: bool = False) -> bool:
 
     if not errors and version not in state.get("migrations_applied", []):
         state["migrations_applied"].append(version)
+    if not errors:
+        state["framework_version"] = get_framework_version()
 
     state["last_migration"] = datetime.now().isoformat()
     state["migrations_log"].append(

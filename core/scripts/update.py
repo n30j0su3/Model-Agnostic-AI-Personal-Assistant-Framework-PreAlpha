@@ -6,13 +6,14 @@ import json
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
 import urllib.request
 import zipfile
 from datetime import datetime
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -173,24 +174,29 @@ def prompt_yes_no(message, default=False):
     return choice in {"s", "si", "y", "yes"}
 
 
-def create_snapshot():
-    script_path = CORE_DIR / "scripts" / "context-version.py"
-    if not script_path.exists():
-        return True
+def create_snapshot() -> Path | None:
+    """Create one rollback-compatible snapshot before any update write."""
     try:
-        result = subprocess.run(
-            [sys.executable, str(script_path), "snapshot"], cwd=REPO_ROOT
-        )
-        return result.returncode == 0
+        from migrate import create_pre_migration_snapshot
+
+        snapshot = create_pre_migration_snapshot(REPO_ROOT)
+        manifest_path = snapshot / "manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if manifest.get("schema") != 1 or not isinstance(manifest.get("roots"), list):
+            raise ValueError("snapshot manifest invalido")
+        print(f"[INFO] Snapshot pre-update creado en: {snapshot}")
+        return snapshot
     except Exception as exc:
-        print(f"[WARN] No se pudo crear snapshot: {exc}")
-        return False
+        print(f"[ERROR] No se pudo crear snapshot: {exc}")
+        return None
 
 
 def load_update_protected_paths() -> list[str]:
     defaults = [
         "workspaces",
         "data/user",
+        "data/sessions.db",
+        "data/user_memory.db",
         "core/.context/MASTER.md",
         "core/.context/profile.md",
         "core/.context/opencode.md",
@@ -306,7 +312,8 @@ def reset_tracked_protected_paths_for_git(protected_paths: list[str]) -> bool:
 def run_migrations() -> bool:
     script_path = CORE_DIR / "scripts" / "migrate.py"
     if not script_path.exists():
-        return True
+        print("[ERROR] Script requerido no encontrado: core/scripts/migrate.py")
+        return False
     result = subprocess.run(
         [sys.executable, str(script_path), "--apply"], cwd=REPO_ROOT
     )
@@ -314,9 +321,10 @@ def run_migrations() -> bool:
 
 
 def run_kb_init() -> bool:
-    script_path = CORE_DIR / "scripts" / "kb-init.py"
+    script_path = CORE_DIR / "scripts" / "kb_init.py"
     if not script_path.exists():
-        return True
+        print("[ERROR] Script requerido no encontrado: core/scripts/kb_init.py")
+        return False
     result = subprocess.run(
         [sys.executable, str(script_path), "--force"], cwd=REPO_ROOT
     )
@@ -383,29 +391,14 @@ def try_requests_download(zip_url, zip_path):
         return False
 
 
-def try_urllib_download(zip_url, zip_path, verify_ssl=True):
-    """Intenta descargar con urllib, con o sin SSL."""
+def try_urllib_download(zip_url, zip_path):
+    """Download using urllib with normal certificate verification."""
     try:
-        import ssl
         import urllib.request
 
-        print(f"[INFO] Intentando con urllib (SSL={'ON' if verify_ssl else 'OFF'})...")
-
-        if verify_ssl:
-            # SSL normal
-            with urllib.request.urlopen(zip_url, timeout=30) as response:
-                zip_path.write_bytes(response.read())
-        else:
-            # SSL desactivado (fallback)
-            ssl_context = ssl.create_default_context()
-            ssl_context.check_hostname = False
-            ssl_context.verify_mode = ssl.CERT_NONE
-
-            req = urllib.request.Request(zip_url, headers={"User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(
-                req, timeout=30, context=ssl_context
-            ) as response:
-                zip_path.write_bytes(response.read())
+        print("[INFO] Intentando con urllib (SSL=ON)...")
+        with urllib.request.urlopen(zip_url, timeout=30) as response:
+            zip_path.write_bytes(response.read())
 
         return True
 
@@ -414,28 +407,48 @@ def try_urllib_download(zip_url, zip_path, verify_ssl=True):
         return False
 
 
-def install_certifi():
-    """Intenta instalar certificados SSL."""
-    try:
-        result = subprocess.run(
-            [sys.executable, "-m", "pip", "install", "--upgrade", "certifi"],
-            capture_output=True,
-            text=True,
-            timeout=60,
-        )
-        if result.returncode == 0:
-            print("[OK] certifi instalado correctamente")
-            return True
-        else:
-            print(f"[ERROR] pip fallo: {result.stderr}")
-            return False
-    except Exception as e:
-        print(f"[ERROR] No se pudo ejecutar pip: {e}")
-        return False
+def _extract_validated_zip(zip_path: Path, destination: Path) -> Path:
+    """Validate every archive member before extracting one rooted tree."""
+    destination.mkdir(parents=True, exist_ok=True)
+    destination_resolved = destination.resolve()
+    top_levels = set()
+    with zipfile.ZipFile(zip_path) as archive:
+        infos = archive.infolist()
+        if not infos:
+            raise ValueError("ZIP vacio")
+        for info in infos:
+            normalized = info.filename.replace("\\", "/")
+            relative = PurePosixPath(normalized)
+            parts = relative.parts
+            if (
+                not parts
+                or relative.is_absolute()
+                or any(part in {".", ".."} for part in parts)
+                or (len(parts[0]) >= 2 and parts[0][1] == ":")
+            ):
+                raise ValueError(f"ruta ZIP insegura: {info.filename!r}")
+            mode = info.external_attr >> 16
+            if stat.S_ISLNK(mode):
+                raise ValueError(f"symlink ZIP no permitido: {info.filename!r}")
+            target = (destination / Path(*parts)).resolve()
+            if target != destination_resolved and destination_resolved not in target.parents:
+                raise ValueError(f"ruta ZIP fuera de staging: {info.filename!r}")
+            top_levels.add(parts[0])
+        bad_member = archive.testzip()
+        if bad_member is not None:
+            raise ValueError(f"CRC ZIP invalido: {bad_member!r}")
+        if len(top_levels) != 1:
+            raise ValueError("ZIP debe contener un unico directorio raiz")
+        archive.extractall(destination)
+
+    source_root = destination / next(iter(top_levels))
+    if not source_root.is_dir():
+        raise ValueError("directorio raiz ZIP inexistente")
+    return source_root
 
 
 def update_with_zip(zip_url, protected_paths):
-    """Descarga y aplica actualizacion desde ZIP con opciones de usuario."""
+    """Download over verified TLS, validate, and apply one rooted ZIP."""
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir)
         zip_path = tmp_path / "update.zip"
@@ -444,105 +457,19 @@ def update_with_zip(zip_url, protected_paths):
         if try_requests_download(zip_url, zip_path):
             print("[OK] Descarga completada con requests")
         # MÉTODO 2: Intentar con urllib estandar
-        elif try_urllib_download(zip_url, zip_path, verify_ssl=True):
+        elif try_urllib_download(zip_url, zip_path):
             print("[OK] Descarga completada con verificacion SSL")
-        # MÉTODO 3: Preguntar al usuario sobre opciones SSL
         else:
-            print("\n" + "=" * 60)
-            print("[INFO] No se pudo descargar con verificacion SSL.")
-            print("Esto es comun en Windows con Python recien instalado.")
-            print("=" * 60 + "\n")
-
-            print("El usuario SIEMPRE tiene el control.")
-            print("El framework NUNCA decide por ti. TU eliges como proceder.\n")
-
-            print("Opciones disponibles:")
-            print("  [1] Intentar sin verificacion SSL (funciona inmediatamente)")
-            print("        - Menos seguro pero descarga desde GitHub igual")
-            print("  [2] Instalar certificados SSL (solucion permanente)")
-            print("        - Ejecuta: pip install --upgrade certifi")
-            print("        - Luego reintenta la actualizacion")
-            print("  [3] Descargar manualmente")
-            print("        - Abre el navegador con el enlace del ZIP")
-            print("        - Extrae manualmente en la carpeta del framework")
-            print("  [c] Cancelar y salir")
-            print()
-
-            choice = input("Elige una opcion [1/2/3/c]: ").strip().lower()
-
-            if choice == "1":
-                print("[INFO] Intentando descarga sin verificacion SSL...")
-                if try_urllib_download(zip_url, zip_path, verify_ssl=False):
-                    print("[OK] Descarga completada (modo compatibilidad)")
-                    print("[WARN] Recuerda: Esto es seguro para GitHub, pero")
-                    print("        considera instalar certificados SSL despues.")
-                else:
-                    print("[ERROR] Aun fallo. Intenta opcion 2 o 3.")
-                    return False
-
-            elif choice == "2":
-                print("[INFO] Instalando certificados SSL...")
-                if install_certifi():
-                    print("[OK] Certificados instalados. Reintentando...")
-                    # Recursivo - vuelve a intentar todo
-                    return update_with_zip(zip_url, protected_paths)
-                else:
-                    print("[ERROR] No se pudieron instalar certificados.")
-                    retry = input("¿Intentar sin verificacion SSL? [s/N]: ")
-                    if retry.lower() in ("s", "si", "y", "yes"):
-                        return try_urllib_download(zip_url, zip_path, verify_ssl=False)
-                    return False
-
-            elif choice == "3":
-                print(f"\n[INFO] Abriendo navegador con: {zip_url}")
-                print("[INFO] Despues de descargar, extrae el ZIP manualmente")
-                print("       en: {}".format(REPO_ROOT))
-                import webbrowser
-
-                webbrowser.open(zip_url)
-                return False  # No automatico, usuario continua manual
-
-            else:
-                print("[INFO] Actualizacion cancelada.")
-                return False
+            print("[ERROR] Descarga cancelada: no hay conexion TLS verificada.")
+            print(f"[INFO] Descarga manualmente y verifica el release oficial: {zip_url}")
+            return False
 
         try:
-            with zipfile.ZipFile(zip_path) as zip_ref:
-                zip_ref.extractall(tmp_path)
+            source_root = _extract_validated_zip(zip_path, tmp_path / "extracted")
         except Exception as exc:
             print(f"[ERROR] No se pudo extraer el zip: {exc}")
             return False
-
-        extracted_dirs = [path for path in tmp_path.iterdir() if path.is_dir()]
-        if not extracted_dirs:
-            print("[ERROR] Zip sin contenido valido.")
-            return False
-        source_root = extracted_dirs[0]
         copy_tree(source_root, REPO_ROOT, protected_paths)
-    return True
-
-
-def run_vendor_assets():
-    script_path = CORE_DIR / "scripts" / "vendor_assets.py"
-    if not script_path.exists():
-        return True
-    result = subprocess.run([sys.executable, str(script_path)], cwd=REPO_ROOT)
-    if result.returncode != 0:
-        print(
-            "[WARN] Descarga de assets fallida. Ejecuta core/scripts/vendor_assets.py manualmente."
-        )
-        return False
-    return True
-
-
-def run_docs_manifest():
-    script_path = CORE_DIR / "scripts" / "generate_docs_index.py"
-    if not script_path.exists():
-        return True
-    result = subprocess.run([sys.executable, str(script_path)], cwd=REPO_ROOT)
-    if result.returncode != 0:
-        print("[WARN] Generacion de docs_manifest fallida.")
-        return False
     return True
 
 
@@ -584,8 +511,6 @@ def run_update(force=False, check_only=False):
 
     if not update_available and not force:
         print("[OK] Framework actualizado.")
-        run_vendor_assets()
-        run_docs_manifest()
         return STATUS_OK
 
     if update_available:
@@ -595,11 +520,8 @@ def run_update(force=False, check_only=False):
         return STATUS_OK
 
     if not create_snapshot():
-        if force:
-            print("[WARN] No se pudo crear snapshot. Continuando por --force.")
-        elif not prompt_yes_no("Continuar sin snapshot?", default=False):
-            print("[INFO] Actualizacion cancelada.")
-            return STATUS_OK
+        print("[ERROR] Actualizacion cancelada: snapshot requerido.")
+        return STATUS_ERROR
 
     protected_paths = load_update_protected_paths()
     backup_dir = backup_protected_update_paths(protected_paths)
@@ -620,8 +542,6 @@ def run_update(force=False, check_only=False):
                     "[ERROR] La inicializacion de Knowledge Base fallo tras la actualizacion."
                 )
                 return STATUS_ERROR
-            run_vendor_assets()
-            run_docs_manifest()
             return STATUS_OK
         restore_protected_update_paths(backup_dir)
         return STATUS_ERROR
@@ -635,8 +555,6 @@ def run_update(force=False, check_only=False):
         if not run_migrations():
             print("[ERROR] Las migraciones post-update fallaron.")
             return STATUS_ERROR
-        run_vendor_assets()
-        run_docs_manifest()
         if not run_kb_init():
             print(
                 "[ERROR] La inicializacion de Knowledge Base fallo tras la actualizacion."
