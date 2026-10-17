@@ -6,7 +6,7 @@ import json
 import os
 import subprocess
 import sys
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 from conftest import assert_private_file, subprocess_text_encoding
 
@@ -51,6 +51,14 @@ def run_installer(root: Path, *flags: str) -> subprocess.CompletedProcess[str]:
         encoding=subprocess_text_encoding(),
         timeout=180,
     )
+
+
+def test_receipt_paths_are_posix_on_windows():
+    """RC6-2A: machine-readable receipts are platform-independent."""
+    install = load_module("install_receipt_rc6", SCRIPTS / "install.py")
+    root = PureWindowsPath("C:/pa-framework")
+    target = root / "workspaces" / "Research" / "projects"
+    assert install._receipt_relative_path(target, root) == "workspaces/Research/projects"
 
 
 def test_installer_dry_run_reports_selected_workspaces_without_writes(repo_extract):

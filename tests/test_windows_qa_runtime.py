@@ -120,6 +120,19 @@ def test_outdated_gate_spawns_no_serve(monkeypatch):
     assert sfm.ensure_opencode_serve() is None
 
 
+def test_existing_serve_port_does_not_bypass_outdated_version_gate(monkeypatch):
+    """RC6-2A: a stale running server cannot bypass fail-closed versioning."""
+    fake = _stub_opencode_version(monkeypatch, "1.17.9")
+    monkeypatch.setattr(sfm, "find_serve_port", lambda: 47017)
+    monkeypatch.setattr(sfm, "find_opencode_exe", lambda: fake)
+
+    def _no_popen(*_args, **_kwargs):
+        raise AssertionError("existing port must not spawn or bypass the gate")
+
+    monkeypatch.setattr(sfm.subprocess, "Popen", _no_popen)
+    assert sfm.ensure_opencode_serve() is None
+
+
 # ------------------------------------------------ selection resolution ------
 
 def test_build_cli_command_prefers_data_selection_over_legacy(tmp_path, monkeypatch):

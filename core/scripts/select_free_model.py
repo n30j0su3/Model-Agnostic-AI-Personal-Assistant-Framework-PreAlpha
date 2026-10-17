@@ -135,22 +135,24 @@ def enforce_opencode_version(exe: str) -> tuple[bool, str]:
 
 def ensure_opencode_serve():
     """Iniciar opencode serve si no está corriendo. Retorna puerto o None."""
+    exe = find_opencode_exe()
+    if not exe:
+        print("[ERROR] opencode no está instalado (npm install -g opencode-ai)")
+        return None
+
+    # RC6-2A: validate the executable before trusting an already-open port.
+    # Otherwise an outdated background server bypasses the fail-closed gate.
+    ok, msg = enforce_opencode_version(exe)
+    if not ok:
+        print(f"[ERROR] {msg}")
+        return None
+
     port = find_serve_port()
     if port:
         print(f"opencode serve detectado en puerto {port}")
         return port
 
     print("Iniciando opencode serve...")
-    exe = find_opencode_exe()
-    if not exe:
-        print("[ERROR] opencode no está instalado (npm install -g opencode-ai)")
-        return None
-
-    # QAWIN-RUNTIME: gate de version fail-closed antes de spawnear serve.
-    ok, msg = enforce_opencode_version(exe)
-    if not ok:
-        print(f"[ERROR] {msg}")
-        return None
 
     try:
         subprocess.Popen(

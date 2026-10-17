@@ -77,6 +77,11 @@ def print_info(m):
     print(f"{Colors.CYAN}  [INFO] {m}{Colors.END}")
 
 
+def _receipt_relative_path(path, root) -> str:
+    """Serialize receipt paths with stable POSIX separators on every OS."""
+    return path.relative_to(root).as_posix()
+
+
 def prompt_yes_no(msg, default=False):
     suffix = "[S/n]" if default else "[s/N]"
     choice = input(f"  {msg} {suffix}: ").strip().lower()
@@ -285,13 +290,16 @@ def main(argv=None):
             "non_interactive": args.non_interactive,
             "no_browser": args.no_browser,
             "planned_directories": [
-                str(path.relative_to(REPO_ROOT))
+                _receipt_relative_path(path, REPO_ROOT)
                 for path in installation_directories(workspace_entries)
             ],
             "planned_workspace_directories": [
-                str(workspace_cfg.project_dir_for(
-                    workspace_entries, key, repo_root=REPO_ROOT
-                ).relative_to(REPO_ROOT))
+                _receipt_relative_path(
+                    workspace_cfg.project_dir_for(
+                        workspace_entries, key, repo_root=REPO_ROOT
+                    ),
+                    REPO_ROOT,
+                )
                 for key in workspace_entries
             ],
             "planned_workspace_config": {
