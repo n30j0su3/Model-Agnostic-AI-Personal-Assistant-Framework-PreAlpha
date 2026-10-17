@@ -513,7 +513,12 @@ def run_knowledge_extraction(session_file: Path) -> Dict:
         return {"available": False}
 
     try:
-        return _extract_all_knowledge(session_file)
+        result = _extract_all_knowledge(session_file)
+        if not isinstance(result, dict):
+            return {"available": False, "error": "invalid extractor result"}
+        normalized = dict(result)
+        normalized.setdefault("available", bool(normalized.get("success", False)))
+        return normalized
     except Exception as e:
         if not _silent_mode:
             safe_print(c(f"[WARN] Knowledge extraction failed: {e}", Colors.YELLOW))

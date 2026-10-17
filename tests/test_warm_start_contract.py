@@ -30,6 +30,7 @@ def _load(name: str, path: Path):
 
 
 session_start = _load("session_start_warm_contract", SCRIPTS / "session_start.py")
+session_end = _load("session_end_w5_contract", SCRIPTS / "session_end.py")
 pa = _load("pa_warm_contract", SCRIPTS / "pa.py")
 
 
@@ -142,9 +143,15 @@ def test_warm_bootstrap_only_opens_no_coordinator_or_sqlite(monkeypatch):
         "timestamp": 1,
         "tiers": {"tier_0": {"tokens": 1}, "tier_1": {"tokens": 1}},
         "source_hashes": {},
+        "storage": {key: False for key in session_start.STORAGE_RECEIPT_KEYS},
     }
     monkeypatch.setattr(sys, "argv", ["session_start.py", "--bootstrap-only"])
     monkeypatch.setattr(session_start, "check_warm_start_cache", lambda: receipt)
+    monkeypatch.setattr(
+        session_start,
+        "_discover_storage_status",
+        lambda: {key: False for key in session_start.STORAGE_RECEIPT_KEYS},
+    )
     monkeypatch.setattr(
         session_start, "_refresh_bootstrap_indexes", lambda: True, raising=False
     )
@@ -244,3 +251,46 @@ def test_cold_bootstrap_only_builds_receipt_without_session(monkeypatch):
     commands = [" ".join(argv) for argv in seen_argv]
     assert any("system_check.py" in command for command in commands)
     assert any("persistent_storage_discover.py" in command for command in commands)
+
+
+def test_warm_bootstrap_refreshes_only_storage(tmp_path, monkeypatch):
+    cache_path = tmp_path / "warm-start.json"
+    receipt = {
+        "schema": "pa.warm-start/1",
+        "timestamp": 123.0,
+        "framework_version": "0.4.1-beta",
+        "status": "ready",
+        "storage": {key: False for key in session_start.STORAGE_RECEIPT_KEYS},
+        "tiers": {"tier_0": {"tokens": 1}, "tier_1": {"tokens": 2}},
+        "source_hashes": {"AGENTS-lite.md": "abc"},
+    }
+    cache_path.write_text(json.dumps(receipt), encoding="utf-8")
+    refreshed = {
+        "sqlite_available": True,
+        "wiki_available": False,
+        "md_memory_available": True,
+        "sessions_md_available": True,
+        "all_available": False,
+    }
+    monkeypatch.setattr(session_start, "WARM_CACHE_PATH", cache_path)
+    monkeypatch.setattr(session_start, "check_warm_start_cache", lambda: dict(receipt))
+    monkeypatch.setattr(session_start, "_discover_storage_status", lambda: refreshed)
+    monkeypatch.setattr(session_start, "_refresh_bootstrap_indexes", lambda: True)
+
+    assert session_start._run_bootstrap_only() == 0
+    persisted = json.loads(cache_path.read_text(encoding="utf-8"))
+    assert persisted["storage"] == refreshed
+    for key in ("timestamp", "tiers", "source_hashes"):
+        assert persisted[key] == receipt[key]
+
+
+def test_knowledge_wrapper_normalizes_success_to_available(tmp_path, monkeypatch):
+    monkeypatch.setattr(session_end, "_knowledge_extraction_available", True)
+    monkeypatch.setattr(
+        session_end,
+        "_extract_all_knowledge",
+        lambda _path: {"success": True, "discoveries": 2},
+    )
+
+    result = session_end.run_knowledge_extraction(tmp_path / "session.md")
+    assert result == {"success": True, "discoveries": 2, "available": True}

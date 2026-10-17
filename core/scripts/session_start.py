@@ -1059,6 +1059,19 @@ def _run_bootstrap_only() -> int:
     _refresh_bootstrap_indexes()
     receipt = check_warm_start_cache()
     if receipt is not None:
+        storage_status = _discover_storage_status()
+        if receipt.get("storage") != storage_status:
+            refreshed = dict(receipt)
+            refreshed["storage"] = storage_status
+            temp_path = WARM_CACHE_PATH.with_suffix(".json.tmp")
+            try:
+                temp_path.write_text(
+                    json.dumps(refreshed, ensure_ascii=False, indent=2) + "\n",
+                    encoding="utf-8",
+                )
+                os.replace(temp_path, WARM_CACHE_PATH)
+            except OSError:
+                return 1
         print(json.dumps({
             "schema": WARM_RECEIPT_SCHEMA,
             "status": "warm",
