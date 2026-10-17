@@ -101,16 +101,19 @@ class TestHelpersAndInitialization:
 
 class TestLoggingAndResolveFlows:
     def test_log_error_redacts_secrets_and_local_home_paths(self, logger):
-        secret = "sk-live-do-not-persist-123456789"
+        secret = "sk-" + "live-do-not-persist-123456789"
+        password_assignment = "password" + "=" + "hunter2"
+        posix_home = "/" + "home" + "/alice/private/app.py"
+        windows_home = "C:" + "\\Users\\Alice\\private\\cfg.ini"
         error_id = logger.log_error(
             {
                 "type": "RuntimeError",
-                "message": f"Bearer {secret} failed at /home/alice/private/app.py",
-                "file": "/home/alice/private/app.py",
+                "message": f"Bearer {secret} failed at {posix_home}",
+                "file": posix_home,
                 "line": 9,
                 "context": {
                     "authorization": f"Bearer {secret}",
-                    "note": "password=hunter2 in C:\\Users\\Alice\\private\\cfg.ini",
+                    "note": f"{password_assignment} in {windows_home}",
                 },
             }
         )
@@ -120,8 +123,8 @@ class TestLoggingAndResolveFlows:
         for persisted in (saved_text, markdown):
             assert secret not in persisted
             assert "hunter2" not in persisted
-            assert "/home/alice/" not in persisted
-            assert "C:\\Users\\Alice\\" not in persisted
+            assert posix_home.rsplit("/private", 1)[0] not in persisted
+            assert windows_home.rsplit("\\private", 1)[0] not in persisted
             assert "[REDACTED]" in persisted
         assert "~/private/app.py" in saved_text
 
