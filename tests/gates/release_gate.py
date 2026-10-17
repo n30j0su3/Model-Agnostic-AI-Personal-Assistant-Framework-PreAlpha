@@ -85,7 +85,7 @@ def fresh_extract_gate() -> dict[str, Any]:
             "USERPROFILE": str(home),
             "PYTHONDONTWRITEBYTECODE": "1",
         }
-        receipt = pytest_gate("R1", "tests", env=env, cwd=extracted)
+        receipt = pytest_gate("R1", "tests", "core/scripts/tests", env=env, cwd=extracted)
     receipt["tree"] = tree
     receipt["source"] = "git archive"
     return receipt

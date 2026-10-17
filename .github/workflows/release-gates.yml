@@ -36,8 +36,10 @@ jobs:
       - name: Assert runner architecture
         shell: bash
         run: python -c "import platform; expected='${{ matrix.machine }}'.lower(); actual=platform.machine().lower(); assert actual == expected, (actual, expected)"
+      - name: Install test dependencies
+        run: python -m pip install -r requirements-dev.txt
       - name: Compile Python
-        run: python -m compileall -q core/scripts tests
+        run: python -m compileall -q core/scripts tests core/memory core/recovery
       - name: Installer automation smoke
         run: python core/scripts/install.py --non-interactive --dry-run --json --no-browser
       - name: Windows launcher smoke
@@ -45,7 +47,7 @@ jobs:
         shell: cmd
         run: pa.bat --help
       - name: Full test suite
-        run: python -m pytest tests -q
+        run: python -m pytest tests core/scripts/tests -q
 
   browser-gate:
     name: Browser gate · ${{ matrix.label }}
@@ -71,6 +73,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Install test dependencies
+        run: python -m pip install -r requirements-dev.txt
       - name: Start dashboard and CDP
         shell: bash
         run: |
@@ -120,6 +124,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Install test dependencies
+        run: python -m pip install -r requirements-dev.txt
       - name: Package contract
         run: python -m pytest tests/test_public_package.py -q
       - name: Build deterministic ZIP

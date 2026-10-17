@@ -1,0 +1,3 @@
+# Test-only dependencies for PA Framework (consumed by .github/workflows/release-gates.yml).
+# Git archive + compileall + stdlib cover everything else; Python >= 3.11.
+pytest==9.1.1

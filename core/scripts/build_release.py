@@ -35,8 +35,24 @@ BINARY_SUFFIXES = {
     ".woff2",
     ".zip",
 }
-DENIED_PARTS = {".git", ".pytest_cache", "__pycache__", "node_modules", ".mypy_cache", ".ruff_cache"}
-DENIED_ROOTS = {"data", "dist", "build", "backups"}
+# Runtime/private paths are generated state, not release payload. ``data`` is
+# root-only because core/skills/ui-ux-pro-max/data contains required assets.
+DENIED_PARTS = {
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    "__pycache__",
+    "backups",
+    "logs",
+    "node_modules",
+}
+DENIED_ROOTS = {"data", "dist", "build"}
+DENIED_PREFIXES = (
+    ("core", ".context", "sessions"),
+    ("core", ".context", ".cache"),
+    ("core", ".context", "knowledge", "errors"),
+)
 DENIED_NAMES = {
     ".env",
     ".env.local",
@@ -81,6 +97,8 @@ def is_denied_path(path: str) -> bool:
     if normalized.name == MANIFEST_NAME:
         return True
     if parts[0] in DENIED_ROOTS or DENIED_PARTS.intersection(parts):
+        return True
+    if any(parts[: len(prefix)] == prefix for prefix in DENIED_PREFIXES):
         return True
     if normalized.name in DENIED_NAMES:
         return True

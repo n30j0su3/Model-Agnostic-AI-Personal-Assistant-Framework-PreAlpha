@@ -144,10 +144,21 @@ def test_sanitizer_rejects_private_payloads_and_paths():
         ".env.production",
         ".opencode/config.json.bak-20260815",
         "data/user.json",
+        "nested/backups/.opencode/config.json",
+        "nested/logs/runtime.txt",
+        "core/.context/sessions/2026-10-16.json",
+        "core/.context/.cache/context.json",
+        "core/.context/knowledge/errors/error-log.md",
         "state.sqlite",
         "run.log",
     ):
         assert builder.is_denied_path(denied), denied
+    for public in (
+        ".opencode/config.json",
+        ".opencode/agent/FreakingJSON.md",
+        "core/skills/core/ui-ux-pro-max/data/colors.csv",
+    ):
+        assert not builder.is_denied_path(public), public
 
 
 def test_extracted_package_installer_dry_run(tmp_path: Path, release_repo: Path):
@@ -191,12 +202,13 @@ def test_workflow_declares_only_supported_blocking_lanes():
     for unsupported in ("Windows arm64", "Linux arm64", "macOS Intel"):
         assert unsupported in readme
         assert f"{unsupported} — no soportado" in readme_plain
-    assert "python -m compileall -q core/scripts tests" in workflow
+    assert workflow.count("python -m pip install -r requirements-dev.txt") == 3
+    assert "python -m compileall -q core/scripts tests core/memory core/recovery" in workflow
     assert "python core/scripts/install.py --non-interactive --dry-run --json --no-browser" in workflow
     assert "pa.bat --help" in workflow
     assert "browser-gate:" in workflow
     assert workflow.count("macOS arm64") >= 2
-    assert "python -m pytest tests -q" in workflow
+    assert "python -m pytest tests core/scripts/tests -q" in workflow
     assert "tests/test_public_package.py" in workflow
     assert "dist/*.zip" in workflow
 
