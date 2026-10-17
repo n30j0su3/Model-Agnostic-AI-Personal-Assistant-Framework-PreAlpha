@@ -1,6 +1,6 @@
 # AGENTS-lite — Bootstrap Minimal (Tier 0)
 
-> **Version: v0.3.8-alpha**
+> **Version: v0.4.1-beta**
 
 ## ✅ Inicialización rápida
 

@@ -90,6 +90,22 @@ def test_version_updater_targets_exist():
     assert missing == []
 
 
+def test_version_updater_targets_only_real_static_tokens():
+    updater = load_module("version_updater_targets", SCRIPTS / "version_updater.py")
+    expected = {
+        "README.md",
+        "AGENTS.md",
+        "AGENTS-lite.md",
+        "config/framework.yaml",
+        "ROADMAP.md",
+    }
+    assert set(updater.TARGETS) == expected
+
+    detected = updater.detect_version_in_files()
+    assert set(detected) == expected
+    assert {info["detected"] for info in detected.values()} == {"0.4.1-beta"}
+
+
 def test_roadmap_markdown_line_break_is_detected(tmp_path, monkeypatch):
     updater = load_module("version_updater", SCRIPTS / "version_updater.py")
     roadmap = tmp_path / "ROADMAP.md"

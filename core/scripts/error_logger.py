@@ -25,6 +25,7 @@ import json
 import re
 import sys
 import traceback
+import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any
@@ -266,13 +267,13 @@ class ErrorLogger:
 
     def _generate_error_id(self) -> str:
         """
-        Generate unique error ID with format ERR-YYYYMMDD-HHMMSS.
+        Generate unique error ID with a timestamp and random suffix.
 
         Returns:
             Unique error identifier string.
         """
         timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-        return f"ERR-{timestamp}"
+        return f"ERR-{timestamp}-{uuid.uuid4().hex[:8].upper()}"
 
     def _generate_timestamp(self) -> str:
         """
@@ -441,15 +442,20 @@ class ErrorLogger:
         try:
             content = self.log_file.read_text(encoding="utf-8")
 
-            content = content.replace(f"[!] {error_id}", f"[OK] {error_id}")
-
-            lines = content.split("\n")
-            new_lines = []
-            for line in lines:
-                if f"**Status** | Open" in line:
-                    line = line.replace("**Status** | Open", "**Status** | Resolved")
-                new_lines.append(line)
-            content = "\n".join(new_lines)
+            pattern = re.compile(
+                rf"^## \[!\] {re.escape(error_id)}\n.*?(?=^---$)",
+                re.MULTILINE | re.DOTALL,
+            )
+            match = pattern.search(content)
+            if match is None:
+                return
+            block = match.group(0)
+            updated = block.replace("## [!]", "## [OK]", 1).replace(
+                "| **Status** | Open |",
+                "| **Status** | Resolved |",
+                1,
+            )
+            content = content[:match.start()] + updated + content[match.end():]
 
             self.log_file.write_text(content, encoding="utf-8")
         except Exception as e:

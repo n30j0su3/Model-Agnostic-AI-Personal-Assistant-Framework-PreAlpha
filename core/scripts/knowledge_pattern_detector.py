@@ -17,11 +17,17 @@ Usage:
     #   pattern_type, description, frequency, sessions
 """
 
+import hashlib
 import re
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
+
+def _stable_prompt_suffix(content: str) -> int:
+    digest = hashlib.sha256(content.encode("utf-8")).hexdigest()
+    return int(digest[:8], 16) % 10000
 
 # --- Lazy-load decorator ---
 
@@ -465,7 +471,7 @@ class PatternDetector:
     def _code_block_prompt(self, code_lines: List[str], start: int) -> Dict:
         """Create prompt dict from a code block."""
         content = "\n".join(code_lines).strip()
-        prompt_id = f"PROMPT-{datetime.now().strftime('%Y%m%d%H%M%S')}-{hash(content) % 10000:04d}"
+        prompt_id = f"PROMPT-{datetime.now().strftime('%Y%m%d%H%M%S')}-{_stable_prompt_suffix(content):04d}"
         return {
             "id": prompt_id,
             "category": self._categorize(content),
@@ -489,7 +495,7 @@ class PatternDetector:
         content = "\n".join(buf).replace(tag, "").strip()
         if not content:
             return None
-        prompt_id = f"PROMPT-{datetime.now().strftime('%Y%m%d%H%M%S')}-{hash(content) % 10000:04d}"
+        prompt_id = f"PROMPT-{datetime.now().strftime('%Y%m%d%H%M%S')}-{_stable_prompt_suffix(content):04d}"
         return {
             "id": prompt_id,
             "category": self._categorize(content),

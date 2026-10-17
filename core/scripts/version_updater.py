@@ -29,11 +29,9 @@ from version import normalize
 TARGETS = (
     "README.md",
     "AGENTS.md",
-    "dashboard.html",
+    "AGENTS-lite.md",
     "config/framework.yaml",
-    "core/scripts/pa.py",
     "ROADMAP.md",
-    "config/branding.txt",
 )
 
 _VERSION_TEXT_RE = re.compile(
@@ -119,17 +117,15 @@ def detect_version_in_files() -> dict:
         "AGENTS.md": [
             r"^> \*\*Version: v?(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)\*\*",
         ],
-        "dashboard.html": [
-            r"<title>PA Framework Command Center v?(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)</title>",
+        "AGENTS-lite.md": [
+            r"^> \*\*Version: v?(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)\*\*",
         ],
         "config/framework.yaml": [
             r"^version:\s*['\"]?v?(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)['\"]?\s*$",
         ],
-        "core/scripts/pa.py": [],
         "ROADMAP.md": [
             r"^\*\*Versión actual\*\*:\s*v?(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)\s*$",
         ],
-        "config/branding.txt": [],
     }
 
     results = {}
@@ -205,17 +201,9 @@ def apply_changes(changes: list, new_version: str, dry_run: bool = False) -> int
                 lambda match: f"{match.group(1)}v{new_version}{match.group(2)}",
             ),
         ],
-        "dashboard.html": [
+        "AGENTS-lite.md": [
             (
-                rf"(<title>PA Framework Command Center )v?{token}(</title>)",
-                lambda match: f"{match.group(1)}v{new_version}{match.group(2)}",
-            ),
-            (
-                rf"(<p class=\"text-xs text-slate-400\">)v?{token}( <span id=\"build-id\")",
-                lambda match: f"{match.group(1)}v{new_version}{match.group(2)}",
-            ),
-            (
-                rf"(Framework )v?{token}( — 100% Local, 100% Privado)",
+                rf"^(> \*\*Version: )v?{token}(\*\*.*)$",
                 lambda match: f"{match.group(1)}v{new_version}{match.group(2)}",
             ),
         ],
@@ -225,14 +213,13 @@ def apply_changes(changes: list, new_version: str, dry_run: bool = False) -> int
                 lambda match: f"{match.group(1)}{new_version}{match.group(2)}",
             ),
         ],
-        "core/scripts/pa.py": [],
         "ROADMAP.md": [
             (
                 rf"^(\*\*Versión actual\*\*:\s*)v?{token}(\s*)$",
                 lambda match: f"{match.group(1)}v{new_version}{match.group(2)}",
             ),
         ],
-        "config/branding.txt": [],
+
     }
 
     for file_name, old_ver, _ in changes:

@@ -151,6 +151,40 @@ class TestLoggingAndResolveFlows:
     def test_resolve_error_returns_false_when_missing(self, logger):
         assert logger.resolve_error("ERR-DOES-NOT-EXIST") is False
 
+    def test_same_second_ids_are_unique_and_resolution_is_block_scoped(
+        self, logger, monkeypatch
+    ):
+        fixed = datetime(2026, 1, 2, 3, 4, 5)
+
+        class FixedDateTime:
+            @classmethod
+            def now(cls):
+                return fixed
+
+        monkeypatch.setattr(_el, "datetime", FixedDateTime)
+        ids = [
+            logger.log_error(
+                {
+                    "type": "ValueError",
+                    "message": f"failure-{index}",
+                    "file": "same.py",
+                    "line": index,
+                }
+            )
+            for index in range(3)
+        ]
+        assert len(set(ids)) == 3
+
+        assert logger.resolve_error(ids[1]) is True
+        text = logger.log_file.read_text(encoding="utf-8")
+        assert f"## [!] {ids[0]}" in text
+        assert f"## [OK] {ids[1]}" in text
+        assert f"## [!] {ids[2]}" in text
+        first_block = text[text.index(ids[0]):text.index(ids[1])]
+        second_block = text[text.index(ids[1]):text.index(ids[2])]
+        assert "| **Status** | Open |" in first_block
+        assert "| **Status** | Resolved |" in second_block
+
     def test_update_md_entry_warns_when_file_update_fails(self, logger, monkeypatch):
         warnings = []
 

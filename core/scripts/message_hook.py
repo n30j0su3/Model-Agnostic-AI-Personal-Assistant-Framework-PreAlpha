@@ -81,6 +81,7 @@ def _console_safe_streams():
 
 _console_safe_streams()
 # ----------------------------------------------------------------------------
+import hashlib
 import os
 import re
 import json
@@ -358,7 +359,7 @@ class MessageHook:
             if self.bridge and hasattr(self.bridge, "set_user_fact"):
                 today = datetime.now().strftime("%Y-%m-%d")
                 self.bridge.set_user_fact(
-                    key=f"auto_{abs(hash(fact)) & 0xFFFFFFFF:X}",
+                    key=f"auto_{hashlib.sha256(fact.encode('utf-8')).hexdigest()[:8].upper()}",
                     value=fact,
                     category="preference",
                     priority="medium",
