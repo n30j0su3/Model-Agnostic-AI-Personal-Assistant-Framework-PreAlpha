@@ -777,6 +777,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"ok": st == 200, "messages": data if st == 200 else None,
                                "error": None if st == 200 else data}, 200 if st == 200 else 502)
         if path == "/api/files/config":
+            if not self._guard_loopback_origin():
+                return
             out = {"ok": True, "files": {}}
             for key, p in self.editable_files.items():
                 out["files"][key] = {
@@ -791,6 +793,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"error": "method not allowed", "method": "POST"}, 405)
         
         if path == "/api/models/free":
+            if not self._guard_loopback_origin():
+                return
             # Lectura pura: nunca inicia procesos. Si serve está apagado, retorna [].
             # Dashboard command center (D1): SOLO modelos free vía sfm.get_free_models.
             # Detección != uso: para probar/usar cualquier modelo existe /test.
@@ -806,6 +810,8 @@ class Handler(BaseHTTPRequestHandler):
 
 
         if path == "/api/config/model":
+            if not self._guard_loopback_origin():
+                return
             # La selección mutable vive en data/user; agent conserva lectura legacy.
             selection = sfm.load_selection(self.repo_root)
             legacy = {}

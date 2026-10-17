@@ -111,6 +111,46 @@ def test_security_bootstrap_is_same_origin(tmp_path):
         assert status == 403
 
 
+def test_sensitive_gets_reject_foreign_origin_before_reading(tmp_path, monkeypatch):
+    forbidden = lambda *args, **kwargs: (_ for _ in ()).throw(
+        AssertionError("foreign origin reached sensitive read")
+    )
+    with running_server(tmp_path) as (_, port):
+        monkeypatch.setattr(dashboard_server.sfm, "get_free_models", forbidden)
+        monkeypatch.setattr(dashboard_server.sfm, "load_selection", forbidden)
+        base = f"http://127.0.0.1:{port}"
+        for path in (
+            "/api/files/config",
+            "/api/models/free",
+            "/api/config/model",
+        ):
+            status, payload = request_status(
+                base + path,
+                headers={"Origin": "https://evil.example"},
+            )
+            assert status == 403, path
+            assert payload["error"] == "invalid origin"
+
+
+def test_sensitive_gets_remain_available_on_loopback(tmp_path, monkeypatch):
+    monkeypatch.setattr(dashboard_server.sfm, "get_free_models", lambda _port: [])
+    monkeypatch.setattr(
+        dashboard_server.sfm,
+        "load_selection",
+        lambda _root: {"model": "opencode/test-free", "agent": "FreakingJSON"},
+    )
+
+    with running_server(tmp_path) as (_, port):
+        base = f"http://127.0.0.1:{port}"
+        for path in (
+            "/api/files/config",
+            "/api/models/free",
+            "/api/config/model",
+        ):
+            status, _ = request_status(base + path)
+            assert status == 200, path
+
+
 def test_runtime_ensure_via_guarded_post(tmp_path, monkeypatch):
     calls = []
 

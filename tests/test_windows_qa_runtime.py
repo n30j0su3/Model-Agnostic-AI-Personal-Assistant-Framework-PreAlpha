@@ -219,6 +219,7 @@ def test_api_models_free_endpoint_uses_free_only(tmp_path, monkeypatch):
     (tmp_path / "dashboard.html").write_text("<html>ok</html>", encoding="utf-8")
     handler = object.__new__(ds.Handler)
     handler.path = "/api/models/free"
+    handler.headers = {"Host": "127.0.0.1:0"}
 
     class FakeServer:
         repo_root = tmp_path
