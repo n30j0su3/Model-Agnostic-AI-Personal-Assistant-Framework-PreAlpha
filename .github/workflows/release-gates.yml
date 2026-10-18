@@ -46,6 +46,13 @@ jobs:
         if: runner.os == 'Windows'
         shell: cmd
         run: pa.bat --help
+      - name: POSIX launcher smoke
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          bash -n pa.sh
+          test -x pa.sh
+          ./pa.sh --help
       - name: Full test suite
         run: python -m pytest tests core/scripts/tests -q
       - name: Windows cp1252 compatibility

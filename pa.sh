@@ -18,6 +18,16 @@ if [ -z "$PY_CMD" ]; then
     exit 1
 fi
 
+# Informational flags must not trigger the interactive first-run installer.
+case "${1:-}" in
+    -h|--help)
+        exec $PY_CMD core/scripts/pa.py --help
+        ;;
+    --version|/version)
+        exec $PY_CMD core/scripts/pa.py --version
+        ;;
+esac
+
 # Auto-install if profile missing
 if [ ! -f "core/.context/profile.md" ]; then
     echo "[INFO] Primera ejecución detectada. Iniciando instalador..."
