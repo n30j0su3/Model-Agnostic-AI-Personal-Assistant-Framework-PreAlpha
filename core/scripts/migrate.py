@@ -390,6 +390,11 @@ def apply_migration(version: str, force: bool = False) -> bool:
             if not create_directory(full_path):
                 errors.append(f"dir:{path}")
         else:
+            if full_path.exists():
+                # Migrations only create missing files. Existing user state
+                # (e.g. a customized protected-paths file or backlog) is kept.
+                safe_print(c(f"  [KEEP] {path} ya existe, no se sobrescribe", Colors.YELLOW))
+                continue
             safe_print(f"  [FILE] Creando: {path}")
             initial = {}
             if path.endswith(".md"):
