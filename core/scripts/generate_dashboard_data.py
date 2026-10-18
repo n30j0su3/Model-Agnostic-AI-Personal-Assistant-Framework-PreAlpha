@@ -17,7 +17,7 @@ Versión: 1.0.0 (Dashboard v2.0 - File:// Compatible)
 """
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 # Paths
@@ -70,7 +70,7 @@ def generate_dashboard_data():
     
     # Preparar datos para embedir
     dashboard_data = {
-        "generatedAt": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generatedAt": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "version": "2.0.0",
         "sessions": sessions_data.get("sessions", []),
         "skills": skills_data.get("skills", []),
