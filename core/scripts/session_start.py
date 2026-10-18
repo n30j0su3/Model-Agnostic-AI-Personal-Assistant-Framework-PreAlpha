@@ -824,8 +824,12 @@ def run_parallel_checks(coord=None, skip_context: bool = False) -> dict:
                 tier_0_data = context_loader.load_tier(0)
                 tier_1_data = context_loader.load_tier(1)
                 
-                # Save to warm cache for next startup
-                save_warm_cache(tier_0_data, tier_1_data)
+                # Save to warm cache for next startup, with the real storage status
+                save_warm_cache(
+                    tier_0_data,
+                    tier_1_data,
+                    storage_status=_discover_storage_status(),
+                )
             except Exception:
                 # ContextLoader failure should not block startup
                 context_loader = None
