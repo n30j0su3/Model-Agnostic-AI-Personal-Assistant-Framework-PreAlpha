@@ -8,7 +8,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from conftest import subprocess_text_encoding
+from conftest import copy_source_sandbox, subprocess_text_encoding
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -48,6 +48,7 @@ def checkout_state():
 def test_full_suite_green_and_does_not_mutate_checkout(tmp_path):
     before_status = checkout_state()
     before_index = _sessions_index_bytes()
+    sandbox = copy_source_sandbox(tmp_path / "sandbox")
     home = tmp_path / "nested-home"
     home.mkdir()
     env = {
@@ -66,7 +67,7 @@ def test_full_suite_green_and_does_not_mutate_checkout(tmp_path):
             "-q",
             "--ignore=tests/test_suite_hygiene.py",
         ],
-        cwd=ROOT,
+        cwd=sandbox,
         env=env,
         capture_output=True,
         text=True,

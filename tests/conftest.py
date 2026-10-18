@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 RUNTIME_RESIDUE = (
     "data",
     "core/.context/knowledge/errors",
+    "core/.context/codebase/ideas.md",
     "core/.context/.cache",
     ".pytest_cache",
 )
@@ -28,6 +29,12 @@ RUNTIME_RESIDUE = (
 def find_runtime_residue(root: Path) -> list[str]:
     """Return residue paths present under root (empty list means clean)."""
     return [rel for rel in RUNTIME_RESIDUE if (root / rel).exists()]
+
+
+# Residue present before any test runs means the input package is contaminated.
+# Residue created later by the suite itself is a hygiene defect, handled by the
+# sandboxed nested-suite test, and must not break unrelated tests in the session.
+_SESSION_START_RESIDUE = find_runtime_residue(ROOT)
 
 
 def symlinks_supported(directory: Path) -> bool:
@@ -55,14 +62,29 @@ def _sandbox_ignore(directory: str, names: list[str]) -> set[str]:
 
 
 def _copy_source_without_git(destination: Path) -> Path:
-    residue = find_runtime_residue(ROOT)
-    if residue:
+    if _SESSION_START_RESIDUE:
         pytest.fail(
-            "source tree is not a clean package; runtime residue present: "
-            + ", ".join(residue)
+            "source tree is not a clean package; runtime residue present at session start: "
+            + ", ".join(_SESSION_START_RESIDUE)
             + ". Re-extract a clean candidate before running the suite."
         )
     shutil.copytree(ROOT, destination, dirs_exist_ok=True, ignore=_sandbox_ignore)
+    return destination
+
+
+def copy_source_sandbox(destination: Path) -> Path:
+    """Copy the source tree without VCS, caches or runtime residue (for nested runs)."""
+
+    def ignore(directory: str, names: list[str]) -> set[str]:
+        ignored = _sandbox_ignore(directory, names)
+        base = Path(directory).resolve()
+        for rel in RUNTIME_RESIDUE:
+            absolute = ROOT / rel
+            if absolute.parent.resolve() == base and absolute.name in names:
+                ignored.add(absolute.name)
+        return ignored
+
+    shutil.copytree(ROOT, destination, dirs_exist_ok=True, ignore=ignore)
     return destination
 
 
