@@ -29,6 +29,7 @@ def checkout_state():
         capture_output=True,
         text=True,
         encoding=subprocess_text_encoding(),
+        errors="replace",
     )
     if status.returncode == 0:
         return ("git", status.stdout.strip())
@@ -70,6 +71,7 @@ def test_full_suite_green_and_does_not_mutate_checkout(tmp_path):
         capture_output=True,
         text=True,
         encoding=subprocess_text_encoding(),
+        errors="replace",
         timeout=180,
     )
     after_status = checkout_state()

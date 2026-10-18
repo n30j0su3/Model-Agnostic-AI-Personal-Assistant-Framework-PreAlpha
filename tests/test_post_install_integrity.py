@@ -29,6 +29,8 @@ def install_fresh(root: Path, tmp_path: Path) -> subprocess.CompletedProcess[str
         input="\n" * 32,
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         timeout=180,
         check=True,
     )
@@ -46,6 +48,8 @@ def test_reference_integrity_after_install(repo_extract, tmp_path):
         cwd=repo_extract,
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         timeout=60,
     )
     assert result.returncode == 0, result.stdout + result.stderr

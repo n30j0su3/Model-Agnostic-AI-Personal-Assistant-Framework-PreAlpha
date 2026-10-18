@@ -1,5 +1,6 @@
 """Fail-closed contracts for Linux cron ownership."""
 
+import platform
 from types import SimpleNamespace
 
 from core.scripts import cron_setup
@@ -13,6 +14,7 @@ UNMANAGED = (
 
 
 def _runner(current_crontab: str, write_returncode: int = 0):
+    platform.system()
     writes = []
 
     def fake_run(command, **kwargs):
@@ -28,6 +30,14 @@ def _runner(current_crontab: str, write_returncode: int = 0):
         raise AssertionError(f"unexpected command: {command}")
 
     return fake_run, writes
+
+
+def test_runner_primes_platform_identity_before_subprocess_is_faked(monkeypatch):
+    monkeypatch.setattr(platform, "_uname_cache", None, raising=False)
+
+    _runner(UNMANAGED)
+
+    assert getattr(platform, "_uname_cache", None) is not None
 
 
 def test_setup_replaces_only_pa_owned_linux_cron_entries(monkeypatch):

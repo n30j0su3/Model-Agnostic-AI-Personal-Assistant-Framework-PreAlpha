@@ -34,11 +34,32 @@ def _load(name: str, path: Path):
     return module
 
 
-def test_subprocess_text_encoding_honors_child_override(monkeypatch):
+def test_subprocess_text_encoding_matches_utf8_children(monkeypatch):
     monkeypatch.setenv("PYTHONIOENCODING", "cp1252:replace")
     helper = getattr(suite_conftest, "subprocess_text_encoding", None)
     assert callable(helper)
-    assert helper() == "cp1252"
+    assert helper() == "utf-8"
+
+
+def test_captured_child_utf8_survives_cp1252_parent_request(monkeypatch):
+    monkeypatch.setenv("PYTHONIOENCODING", "cp1252")
+    monkeypatch.setenv("PYTHONUTF8", "0")
+    child = (
+        "import sys; "
+        "sys.stdout.reconfigure(encoding='utf-8', errors='replace'); "
+        "print('══ v0.4.1-beta ✓')"
+    )
+
+    result = subprocess.run(
+        [sys.executable, "-c", child],
+        capture_output=True,
+        text=True,
+        encoding=suite_conftest.subprocess_text_encoding(),
+        errors="replace",
+        check=True,
+    )
+
+    assert result.stdout == "══ v0.4.1-beta ✓\n"
 
 
 def test_repo_extract_does_not_invoke_missing_git(tmp_path, monkeypatch):
@@ -105,11 +126,29 @@ def test_private_file_helper_enforces_posix_mode(tmp_path):
     assert callable(helper)
     target = tmp_path / "private.json"
     target.write_text("{}\n", encoding="utf-8")
-    os.chmod(target, 0o644)
-    with pytest.raises(AssertionError):
+    if os.name == "posix":
+        os.chmod(target, 0o644)
+        with pytest.raises(AssertionError):
+            helper(target, platform="posix")
+        os.chmod(target, 0o600)
         helper(target, platform="posix")
-    os.chmod(target, 0o600)
-    helper(target, platform="posix")
+    else:
+        # Windows synthesizes writable/read-only mode bits as 0666/0444;
+        # neither can prove the POSIX 0600 privacy contract.
+        for mode in (0o644, 0o400):
+            os.chmod(target, mode)
+            with pytest.raises(AssertionError):
+                helper(target, platform="posix")
+
+
+def test_private_file_helper_rejects_unknown_platform(tmp_path):
+    helper = getattr(suite_conftest, "assert_private_file", None)
+    assert callable(helper)
+    target = tmp_path / "private.json"
+    target.write_text("{}\n", encoding="utf-8")
+
+    with pytest.raises(AssertionError, match="unknown platform"):
+        helper(target, platform="plan9")
 
 
 def test_private_file_helper_defers_windows_mode_bits_to_acl_gate(tmp_path):

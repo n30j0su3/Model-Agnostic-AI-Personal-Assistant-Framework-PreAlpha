@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import io
-import locale
 import os
 import shutil
 import stat
@@ -30,16 +29,18 @@ def _sandbox_ignore(directory: str, names: list[str]) -> set[str]:
 
 
 def subprocess_text_encoding() -> str:
-    """Decode captured child output with the encoding requested for that child."""
-    requested = os.environ.get("PYTHONIOENCODING", "").partition(":")[0]
-    return requested or locale.getpreferredencoding(False)
+    """Decode captured pipes as UTF-8, matching PA child scripts on Windows."""
+    return "utf-8"
 
 
 def assert_private_file(path: Path, *, platform: str | None = None) -> None:
     """Assert POSIX mode locally; native Windows ACL has a separate gate."""
     assert path.is_file()
-    if (platform or os.name) == "posix":
+    effective = platform or os.name
+    if effective == "posix":
         assert stat.S_IMODE(path.stat().st_mode) == 0o600
+    elif effective != "nt":
+        raise AssertionError(f"unknown platform for privacy gate: {effective}")
 
 
 @pytest.fixture(autouse=True)
@@ -76,6 +77,7 @@ def repo_extract(tmp_path):
         capture_output=True,
         text=True,
         encoding=subprocess_text_encoding(),
+        errors="replace",
     )
     if in_git.returncode != 0:
         shutil.copytree(
@@ -92,6 +94,7 @@ def repo_extract(tmp_path):
         capture_output=True,
         text=True,
         encoding=subprocess_text_encoding(),
+        errors="replace",
         check=True,
     ).stdout.strip()
     archive = subprocess.run(

@@ -49,6 +49,7 @@ def run_installer(root: Path, *flags: str) -> subprocess.CompletedProcess[str]:
         capture_output=True,
         text=True,
         encoding=subprocess_text_encoding(),
+        errors="replace",
         timeout=180,
     )
 

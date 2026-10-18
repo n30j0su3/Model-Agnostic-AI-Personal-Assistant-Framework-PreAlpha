@@ -57,6 +57,7 @@ def test_cli_and_fallback_banner_never_render_double_v(tmp_path, monkeypatch, ca
             capture_output=True,
             text=True,
             encoding=subprocess_text_encoding(),
+            errors="replace",
             check=False,
         )
         assert result.returncode == 0, result.stderr

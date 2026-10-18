@@ -42,6 +42,7 @@ def make_candidate_from_040(tmp_path: Path) -> Path:
         capture_output=True,
         text=True,
         encoding=subprocess_text_encoding(),
+        errors="replace",
         check=True,
     ).stdout.strip()
     extract_archive(tree, root)
@@ -78,6 +79,7 @@ def run(root: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
         capture_output=True,
         text=True,
         encoding=subprocess_text_encoding(),
+        errors="replace",
         timeout=180,
     )
 
@@ -94,6 +96,7 @@ def test_migrate_full_roundtrip_is_idempotent(tmp_path):
         capture_output=True,
         text=True,
         encoding=subprocess_text_encoding(),
+        errors="replace",
     )
     if git_check.returncode != 0:
         pytest.skip("v0.4.0 tag fixture requires Git history")
