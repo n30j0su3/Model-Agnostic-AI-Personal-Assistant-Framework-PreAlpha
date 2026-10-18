@@ -315,6 +315,7 @@ def test_manual_opencode_outdated_gate_blocks_launch(tmp_path, monkeypatch):
 
 
 def test_auto_opencode_outdated_gate_blocks_launch(tmp_path, monkeypatch):
+    monkeypatch.setattr(pa, "REPO_ROOT", tmp_path)
     fake = _stub_opencode_version(monkeypatch, "1.17.9")
     monkeypatch.setattr(pa.shutil, "which",
                         lambda n: str(fake) if n == "opencode" else None)
