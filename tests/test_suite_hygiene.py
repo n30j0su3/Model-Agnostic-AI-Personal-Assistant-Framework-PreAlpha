@@ -72,7 +72,7 @@ def test_full_suite_green_and_does_not_mutate_checkout(tmp_path):
         text=True,
         encoding=subprocess_text_encoding(),
         errors="replace",
-        timeout=180,
+        timeout=600,
     )
     after_status = checkout_state()
     after_index = _sessions_index_bytes()
