@@ -28,6 +28,20 @@
   decimal; timezone-aware UTC timestamp in the dashboard data; context allowlist
   is 20 members.
 
+### W7/W8 publication hardening (2026-10-18)
+
+- **QA harness is idempotent.** `.pytest_cache` is tool scratch, not runtime
+  residue; `PA_FRAMEWORK_DATA` isolates the memory layer; a tree with real
+  `workspaces`/`backlog.md` state fails closed and must be re-extracted.
+- **Cold-start storage discovery reports capability**, not file existence:
+  `sqlite_available:true` can be reported without creating `sessions.db`.
+- **POSIX launcher** `pa.sh` ships LF-only, mode 100755, and answers
+  `--help`/`--version` before the installer.
+- **OpenCode runtime contract:** the CLI gate requires `>= 1.18.0`.
+  `.opencode/package.json` and `package-lock.json` are runtime-managed: they
+  ship for bootstrap but are excluded from the manifest hash gate. The pin
+  guard now checks CLI/plugin coherence instead of freezing `1.4.6`.
+
 ### RC6 publication hardening
 
 - The public release builder now uses a semantic allowlist for

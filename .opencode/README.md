@@ -24,4 +24,11 @@ Esto reinstalla las dependencias desde `package.json`.
 
 ## Dependencias
 
-- `@opencode-ai/plugin`: ^1.2.24
+- `@opencode-ai/plugin`: `^1.18.18` (mínimo del runtime: `1.18.0`).
+
+## Runtime-managed
+
+`package.json` y `package-lock.json` son **runtime-managed**: el CLI de OpenCode
+los reescribe a su propia versión. Se incluyen en el ZIP para el bootstrap,
+pero **no** se certifican por hash en `MANIFEST.sha256.json`; el contrato es
+semver `>= 1.18.0` y se valida en el build y en el arranque.

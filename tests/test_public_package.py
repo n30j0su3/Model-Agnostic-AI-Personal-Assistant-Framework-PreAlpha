@@ -95,6 +95,78 @@ def test_release_zip_is_sanitized_and_hashed(tmp_path: Path, release_repo: Path)
                 assert not any(needle in payload for needle in forbidden_paths)
 
 
+def test_manifest_excludes_runtime_managed_opencode_files(
+    tmp_path: Path, release_repo: Path
+):
+    builder = load_builder()
+    package = builder.build_release_zip(tmp_path / "dist", repo_root=release_repo)
+    with zipfile.ZipFile(package) as archive:
+        manifest = json.loads(archive.read(builder.MANIFEST_NAME))
+        names = set(archive.namelist())
+    hashed = {entry["path"] for entry in manifest["files"]}
+    volatile = {entry["path"] for entry in manifest["volatile"]}
+    assert manifest["schema"] == 2
+    assert volatile == {".opencode/package.json", ".opencode/package-lock.json"}
+    assert not (hashed & volatile)
+    assert volatile <= names
+    assert all(
+        entry["contract"] == "opencode-plugin>=1.18.0"
+        for entry in manifest["volatile"]
+    )
+
+
+def _rewrite_zip_members(
+    source: Path, target: Path, replacements: dict[str, bytes]
+) -> None:
+    with zipfile.ZipFile(source) as src, zipfile.ZipFile(
+        target, "w", zipfile.ZIP_DEFLATED
+    ) as dst:
+        for info in src.infolist():
+            dst.writestr(info, replacements.get(info.filename, src.read(info.filename)))
+
+
+def _opencode_runtime_rewrite(archive: zipfile.ZipFile, version: str) -> dict[str, bytes]:
+    package = json.loads(archive.read(".opencode/package.json"))
+    package["dependencies"]["@opencode-ai/plugin"] = version
+    lock = json.loads(archive.read(".opencode/package-lock.json"))
+    lock["packages"][""]["dependencies"]["@opencode-ai/plugin"] = version
+    for name in ("@opencode-ai/plugin", "@opencode-ai/sdk"):
+        lock["packages"][f"node_modules/{name}"]["version"] = version
+    plugin = lock["packages"]["node_modules/@opencode-ai/plugin"]
+    if "@opencode-ai/sdk" in plugin.get("dependencies", {}):
+        plugin["dependencies"]["@opencode-ai/sdk"] = version
+    return {
+        ".opencode/package.json": (json.dumps(package, indent=2) + "\n").encode(),
+        ".opencode/package-lock.json": (json.dumps(lock, indent=2) + "\n").encode(),
+    }
+
+
+def test_verify_accepts_runtime_managed_opencode_versions(
+    tmp_path: Path, release_repo: Path
+):
+    builder = load_builder()
+    package = builder.build_release_zip(tmp_path / "dist", repo_root=release_repo)
+    with zipfile.ZipFile(package) as archive:
+        replacements = _opencode_runtime_rewrite(archive, "1.19.0")
+    rewritten = tmp_path / "runtime-rewritten.zip"
+    _rewrite_zip_members(package, rewritten, replacements)
+    receipt = builder.verify_release_zip(rewritten)
+    assert receipt["volatile"] == 2
+
+
+def test_verify_rejects_runtime_opencode_below_gate(
+    tmp_path: Path, release_repo: Path
+):
+    builder = load_builder()
+    package = builder.build_release_zip(tmp_path / "dist", repo_root=release_repo)
+    with zipfile.ZipFile(package) as archive:
+        replacements = _opencode_runtime_rewrite(archive, "1.4.6")
+    rewritten = tmp_path / "runtime-old.zip"
+    _rewrite_zip_members(package, rewritten, replacements)
+    with pytest.raises(builder.ReleaseBuildError, match="1.18.0"):
+        builder.verify_release_zip(rewritten)
+
+
 def test_release_zip_is_byte_deterministic(tmp_path: Path, release_repo: Path):
     builder = load_builder()
     first = builder.build_release_zip(tmp_path / "first", repo_root=release_repo)

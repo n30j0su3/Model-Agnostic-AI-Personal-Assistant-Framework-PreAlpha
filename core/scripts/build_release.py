@@ -17,6 +17,21 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MANIFEST_NAME = "MANIFEST.sha256.json"
+# OpenCode rewrites its own package.json/package-lock.json to the CLI version.
+# They must ship for the bootstrap, but hashing them in the release manifest
+# would fail after any real launch. They are covered by a semver contract
+# instead of a byte-level hash.
+VOLATILE_RUNTIME_PATHS = frozenset(
+    {
+        ".opencode/package.json",
+        ".opencode/package-lock.json",
+    }
+)
+OPENCODE_MIN_VERSION = (1, 18, 0)
+VOLATILE_CONTRACTS = {
+    path: "opencode-plugin>=%s" % ".".join(map(str, OPENCODE_MIN_VERSION))
+    for path in VOLATILE_RUNTIME_PATHS
+}
 TEXT_SUFFIXES = {".md", ".py", ".html", ".yaml", ".yml", ".json", ".txt", ".sh", ".ps1", ".bat", ".toml"}
 BINARY_SUFFIXES = {
     ".gif",
@@ -117,6 +132,47 @@ class ReleaseBuildError(RuntimeError):
 
 def sha256(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
+
+
+_SEMVER_RE = re.compile(r"(\d+)\.(\d+)\.(\d+)")
+
+
+def _parse_semver(value: str, *, context: str) -> tuple[int, int, int]:
+    match = _SEMVER_RE.search(value or "")
+    if match is None:
+        raise ReleaseBuildError(f"invalid OpenCode version in {context}: {value!r}")
+    return (int(match.group(1)), int(match.group(2)), int(match.group(3)))
+
+
+def _assert_min_opencode_version(path: str, value: str) -> None:
+    found = _parse_semver(value, context=path)
+    if found < OPENCODE_MIN_VERSION:
+        minimum = ".".join(map(str, OPENCODE_MIN_VERSION))
+        raise ReleaseBuildError(
+            f"OpenCode plugin {value} in {path} is below the release minimum {minimum}"
+        )
+
+
+def validate_volatile_runtime_payload(path: str, payload: bytes) -> None:
+    """Validate a runtime-managed OpenCode file without freezing its bytes."""
+    if path not in VOLATILE_RUNTIME_PATHS:
+        raise ReleaseBuildError(f"not a runtime-managed path: {path}")
+    try:
+        data = json.loads(payload.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ReleaseBuildError(f"invalid JSON in {path}: {exc}") from exc
+    if path == ".opencode/package.json":
+        deps = {**data.get("dependencies", {}), **data.get("devDependencies", {})}
+        _assert_min_opencode_version(path, str(deps.get("@opencode-ai/plugin", "")))
+        return
+    packages = data.get("packages")
+    if not isinstance(packages, dict):
+        raise ReleaseBuildError(f"invalid package-lock structure in {path}")
+    for name in ("@opencode-ai/plugin", "@opencode-ai/sdk"):
+        entry = packages.get(f"node_modules/{name}")
+        if not isinstance(entry, dict) or "version" not in entry:
+            raise ReleaseBuildError(f"missing {name} in {path}")
+        _assert_min_opencode_version(path, str(entry["version"]))
 
 
 def is_denied_context_path(path: str) -> bool:
@@ -250,13 +306,25 @@ def build_release_zip(
     if "VERSION" not in files:
         raise ReleaseBuildError("VERSION is missing from release tree")
     version = files["VERSION"][0].decode("utf-8").strip()
+    missing_volatile = VOLATILE_RUNTIME_PATHS.difference(files)
+    if missing_volatile:
+        raise ReleaseBuildError(
+            f"runtime-managed OpenCode files missing: {sorted(missing_volatile)}"
+        )
+    for path in sorted(VOLATILE_RUNTIME_PATHS):
+        validate_volatile_runtime_payload(path, files[path][0])
     manifest: dict[str, Any] = {
-        "schema": 1,
+        "schema": 2,
         "version": version,
         "tree": resolved_tree,
         "files": [
             {"path": path, "size": len(payload), "sha256": sha256(payload)}
             for path, (payload, _mode) in sorted(files.items())
+            if path not in VOLATILE_RUNTIME_PATHS
+        ],
+        "volatile": [
+            {"path": path, "contract": VOLATILE_CONTRACTS[path]}
+            for path in sorted(VOLATILE_RUNTIME_PATHS)
         ],
         "excluded": excluded,
     }
@@ -283,8 +351,13 @@ def verify_release_zip(package: Path | str) -> dict[str, Any]:
         if any(name != MANIFEST_NAME and is_denied_path(name) for name in names):
             raise ReleaseBuildError("denied path present in ZIP")
         manifest = json.loads(archive.read(MANIFEST_NAME))
+        if manifest.get("schema") != 2:
+            raise ReleaseBuildError("unsupported manifest schema")
         expected = {entry["path"]: entry for entry in manifest["files"]}
-        if set(names) != {*expected, MANIFEST_NAME}:
+        volatile = {entry["path"]: entry for entry in manifest.get("volatile", [])}
+        if set(volatile) != set(VOLATILE_RUNTIME_PATHS):
+            raise ReleaseBuildError("volatile manifest mismatch")
+        if set(names) != {*expected, *volatile, MANIFEST_NAME}:
             raise ReleaseBuildError("ZIP/member manifest mismatch")
         for member, entry in expected.items():
             member_payload = archive.read(member)
@@ -293,11 +366,16 @@ def verify_release_zip(package: Path | str) -> dict[str, Any]:
             if sha256(member_payload) != entry["sha256"]:
                 raise ReleaseBuildError(f"hash mismatch: {member}")
             assert_public_payload(member, member_payload)
+        for member in volatile:
+            member_payload = archive.read(member)
+            validate_volatile_runtime_payload(member, member_payload)
+            assert_public_payload(member, member_payload)
     return {
         "path": str(path.resolve()),
         "size": len(payload),
         "sha256": sha256(payload),
-        "files": len(manifest["files"]),
+        "files": len(expected),
+        "volatile": len(volatile),
         "tree": manifest["tree"],
         "version": manifest["version"],
     }
