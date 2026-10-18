@@ -2,6 +2,29 @@
 
 ## [v0.4.1-beta] - 2026-10-17 (RC6 publication candidate)
 
+### Release corrections (publication candidate)
+
+- **Update protection is add-only.** `config/update-protected-paths.txt` can add
+  paths but can no longer remove mandatory defaults. A trimmed or emptied file
+  still protects `data/user`, `data/sessions.db`, `data/user_memory.db` and the
+  other mandatory paths. If you relied on removing a default, that path is now
+  protected; move the data elsewhere instead.
+- **The `.seed` protection file matches the active file**, so regenerating the
+  file from the seed keeps the data protections.
+- **Migrations never overwrite existing files.** A migration creates only
+  missing files; existing customized files (protected paths, backlog, indexes)
+  are kept and reported as `[KEEP]`.
+- **Cold start records real storage status** in the warm-start receipt instead
+  of marking every storage flag as unavailable.
+- **Windows consoles on legacy code pages** (cp1252) no longer abort
+  `self_healing_check`, `learning_cron`, `memory_sync` or `wiki_populate`.
+  Launchers enable Python UTF-8 mode.
+- **Harness:** symlink tests skip only when the host cannot create symlinks.
+  The no-git test fallback refuses source trees that contain runtime state.
+- Debt: navigation footer aligned to the current version; sub-KiB sizes show one
+  decimal; timezone-aware UTC timestamp in the dashboard data; context allowlist
+  is 20 members.
+
 ### RC6 publication hardening
 
 - The public release builder now uses a semantic allowlist for
