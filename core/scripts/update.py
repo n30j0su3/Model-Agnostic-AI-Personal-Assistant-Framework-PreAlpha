@@ -191,39 +191,54 @@ def create_snapshot() -> Path | None:
         return None
 
 
+# Mandatory protected paths. Canonical source for the release; the active file
+# and its .seed must list exactly this set (enforced by tests).
+MANDATORY_UPDATE_PROTECTED_PATHS = [
+    "workspaces",
+    "data/user",
+    "data/sessions.db",
+    "data/user_memory.db",
+    "core/.context/MASTER.md",
+    "core/.context/profile.md",
+    "core/.context/navigation.md",
+    "core/.context/quick-start.md",
+    "core/.context/opencode.md",
+    "core/.context/claude.md",
+    "core/.context/gemini.md",
+    "core/.context/sessions",
+    "core/.context/codebase",
+    "core/.context/backups",
+    "core/.context/projects",
+    "core/.context/vitals",
+    "core/.context/knowledge/insights",
+    "core/.context/knowledge/learning",
+    "core/.context/knowledge/self-healing",
+    "core/.context/knowledge/prompts",
+    "core/.context/memory",
+    "config/mcp.json",
+    "config/quotas.json",
+    "opencode.jsonc",
+    ".opencode/config.json",
+]
+
+
 def load_update_protected_paths() -> list[str]:
-    defaults = [
-        "workspaces",
-        "data/user",
-        "data/sessions.db",
-        "data/user_memory.db",
-        "core/.context/MASTER.md",
-        "core/.context/profile.md",
-        "core/.context/opencode.md",
-        "core/.context/claude.md",
-        "core/.context/gemini.md",
-        "core/.context/sessions",
-        "core/.context/codebase",
-        "core/.context/backups",
-        "core/.context/projects",
-        "core/.context/vitals",
-        "core/.context/knowledge/insights",
-        "core/.context/knowledge/learning",
-        "core/.context/knowledge/self-healing",
-        "core/.context/knowledge/prompts",
-        "config/mcp.json",
-        "config/quotas.json",
-        "opencode.jsonc",
-        ".opencode/config.json",
-    ]
+    """Return mandatory paths plus any extra paths listed in the user file.
+
+    Add-only: the file can extend the protected set but never remove a
+    mandatory path, so a trimmed or emptied file cannot unprotect user data.
+    """
+    paths = list(MANDATORY_UPDATE_PROTECTED_PATHS)
     if not UPDATE_PROTECTED_PATHS_FILE.exists():
-        return defaults
-    lines = [
-        line.strip().rstrip("/")
-        for line in UPDATE_PROTECTED_PATHS_FILE.read_text(encoding="utf-8").splitlines()
-        if line.strip() and not line.strip().startswith("#")
-    ]
-    return lines or defaults
+        return paths
+    for line in UPDATE_PROTECTED_PATHS_FILE.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        entry = stripped.rstrip("/")
+        if entry not in paths:
+            paths.append(entry)
+    return paths
 
 
 def is_protected_update_path(rel_path: Path, protected_paths: list[str]) -> bool:
