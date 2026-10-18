@@ -8,7 +8,7 @@
   `core/.context/`; generated knowledge, session, memory, migration, workspace,
   and `.opencode` state are excluded even if accidentally tracked.
 - Public package tests execute against the staged tree and prove the exact
-  22-member context allowlist plus fresh-extract regeneration of local state.
+  20-member context allowlist plus fresh-extract regeneration of local state.
 - Recovery file creation is contained to explicit write roots; error records
   redact secrets/home paths and rotate as a bounded JSON + Markdown pair.
 - Linux cron ownership uses exact begin/end markers and preserves unrelated
