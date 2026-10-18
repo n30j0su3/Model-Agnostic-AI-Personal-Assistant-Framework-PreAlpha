@@ -14,6 +14,9 @@
 - **Migrations never overwrite existing files.** A migration creates only
   missing files; existing customized files (protected paths, backlog, indexes)
   are kept and reported as `[KEEP]`.
+- **Legacy `workspaces/content` is never deleted.** When the selected workspaces
+  exclude it, the installer keeps the directory and reports its path
+  (`preserved_legacy_workspaces` in the JSON receipt and a notice on stderr).
 - **Cold start records real storage status** in the warm-start receipt instead
   of marking every storage flag as unavailable.
 - **Windows consoles on legacy code pages** (cp1252) no longer abort
