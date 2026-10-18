@@ -17,6 +17,15 @@ _el = importlib.import_module("error_logger")
 ErrorLogger = _el.ErrorLogger
 
 
+@pytest.fixture(autouse=True)
+def isolated_default_errors_dir(tmp_path, monkeypatch):
+    """Redirect the default logger away from the source tree (core/.context/knowledge/errors)."""
+    errors = tmp_path / "default-errors"
+    monkeypatch.setattr(_el, "ERRORS_DIR", errors)
+    monkeypatch.setattr(_el, "ERROR_INDEX_FILE", errors / "index.json")
+    monkeypatch.setattr(_el, "ERROR_LOG_MD", errors / "error-log.md")
+
+
 @pytest.fixture
 def logger(tmp_path):
     return ErrorLogger(errors_dir=tmp_path / "errors")
