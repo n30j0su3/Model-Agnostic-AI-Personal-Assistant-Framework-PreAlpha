@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
 """
-Cron Setup — Cross-platform scheduled task configuration.
-Supports: Windows (Task Scheduler), macOS (launchd), Linux (cron)
-
-Uses tempfile.gettempdir() for cross-platform temp paths.
-"""
-"""
 Cron Setup - Cross-platform scheduled tasks for PA Framework
 
 This solves the "Crons automáticos" problem - no crons were scheduled.
