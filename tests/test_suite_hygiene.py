@@ -51,11 +51,16 @@ def test_full_suite_green_and_does_not_mutate_checkout(tmp_path):
     sandbox = copy_source_sandbox(tmp_path / "sandbox")
     home = tmp_path / "nested-home"
     home.mkdir()
+    nested_state = tmp_path / "nested-state"
+    nested_state.mkdir()
+    nested_data = nested_state / "data"
+    nested_data.mkdir()
     env = {
         **os.environ,
         "HOME": str(home),
         "USERPROFILE": str(home),
-        "PA_TEST_REPO_ROOT": str(tmp_path / "nested-state"),
+        "PA_FRAMEWORK_DATA": str(nested_data),
+        "PA_TEST_REPO_ROOT": str(nested_state),
         "PYTHONDONTWRITEBYTECODE": "1",
     }
     result = subprocess.run(

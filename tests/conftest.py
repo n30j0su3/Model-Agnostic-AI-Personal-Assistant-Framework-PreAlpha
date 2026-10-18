@@ -21,8 +21,9 @@ RUNTIME_RESIDUE = (
     "data",
     "core/.context/knowledge/errors",
     "core/.context/codebase/ideas.md",
+    "core/.context/codebase/backlog.md",
     "core/.context/.cache",
-    ".pytest_cache",
+    "workspaces",
 )
 
 
@@ -61,6 +62,23 @@ def _sandbox_ignore(directory: str, names: list[str]) -> set[str]:
     )
 
 
+def _residue_ignore(directory: str, names: list[str]) -> set[str]:
+    """Ignore VCS/bytecode noise plus runtime residue at its exact location.
+
+    Mirrors ``git archive`` semantics for VCS-less packages: runtime state that
+    a ``.git`` checkout would leave untracked must never reach a test sandbox.
+    Nested directories that merely share a name (e.g. a skill's own ``data/``)
+    are intentionally preserved.
+    """
+    ignored = _sandbox_ignore(directory, names)
+    base = Path(directory).resolve()
+    for rel in RUNTIME_RESIDUE:
+        absolute = ROOT / rel
+        if absolute.parent.resolve() == base and absolute.name in names:
+            ignored.add(absolute.name)
+    return ignored
+
+
 def _copy_source_without_git(destination: Path) -> Path:
     if _SESSION_START_RESIDUE:
         pytest.fail(
@@ -68,23 +86,13 @@ def _copy_source_without_git(destination: Path) -> Path:
             + ", ".join(_SESSION_START_RESIDUE)
             + ". Re-extract a clean candidate before running the suite."
         )
-    shutil.copytree(ROOT, destination, dirs_exist_ok=True, ignore=_sandbox_ignore)
+    shutil.copytree(ROOT, destination, dirs_exist_ok=True, ignore=_residue_ignore)
     return destination
 
 
 def copy_source_sandbox(destination: Path) -> Path:
     """Copy the source tree without VCS, caches or runtime residue (for nested runs)."""
-
-    def ignore(directory: str, names: list[str]) -> set[str]:
-        ignored = _sandbox_ignore(directory, names)
-        base = Path(directory).resolve()
-        for rel in RUNTIME_RESIDUE:
-            absolute = ROOT / rel
-            if absolute.parent.resolve() == base and absolute.name in names:
-                ignored.add(absolute.name)
-        return ignored
-
-    shutil.copytree(ROOT, destination, dirs_exist_ok=True, ignore=ignore)
+    shutil.copytree(ROOT, destination, dirs_exist_ok=True, ignore=_residue_ignore)
     return destination
 
 
@@ -119,8 +127,13 @@ def hermetic_env(tmp_path, monkeypatch):
     state_root = tmp_path / "repo-state"
     home.mkdir()
     state_root.mkdir()
+    data_dir = state_root / "data"
+    data_dir.mkdir()
     monkeypatch.setenv("HOME", str(home))
     monkeypatch.setenv("USERPROFILE", str(home))
+    # PA_FRAMEWORK_DATA is the override the memory layer actually honors;
+    # PA_TEST_REPO_ROOT alone lets default data paths write into the checkout.
+    monkeypatch.setenv("PA_FRAMEWORK_DATA", str(data_dir))
     monkeypatch.setenv("PA_TEST_REPO_ROOT", str(state_root))
     monkeypatch.setenv("PYTHONDONTWRITEBYTECODE", "1")
     yield
