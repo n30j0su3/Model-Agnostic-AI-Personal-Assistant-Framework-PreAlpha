@@ -21,6 +21,8 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 
+from console_encoding import configure_utf8_console
+
 # Framework paths
 FRAMEWORK_ROOT = Path(__file__).parent.parent
 ERROR_LOG_PATH = FRAMEWORK_ROOT / ".context" / "knowledge" / "errors" / "error-log.json"
@@ -343,7 +345,8 @@ class SelfHealingCheck:
 
 def main():
     """CLI interface"""
-    
+    configure_utf8_console()
+
     healing = SelfHealingCheck()
     
     if len(sys.argv) < 2:
