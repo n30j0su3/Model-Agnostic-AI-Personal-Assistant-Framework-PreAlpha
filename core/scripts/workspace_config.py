@@ -252,6 +252,20 @@ def save_user_config(entries: Any, repo_root: Path | None = None) -> dict:
 # ---------------------------------------------------------------------------
 
 
+def preserved_legacy_workspaces(
+    repo_root: Path, entries: dict[str, dict[str, str]]
+) -> list[str]:
+    """Legacy workspaces/content dirs that the current selection does not use.
+
+    Never deleted: when the selection changes, the directory is kept and its
+    relative path is reported so the user can move or remove it deliberately.
+    """
+    if LEGACY_WORKSPACE_KEY in entries:
+        return []
+    legacy = Path(repo_root) / "workspaces" / LEGACY_WORKSPACE_DIR
+    return [f"workspaces/{LEGACY_WORKSPACE_DIR}"] if legacy.is_dir() else []
+
+
 def workspace_dir_for(
     entries: dict[str, dict[str, str]],
     key: str,

@@ -306,6 +306,9 @@ def main(argv=None):
                 "schema": workspace_cfg.CONFIG_SCHEMA_VERSION,
                 "workspaces": workspace_entries,
             },
+            "preserved_legacy_workspaces": workspace_cfg.preserved_legacy_workspaces(
+                REPO_ROOT, workspace_entries
+            ),
             "writes": [],
         }
         if args.json:
@@ -546,6 +549,7 @@ Bienvenida. Este framework actúa como asistente personal para tareas diarias, i
     print(f"{Colors.CYAN}  ─────────────────────────────────────────────────{Colors.END}")
     print(f"{Colors.BOLD}{Colors.HEADER}  \"I own my context. I am FreakingJSON.\"{Colors.END}\n")
 
+    preserved_legacy = workspace_cfg.preserved_legacy_workspaces(REPO_ROOT, workspace_entries)
     if machine_stdout is not None:
         sys.stdout = machine_stdout
         print(json.dumps({
@@ -555,7 +559,13 @@ Bienvenida. Este framework actúa como asistente personal para tareas diarias, i
             "default_cli": default_cli,
             "no_browser": args.no_browser,
             "workspaces": workspace_entries,
+            "preserved_legacy_workspaces": preserved_legacy,
         }, ensure_ascii=False))
+    for legacy_path in preserved_legacy:
+        print(
+            f"[INFO] Workspace legacy conservado (no se borra): {legacy_path}",
+            file=sys.stderr,
+        )
     return 0
 
 
