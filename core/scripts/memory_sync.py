@@ -17,6 +17,8 @@ import yaml
 from pathlib import Path
 from datetime import datetime
 
+from console_encoding import configure_utf8_console
+
 # Constants
 FRAMEWORK_ROOT = Path(__file__).parent.parent.parent
 WIKI_ROOT = FRAMEWORK_ROOT / "core" / ".context" / "knowledge" / "wiki"
@@ -230,6 +232,7 @@ def report_health():
 
 def main():
     """Main entry point."""
+    configure_utf8_console()
     log_header("PA Framework LLM-Wiki Sync")
     log(f"Framework root: {FRAMEWORK_ROOT}")
     log(f"Wiki root: {WIKI_ROOT}")

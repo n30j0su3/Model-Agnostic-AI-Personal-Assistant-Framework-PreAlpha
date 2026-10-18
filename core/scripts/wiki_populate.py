@@ -20,6 +20,8 @@ from pathlib import Path
 from datetime import datetime
 from typing import Optional, List
 
+from console_encoding import configure_utf8_console
+
 # Wiki root location
 WIKI_ROOT = Path(__file__).parent.parent / "memory" / "wiki"
 PROJECT_ROOT = Path(__file__).parent.parent.parent
@@ -393,7 +395,8 @@ def show_wiki_status():
 
 def main():
     """CLI interface"""
-    
+    configure_utf8_console()
+
     if len(sys.argv) < 2:
         print(__doc__)
         populate_all()

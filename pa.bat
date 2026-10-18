@@ -3,6 +3,8 @@ setlocal EnableDelayedExpansion
 
 cd /d "%~dp0"
 chcp 65001 >nul
+:: Python UTF-8 mode: stdio and default file encodings independent of the legacy code page.
+set "PYTHONUTF8=1"
 
 :: ===========================================================================
 :: PA FRAMEWORK - Inicio rapido para Windows

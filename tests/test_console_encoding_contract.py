@@ -55,3 +55,38 @@ def test_self_healing_run_survives_legacy_code_page(tmp_path, monkeypatch):
     monkeypatch.setattr(sys, "argv", ["self_healing_check.py", "--run"])
 
     healing.main()  # RED on baseline: UnicodeEncodeError on '\u2713'
+
+
+SCHEDULED_ENTRYPOINTS = (
+    "learning_cron.py",
+    "memory_sync.py",
+    "self_healing_check.py",
+    "wiki_populate.py",
+)
+
+
+def _main_calls_configure(path: Path) -> bool:
+    import ast
+
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef) and node.name == "main":
+            for call in ast.walk(node):
+                if (
+                    isinstance(call, ast.Call)
+                    and isinstance(call.func, ast.Name)
+                    and call.func.id == "configure_utf8_console"
+                ):
+                    return True
+    return False
+
+
+def test_every_scheduled_entrypoint_configures_console_in_main():
+    """Scheduler runs scripts directly, bypassing pa.bat/pa.sh; each must guard itself."""
+    missing = [name for name in SCHEDULED_ENTRYPOINTS if not _main_calls_configure(SCRIPTS / name)]
+    assert missing == []
+
+
+def test_launchers_enable_python_utf8_mode():
+    assert 'set "PYTHONUTF8=1"' in (ROOT / "pa.bat").read_text(encoding="utf-8")
+    assert "export PYTHONUTF8=1" in (ROOT / "pa.sh").read_text(encoding="utf-8")

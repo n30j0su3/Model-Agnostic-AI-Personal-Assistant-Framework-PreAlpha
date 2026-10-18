@@ -25,6 +25,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
+from console_encoding import configure_utf8_console
+
 # Paths
 SCRIPT_DIR = Path(__file__).resolve().parent
 CORE_DIR = SCRIPT_DIR.parent
@@ -211,6 +213,7 @@ def watch_mode(interval_minutes: int = 5):
 
 
 def main():
+    configure_utf8_console()
     parser = argparse.ArgumentParser(
         description="PA Framework Learning Cron - Periodic session learning"
     )
