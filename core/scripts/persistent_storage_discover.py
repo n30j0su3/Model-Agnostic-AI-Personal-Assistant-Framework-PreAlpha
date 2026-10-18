@@ -55,7 +55,13 @@ DEFAULT_STORAGE_LOCATIONS = {
 
 # --- STORAGE CHECKERS ---
 def check_sqlite(db_path: Path) -> dict:
-    """Check SQLite database status."""
+    """Check SQLite backend capability or validate an existing database.
+
+    ``available`` means the backend can be used at this path. An existing
+    database is opened and queried; an absent database is reported available
+    when its parent directory is writable. This reports the real capability
+    during bootstrap-only discovery without creating the database early.
+    """
     result = {
         "available": False,
         "exists": db_path.exists(),
@@ -63,7 +69,7 @@ def check_sqlite(db_path: Path) -> dict:
         "size_kb": 0,
         "last_modified": None
     }
-    
+
     if db_path.exists():
         try:
             conn = sqlite3.connect(str(db_path))
@@ -77,7 +83,24 @@ def check_sqlite(db_path: Path) -> dict:
             result["last_modified"] = datetime.fromtimestamp(db_path.stat().st_mtime).isoformat()
         except Exception as e:
             result["error"] = str(e)
-    
+        return result
+
+    # Absent database: report capability without creating the file.
+    parent = db_path.parent
+    try:
+        if parent.exists():
+            writable = os.access(parent, os.W_OK)
+        else:
+            ancestor = parent
+            while not ancestor.exists() and ancestor != ancestor.parent:
+                ancestor = ancestor.parent
+            writable = os.access(ancestor, os.W_OK)
+        result["available"] = bool(writable)
+        if not writable:
+            result["error"] = f"data directory not writable: {parent}"
+    except OSError as e:
+        result["error"] = str(e)
+
     return result
 
 
