@@ -49,8 +49,11 @@ def test_external_token_change_is_reloaded(tmp_path):
         replacement = "replacement-token-with-at-least-32-bytes"
         token_file.write_text(replacement + "\n", encoding="utf-8")
         os.chmod(token_file, 0o600)
+        # Push the mtime clearly forward. A +1ns delta rounds away on NTFS
+        # (100ns granularity) and Windows defers the write's own mtime update,
+        # so the reload was not triggered deterministically on Windows.
         current = token_file.stat().st_mtime_ns
-        os.utime(token_file, ns=(current + 1, current + 1))
+        os.utime(token_file, ns=(current + 1_000_000_000, current + 1_000_000_000))
         assert server.current_token() == replacement
     finally:
         server.server_close()
