@@ -1,6 +1,6 @@
-# Windows x64 QA Checklist — PA Framework v0.4.1-beta-r3
+# Windows x64 QA Checklist — PA Framework v0.4.1-beta-r6
 
-**Estado:** candidato `r3` local pendiente de QA humana en Windows x64
+**Estado:** candidato `r6` local pendiente de QA humana en Windows x64
 **Runtime requerido:** Python 3.11+
 **Default:** OpenCode
 **Alternativa opt-in:** Pi
@@ -16,7 +16,7 @@
 En PowerShell, desde la carpeta que contiene el ZIP:
 
 ```powershell
-Get-FileHash .\pa-framework-0.4.1-beta-r3.zip -Algorithm SHA256
+Get-FileHash .\pa-framework-0.4.1-beta-r6.zip -Algorithm SHA256
 ```
 
 Registra:
@@ -35,7 +35,7 @@ Python 3.11+.
 
 1. Elimina o aparta extracciones anteriores.
 2. Extrae el ZIP en una ruta nueva y corta, por ejemplo:
-   `C:\PA-QA\pa-framework-0.4.1-beta-r3`.
+   `C:\PA-QA\pa-framework-0.4.1-beta-r6`.
 3. Abre PowerShell dentro de esa carpeta.
 4. Confirma que existe `MANIFEST.sha256.json`.
 
@@ -116,7 +116,7 @@ No compartas API keys, tokens ni contenido de `data\user\` en el reporte.
 
 ---
 
-## 5A. Regresiones específicas RC3
+## 5A. Regresiones específicas RC6
 
 ### A. Provider estricto de OpenCode
 

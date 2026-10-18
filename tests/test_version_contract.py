@@ -191,3 +191,15 @@ def test_changelog_release_headers_are_unique():
         version for version in set(versions) if versions.count(version) > 1
     )
     assert duplicates == []
+
+
+def test_windows_checklist_targets_rc6_candidate():
+    checklist = (ROOT / "docs/WINDOWS-CHECKLIST.md").read_text(encoding="utf-8")
+
+    assert "PA Framework v0.4.1-beta-r6" in checklist
+    assert "candidato `r6`" in checklist
+    assert "pa-framework-0.4.1-beta-r6.zip" in checklist
+    assert "Regresiones específicas RC6" in checklist
+    assert "0.4.1-beta-r3" not in checklist
+    assert "candidato `r3`" not in checklist
+    assert "Regresiones específicas RC3" not in checklist
