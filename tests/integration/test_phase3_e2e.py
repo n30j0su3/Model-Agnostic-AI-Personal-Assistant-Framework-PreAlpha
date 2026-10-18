@@ -481,10 +481,10 @@ class TestKnowledgeExtractorIntegration:
         practices = extractor.extract_best_practices(sample_session_file)
         assert isinstance(practices, list)
 
-    def test_convenience_functions(self, sample_session_file, sample_knowledge_dir):
+    def test_convenience_functions(self, sample_session_file, sample_knowledge_dir, temp_dir, monkeypatch):
         """Test module-level convenience functions."""
-        # Note: Convenience functions use default paths, we just verify they exist
-        # and can be called (may fail due to path issues, but that's expected)
+        # Default paths resolve under REPO_ROOT; redirect them so the source tree is untouched.
+        monkeypatch.setattr(knowledge_extractor, "REPO_ROOT", temp_dir)
         try:
             discoveries = knowledge_extractor.extract_session_discoveries(sample_session_file)
             assert isinstance(discoveries, list)
