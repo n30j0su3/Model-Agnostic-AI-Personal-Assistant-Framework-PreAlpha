@@ -169,12 +169,16 @@ def check_scripts():
         return True, f"{len(essential)} scripts OK"
     return False, f"Faltan: {', '.join(missing)}"
 
+def _format_kb(size_bytes: int) -> str:
+    """Human size with one decimal so sub-KiB files never render as 0 KB."""
+    return f"{size_bytes / 1024:.1f} KB"
+
+
 @register("sqlite", "SQLite (sessions.db)")
 def check_sqlite():
     db = DATA_DIR / "sessions.db"
     if db.exists():
-        size_kb = db.stat().st_size // 1024
-        return True, f"OK ({size_kb} KB)"
+        return True, f"OK ({_format_kb(db.stat().st_size)})"
     # No es crítico si no existe (se crea al usar el framework)
     return "warn", "No creado aun (se crea automaticamente)"
 
@@ -243,8 +247,7 @@ def check_update_protected():
 def check_opencode_config():
     oc = REPO_ROOT / "opencode.jsonc"
     if oc.exists():
-        size_kb = oc.stat().st_size // 1024
-        return True, f"OK ({size_kb} KB)"
+        return True, f"OK ({_format_kb(oc.stat().st_size)})"
     return "warn", "No encontrado (opcional)"
 
 @register("opencode_dir", ".opencode/ directorio", quick=True)
