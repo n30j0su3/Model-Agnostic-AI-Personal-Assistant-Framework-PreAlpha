@@ -9,6 +9,8 @@ import json
 import stat
 import sys
 import zipfile
+
+import pytest
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -188,6 +190,7 @@ def test_update_zip_rejects_parent_traversal(tmp_path, monkeypatch):
     assert not (target / "file.txt").exists()
 
 
+@pytest.mark.usefixtures("require_symlinks")
 def test_update_zip_rejects_symlink_member(tmp_path, monkeypatch):
     update = load_module("update_rc5_symlink", SCRIPTS / "update.py")
     target = tmp_path / "target"

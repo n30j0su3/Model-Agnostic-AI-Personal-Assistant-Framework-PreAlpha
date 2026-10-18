@@ -15,17 +15,64 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 
+# Runtime state that must never be present in a source tree used for tests.
+# A clean release package contains none of these paths.
+RUNTIME_RESIDUE = (
+    "data",
+    "core/.context/knowledge/errors",
+    "core/.context/.cache",
+    ".pytest_cache",
+)
+
+
+def find_runtime_residue(root: Path) -> list[str]:
+    """Return residue paths present under root (empty list means clean)."""
+    return [rel for rel in RUNTIME_RESIDUE if (root / rel).exists()]
+
+
+def symlinks_supported(directory: Path) -> bool:
+    """Probe whether this host can create symlinks, leaving no files behind."""
+    target = directory / ".symlink-probe-target"
+    link = directory / ".symlink-probe-link"
+    target.write_text("probe", encoding="utf-8")
+    try:
+        link.symlink_to(target)
+    except (OSError, NotImplementedError):
+        return False
+    finally:
+        link.unlink(missing_ok=True)
+        target.unlink(missing_ok=True)
+    return True
+
 
 def _sandbox_ignore(directory: str, names: list[str]) -> set[str]:
-    """Ignore root runtime data without dropping nested skill assets."""
-    ignored = set(
+    """Ignore VCS and bytecode noise only; runtime residue is handled fail-closed."""
+    return set(
         shutil.ignore_patterns(
             ".git", ".pytest_cache", "__pycache__", "*.pyc"
         )(directory, names)
     )
-    if Path(directory).resolve() == ROOT.resolve() and "data" in names:
-        ignored.add("data")
-    return ignored
+
+
+def _copy_source_without_git(destination: Path) -> Path:
+    residue = find_runtime_residue(ROOT)
+    if residue:
+        pytest.fail(
+            "source tree is not a clean package; runtime residue present: "
+            + ", ".join(residue)
+            + ". Re-extract a clean candidate before running the suite."
+        )
+    shutil.copytree(ROOT, destination, dirs_exist_ok=True, ignore=_sandbox_ignore)
+    return destination
+
+
+@pytest.fixture
+def require_symlinks(tmp_path):
+    """Skip only when the host cannot create symlinks; security lanes must run elsewhere."""
+    if not symlinks_supported(tmp_path):
+        pytest.skip(
+            "host cannot create symlinks (Windows needs Developer Mode or elevation)"
+        )
 
 
 def subprocess_text_encoding() -> str:
@@ -64,13 +111,7 @@ def repo_extract(tmp_path):
     destination.mkdir()
     git_executable = shutil.which("git")
     if git_executable is None:
-        shutil.copytree(
-            ROOT,
-            destination,
-            dirs_exist_ok=True,
-            ignore=_sandbox_ignore,
-        )
-        return destination
+        return _copy_source_without_git(destination)
     in_git = subprocess.run(
         [git_executable, "rev-parse", "--is-inside-work-tree"],
         cwd=ROOT,
@@ -80,13 +121,7 @@ def repo_extract(tmp_path):
         errors="replace",
     )
     if in_git.returncode != 0:
-        shutil.copytree(
-            ROOT,
-            destination,
-            dirs_exist_ok=True,
-            ignore=_sandbox_ignore,
-        )
-        return destination
+        return _copy_source_without_git(destination)
 
     tree = subprocess.run(
         [git_executable, "write-tree"],

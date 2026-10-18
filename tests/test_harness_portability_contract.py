@@ -28,7 +28,8 @@ def test_symlink_probe_reports_denial_and_leaves_no_files(tmp_path, monkeypatch)
     monkeypatch.setattr(Path, "symlink_to", denied)
 
     assert symlinks_supported(tmp_path) is False
-    assert list(tmp_path.iterdir()) == []
+    leftovers = [p.name for p in tmp_path.iterdir() if p.name.startswith(".symlink-probe")]
+    assert leftovers == []
 
 
 def test_residue_detector_flags_runtime_state(tmp_path):

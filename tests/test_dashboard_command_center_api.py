@@ -362,6 +362,7 @@ def test_agent_update_rejects_unindexed_weird_abs_poisoned_and_nonmd(tmp_path):
         assert request(repo, "POST", "/api/agents/update", payload)[0] == expected
 
 
+@pytest.mark.usefixtures("require_symlinks")
 def test_agent_update_rejects_symlinked_document(tmp_path):
     repo = seed_repo(tmp_path)
     target = tmp_path / "outside-root/target.md"
@@ -430,6 +431,7 @@ def test_static_denies_encoded_and_backslash_traversal(tmp_path):
         assert request(repo, "GET", path)[0] == 404
 
 
+@pytest.mark.usefixtures("require_symlinks")
 def test_static_denies_symlinked_assets(tmp_path):
     repo = seed_repo(tmp_path)
     outside = tmp_path / "outside-root/secret.md"
