@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/hero-pa-prealpha.png" alt="FreakingJSON PA Framework — Command Center local-first" width="880">
+  <img src="https://raw.githubusercontent.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/main/assets/pa-framework-v0.4.1-beta-hero.png" alt="PA Framework v0.4.1-beta — Command Center local-first" width="880">
 </p>
 
 # FreakingJSON PA Framework
