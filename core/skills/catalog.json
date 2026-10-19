@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-08-15",
+  "last_updated": "2026-10-18",
   "skills": {
     "task-management": {
       "id": "task-management",
@@ -54,7 +54,7 @@
       "id": "etl",
       "name": "ETL Processor",
       "category": "Development",
-      "description": "Procesamiento ETL de datos",
+      "description": "Manipulación y transformación de datos (Extract, Transform, Load)",
       "path": "core/skills/core/etl",
       "status": "active"
     },

@@ -2,7 +2,7 @@
 
 > "Conocer las herramientas es dominar el flujo de trabajo."
 
-**Última actualización**: 2026-03-06  
+**Última actualización**: 2026-03-06
 **Versión OpenCode**: Latest (2026-03)
 
 ---
@@ -80,19 +80,32 @@
 
 | Archivo | Propósito |
 |---------|-----------|
-| `config.json` | Agente por defecto |
+| `config.json` | Agente por defecto (legacy del framework) |
 | `commands/` | Comandos custom (.md files) |
 | `agent/` | Definición de agentes custom |
+| `plugins/` | Plugins TypeScript auto-cargados por OpenCode |
 | `context/` | Contexto específico del proyecto |
+
+### Skills Nativas del Framework (v0.4.1-beta)
+
+Las 23 skills de `core/skills/core/<name>/SKILL.md` son **skills nativas de OpenCode**:
+
+- **Registro**: `opencode.jsonc` → `"skills": { "paths": ["core/skills/core"] }` (alcance de proyecto/framework, no global).
+- **Plugin**: `.opencode/plugins/freakingjson-framework.ts` se auto-carga; el hook `config` re-registra la ruta y `experimental.chat.system.transform` inyecta las reglas del framework.
+- **Invocación**: tool `skill` (progressive disclosure por `description`), direccionada por el orquestador + `@skill-finder`.
+- **Agente por defecto**: `default_agent: "FreakingJSON"`.
+- **Requisito**: reiniciar OpenCode tras cambiar config/plugin.
+
+> Documento canónico de skills: `core/skills/SKILLS.md` · Índice generado: `core/.context/knowledge/skills-index.json`
 
 ### Nuestro `opencode.jsonc`
 
 **Ubicación**: Raíz del proyecto
 
 **Contiene**:
-- MCP servers configurados (Context7, Klaviyo, TripleWhale, GitHub)
-- Providers de modelos (Kimi, Model Studio, NanoGPT)
-- Modelos disponibles con configuración detallada
+- MCP servers desactivados por defecto (Context7, sequentialthinking, GitHub)
+- Skills nativas del framework (`skills.paths`)
+- Agente por defecto (`default_agent: FreakingJSON`)
 
 **Versión CLEAN-PROD**: `opencode.jsonc.CLEAN-PROD`
 - Sin credenciales
@@ -234,5 +247,5 @@ OpenCode tiene agentes built-in (`plan`, `build`, etc.). Nuestros agentes del fr
 
 ---
 
-*Para documentación del framework FreakingJSON: `docs/README.md`*  
+*Para documentación del framework FreakingJSON: `docs/README.md`*
 *Para configuración de agentes: `core/agents/AGENTS.md`*

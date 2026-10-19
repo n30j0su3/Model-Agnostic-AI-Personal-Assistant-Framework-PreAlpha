@@ -3,7 +3,7 @@ name: prompt-improvement
 description: Mejora prompts con estandares modernos (RAG, few-shot, JSON prompts) y criterios de calidad. Usalo en el workspace @development.
 license: MIT
 metadata:
-  author: opencode
+  author: FreakingJSON Framework
   version: "1.0"
 compatibility: OpenCode, Claude Code, Gemini CLI, Codex
 ---
@@ -69,8 +69,8 @@ Criterios de calidad: [como evaluar]
 
 ## Actualizacion programable
 
-- Referencias en `skills/core/prompt-improvement/references.md`.
-- Script: `python skills/core/prompt-improvement/scripts/update-references.py`.
+- Referencias en `core/skills/core/prompt-improvement/references.md`.
+- Script: `python core/skills/core/prompt-improvement/scripts/update-references.py`.
 - Sugerencia: programar ejecucion mensual con cron/Task Scheduler y revisar manualmente los cambios.
 
 ## Comandos soportados

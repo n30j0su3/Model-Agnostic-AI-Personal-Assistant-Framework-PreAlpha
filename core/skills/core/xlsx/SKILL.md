@@ -3,7 +3,7 @@ name: xlsx
 description: Comprehensive spreadsheet creation, editing, and analysis with support for formulas, formatting, data analysis, and visualization. Use when working with .xlsx, .csv, .tsv files.
 license: Apache-2.0
 metadata:
-  author: Agentman
+  author: FreakingJSON Framework
   version: "1.0"
 compatibility: Requires openpyxl, pandas, and LibreOffice (for recalculation).
 ---
@@ -41,7 +41,7 @@ Use this skill when you need to work with spreadsheets (.xlsx, .xlsm, .csv, .tsv
 ## Excel File Workflows
 
 ### CRITICAL: Use Formulas, Not Hardcoded Values
-**Always use Excel formulas instead of calculating values in Python and hardcoding them.** 
+**Always use Excel formulas instead of calculating values in Python and hardcoding them.**
 
 ### Reading and analyzing data with pandas
 ```python

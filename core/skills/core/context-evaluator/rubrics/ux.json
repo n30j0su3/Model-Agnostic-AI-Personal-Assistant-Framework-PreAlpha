@@ -1,0 +1,24 @@
+{
+  "name": "UX Rubric",
+  "description": "Criterios para evaluar la claridad y el tono de una respuesta orientada al usuario.",
+  "criteria": [
+    {
+      "id": "clarity",
+      "label": "Claridad",
+      "description": "El mensaje es facil de entender, sin ambiguedad ni jerga innecesaria.",
+      "weight": 0.4
+    },
+    {
+      "id": "tone",
+      "label": "Tono y Empatia",
+      "description": "El tono es adecuado para el usuario y el contexto, sin ser condescendiente.",
+      "weight": 0.3
+    },
+    {
+      "id": "actionability",
+      "label": "Accionabilidad",
+      "description": "El usuario sabe exactamente que hacer a continuacion.",
+      "weight": 0.3
+    }
+  ]
+}

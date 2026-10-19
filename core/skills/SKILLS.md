@@ -43,11 +43,12 @@
 
 ## Cómo Invocar
 
-Desde una sesión AI, menciona el skill:
+En OpenCode, las skills se cargan con la tool nativa `skill` usando el nombre de la skill (por ejemplo, `pdf`). En otros CLIs, usa `@nombre` según su convención:
+
 ```
-Usa @pdf para extraer el contenido de este archivo.
-Usa @task-management para crear una nueva tarea.
-Usa @skill-discovery para encontrar la skill apropiada.
+Usa la skill pdf para extraer el contenido de este archivo.
+Usa la skill task-management para crear una nueva tarea.
+Usa la skill skill-discovery para encontrar la skill apropiada.
 ```
 
 ## Crear Nuevo Skill

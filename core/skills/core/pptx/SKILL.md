@@ -3,7 +3,7 @@ name: pptx
 description: Presentation creation, editing, and analysis with support for layouts, notes, and design. Use when working with PowerPoint files (.pptx).
 license: Apache-2.0
 metadata:
-  author: Agentman
+  author: FreakingJSON Framework
   version: "1.0"
 compatibility: Requires python-pptx, markitdown, and LibreOffice.
 ---

@@ -1,14 +1,10 @@
 ---
-id: decision-engine
-name: Decision Engine
+name: decision-engine
 description: Evalua instrucciones con enfoque local-first y decide entre ejecucion local, delegacion a agentes o uso de LLM remoto. Usalo para optimizar contexto, cuota y resultados.
-category: core
-type: core
-version: 1.0.0
 license: MIT
 metadata:
-  author: FreakingJSON
-  source: OBSOLETE/migration
+  author: FreakingJSON Framework
+  version: "1.0"
 compatibility: [OpenCode, Claude, Gemini, Codex]
 ---
 

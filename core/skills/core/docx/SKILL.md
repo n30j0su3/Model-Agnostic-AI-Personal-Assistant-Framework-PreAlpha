@@ -3,7 +3,7 @@ name: docx
 description: Comprehensive document creation, editing, and analysis with support for tracked changes, formatting preservation, and text extraction. Use when working with Word documents (.docx).
 license: Apache-2.0
 metadata:
-  author: Agentman
+  author: FreakingJSON Framework
   version: "1.0"
 compatibility: Requires pandoc, python-docx, and LibreOffice.
 ---

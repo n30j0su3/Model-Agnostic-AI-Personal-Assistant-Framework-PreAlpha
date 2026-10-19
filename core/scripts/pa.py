@@ -324,7 +324,7 @@ def get_magic_prompt() -> str:
 def build_cli_command(cli: str, prompt: str, workdir: Path) -> tuple[list[str], bool]:
     """
     Build CLI command with prompt injection.
-    
+
     Returns:
         tuple: (command_list, can_auto_inject)
         - command_list: The command to run
@@ -340,21 +340,21 @@ def build_cli_command(cli: str, prompt: str, workdir: Path) -> tuple[list[str], 
         if model:
             model_flag = ["--model", model]
         return [cli, "--agent", "FreakingJSON"] + model_flag + ["--prompt", prompt], True
-    
+
     elif cli == "claude":
         # Claude Code: try with prompt via stdin or just launch
         # Note: claude --print is non-interactive, so we just launch normally
         # and let user paste the prompt
         return [cli], False
-    
+
     elif cli == "gemini":
         # Gemini CLI: prompt can be passed as argument or via stdin
         return [cli], False
-    
+
     elif cli == "codex":
         # Codex: similar to others
         return [cli], False
-    
+
     else:
         # Default: just launch the CLI
         return [cli], False
@@ -617,29 +617,29 @@ def menu_sync():
         config = load_config()
         clear_screen()
         print(c("\n  [SYNC] Sincronización de Contexto\n", f"{Colors.BOLD}{Colors.CYAN}"))
-        
+
         # Show current status
         auto_sync = config.get("auto_sync", False)
         sync_interval = config.get("sync_interval", 30)
-        
+
         mode_str = c("Automático", Colors.GREEN) if auto_sync else c("Manual", Colors.YELLOW)
         print(f"  Modo actual: {mode_str}")
         if auto_sync:
             print(f"  Intervalo: cada {sync_interval} minutos")
         print()
-        
+
         print(f"    {c('1', Colors.CYAN)}. [SYNC] Sincronizar ahora (manual)")
         print(f"    {c('2', Colors.CYAN)}. [TOGGLE] Cambiar modo ({'Manual' if auto_sync else 'Auto'})")
         if auto_sync:
             print(f"    {c('3', Colors.CYAN)}. [CONFIG] Cambiar intervalo (actual: {sync_interval} min)")
         print(f"    {c('0', Colors.RED)}. ↩  Volver\n")
-        
+
         valid_choices = {"0", "1", "2"}
         if auto_sync:
             valid_choices.add("3")
-        
+
         choice = prompt_choice("  Selecciona: ", valid_choices)
-        
+
         if choice == "0":
             return
         elif choice == "1":
@@ -687,7 +687,7 @@ def menu_launch_ai(cli_override: str = None):
         else:
             print_warn(f"CLI '{cli_override}' no disponible. Seleccionando de la lista...")
             cli_override = None
-    
+
     if not cli_override:
         if not available:
             print_error("No se detectaron CLIs de IA instalados.")
@@ -733,7 +733,7 @@ def menu_launch_ai(cli_override: str = None):
         _close_cli_memory_bridge(summary=f"CLI session finished ({selected})")
         pause()
         return
-    
+
     # Fallback: Show manual prompt for CLIs that don't support auto-inject
     print(
         c(
@@ -846,33 +846,33 @@ def submenu_memoria_wiki():
         config = load_config()
         clear_screen()
         print(c("\n  [CONFIG] Memoria/Wiki\n", f"{Colors.BOLD}{Colors.CYAN}"))
-        
+
         # Show current settings
         wiki_path = config.get("wiki_path", "")
         memory_path = config.get("memory_path", str(STANDALONE_CONFIG_DIR / "memory"))
         auto_sync = config.get("auto_sync", False)
         sync_interval = config.get("sync_interval", 30)
-        
+
         # Display current values
         wiki_display = c(wiki_path if wiki_path else "(no configurado)", Colors.YELLOW if not wiki_path else Colors.GREEN)
         memory_display = c(memory_path, Colors.GREEN)
         auto_display = c("Sí" if auto_sync else "No", Colors.GREEN if auto_sync else Colors.YELLOW)
-        
+
         print(f"  Wiki Path:     {wiki_display}")
         print(f"  Memory Path:   {memory_display}")
         print(f"  Auto-sync:     {auto_display}")
         if auto_sync:
             print(f"  Sync Interval: {sync_interval} minutos")
         print()
-        
+
         print(f"    {c('1', Colors.CYAN)}. [SET] Configurar Wiki Path")
         print(f"    {c('2', Colors.CYAN)}. [SET] Configurar Memory Path")
         print(f"    {c('3', Colors.CYAN)}. [TOGGLE] Auto-sync: {'Desactivar' if auto_sync else 'Activar'}")
         print(f"    {c('4', Colors.CYAN)}. [CONFIG] Cambiar intervalo de sync")
         print(f"    {c('0', Colors.RED)}. ↩  Volver\n")
-        
+
         choice = prompt_choice("  Selecciona: ", {"0", "1", "2", "3", "4"})
-        
+
         if choice == "0":
             return
         elif choice == "1":
@@ -881,7 +881,7 @@ def submenu_memoria_wiki():
             new_path = input(f"  Wiki path [{default_wiki}]: ").strip()
             if not new_path:
                 new_path = default_wiki
-            
+
             wiki_dir = Path(new_path).expanduser()
             if wiki_dir.exists():
                 config["wiki_path"] = str(wiki_dir)
@@ -900,7 +900,7 @@ def submenu_memoria_wiki():
                 else:
                     print_info("Operación cancelada.")
             pause()
-            
+
         elif choice == "2":
             # Set memory path
             new_path = input(f"  Memory path [{memory_path}]: ").strip()
@@ -908,7 +908,7 @@ def submenu_memoria_wiki():
                 print_info("Se mantiene el path actual.")
                 pause()
                 continue
-            
+
             memory_dir = Path(new_path).expanduser()
             if memory_dir.exists():
                 config["memory_path"] = str(memory_dir)
@@ -927,7 +927,7 @@ def submenu_memoria_wiki():
                 else:
                     print_info("Operación cancelada.")
             pause()
-            
+
         elif choice == "3":
             # Toggle auto-sync
             config["auto_sync"] = not auto_sync
@@ -935,7 +935,7 @@ def submenu_memoria_wiki():
             status = "activado" if config["auto_sync"] else "desactivado"
             print_ok(f"Auto-sync {status}.")
             pause()
-            
+
         elif choice == "4":
             # Set sync interval
             new_interval = input(f"  Intervalo en minutos [{sync_interval}]: ").strip()
@@ -1037,40 +1037,40 @@ def _select_free_model():
 def submenu_comportamiento_agente():
     """Option 3: Configure Agent Behavior (formerly Profile)."""
     print(c("\n  [CONFIG] Comportamiento del Agente\n", f"{Colors.BOLD}{Colors.CYAN}"))
-    
+
     # Load current config
     config = load_config()
-    
+
     master = CONTEXT_DIR / "MASTER.md"
     if not master.exists():
         print_error("No se encontró MASTER.md. Ejecuta 'Sincronizar Contexto' primero.")
         pause()
         return
-    
+
     content = master.read_text(encoding="utf-8")
-    
+
     # Extract current values
     def _extract(lines, prefix):
         for l in lines:
             if l.strip().startswith(prefix):
                 return l.split(":", 1)[1].strip() if ":" in l else ""
         return ""
-    
+
     lines = content.splitlines()
     cur_lang = _extract(lines, "- **Primary Language**") or config.get("language", "es")
     cur_style = _extract(lines, "- Response style")
     cur_cli = config.get("default_cli", get_default_cli())
-    
+
     # QAWIN-RUNTIME: modelo actual desde la selección canónica del usuario
     # (data/user/model-selection.json; fallback legacy .opencode/config.json)
     cur_model = _current_selected_model_display()
-    
+
     print(f"  (Enter para mantener valor actual)\n")
-    
+
     lang = input(f"  Idioma principal [{cur_lang}]: ").strip() or cur_lang
     style = input(f"  Estilo de respuesta [{cur_style}]: ").strip() or cur_style
     focus = input(f"  Enfoque actual [libre]: ").strip()
-    
+
     # CLI default
     print(f"\n  CLI por defecto actual: {CLI_LABELS.get(cur_cli, cur_cli)}")
     available = detect_clis()
@@ -1085,7 +1085,7 @@ def submenu_comportamiento_agente():
             new_cli = cur_cli
     else:
         new_cli = cur_cli
-    
+
     # Modelo
     print(f"\n  Modelo actual: {cur_model}")
     print(f"    {c('M', Colors.CYAN)}. Seleccionar modelo free disponible")
@@ -1094,15 +1094,15 @@ def submenu_comportamiento_agente():
         _select_free_model()
         # QAWIN-RUNTIME: recargar desde la selección canónica del usuario
         cur_model = _current_selected_model_display()
-    
+
     # Update MASTER.md
     import re
-    
+
     content = re.sub(
         r"- \*\*Primary Language\*\*: .*", f"- **Primary Language**: {lang}", content
     )
     content = re.sub(r"- Response style: .*", f"- Response style: {style}", content)
-    
+
     if focus:
         lines = content.splitlines()
         for i, l in enumerate(lines):
@@ -1112,251 +1112,17 @@ def submenu_comportamiento_agente():
                     lines[i + 1] = focus
                 break
         content = "\n".join(lines)
-    
+
     master.write_text(content.rstrip() + "\n", encoding="utf-8")
-    
+
     # Save to config.json
     config["language"] = lang
     config["default_cli"] = new_cli
     save_config(config)
-    
+
     # Also save to profile.md for backward compatibility
     _save_profile(lang, new_cli)
     print_ok("Configuración del agente actualizada.")
-    pause()
-
-
-# --- SUBMENU: SKILLS ---
-def get_skills_directories() -> list[Path]:
-    """Get list of skills directories (repo and standalone)."""
-    dirs = []
-    # Repo skills directory
-    repo_skills = REPO_ROOT / "skills"
-    if repo_skills.exists():
-        dirs.append(repo_skills)
-    # Standalone skills directory
-    standalone_skills = STANDALONE_CONFIG_DIR / "skills"
-    if standalone_skills.exists():
-        dirs.append(standalone_skills)
-    return dirs
-
-
-def list_available_skills() -> dict[str, Path]:
-    """List all available skills from all directories.
-    
-    Returns:
-        dict mapping skill_name -> skill_file_path
-    """
-    skills = {}
-    for skills_dir in get_skills_directories():
-        for toml_file in skills_dir.glob("*.toml"):
-            skill_name = toml_file.stem
-            if skill_name not in skills:  # First found takes precedence
-                skills[skill_name] = toml_file
-    return skills
-
-
-def submenu_skills():
-    """Option 4: Skills management."""
-    while True:
-        config = load_config()
-        clear_screen()
-        print(c("\n  [CONFIG] Skills\n", f"{Colors.BOLD}{Colors.CYAN}"))
-        
-        # Get skills info
-        all_skills = list_available_skills()
-        enabled_skills = config.get("enabled_skills", [])
-        
-        # Count enabled/available
-        enabled_count = len([s for s in enabled_skills if s in all_skills])
-        total_count = len(all_skills)
-        
-        print(f"  Skills disponibles: {total_count}")
-        print(f"  Skills habilitados: {enabled_count}")
-        print()
-        
-        print(f"    {c('1', Colors.CYAN)}. [LIST] Listar todos los skills")
-        print(f"    {c('2', Colors.CYAN)}. [ENABLE] Habilitar skill")
-        print(f"    {c('3', Colors.CYAN)}. [DISABLE] Deshabilitar skill")
-        print(f"    {c('4', Colors.CYAN)}. [IMPORT] Importar skill desde path")
-        print(f"    {c('0', Colors.RED)}. ↩  Volver\n")
-        
-        choice = prompt_choice("  Selecciona: ", {"0", "1", "2", "3", "4"})
-        
-        if choice == "0":
-            return
-        elif choice == "1":
-            # List all skills
-            _list_skills(all_skills, enabled_skills)
-            pause()
-        elif choice == "2":
-            # Enable skill
-            _enable_skill(all_skills, enabled_skills, config)
-        elif choice == "3":
-            # Disable skill
-            _disable_skill(enabled_skills, config)
-        elif choice == "4":
-            # Import skill
-            _import_skill()
-
-
-def _list_skills(all_skills: dict, enabled_skills: list):
-    """Display all available skills with their status."""
-    print(c("\n  ─── Skills Disponibles ───\n", Colors.BOLD))
-    
-    if not all_skills:
-        print_warn("  No se encontraron skills.")
-        print_info("  Coloca archivos .toml en:")
-        print_info(f"    - {REPO_ROOT / 'skills'}")
-        print_info(f"    - {STANDALONE_CONFIG_DIR / 'skills'}")
-        return
-    
-    # Sort: enabled first, then alphabetically
-    sorted_skills = sorted(all_skills.items(), key=lambda x: (x[0] not in enabled_skills, x[0]))
-    
-    for skill_name, skill_path in sorted_skills:
-        is_enabled = skill_name in enabled_skills
-        status = c("[✓]", Colors.GREEN) if is_enabled else c("[ ]", Colors.DIM)
-        location = "repo" if REPO_ROOT in skill_path.parents else "standalone"
-        print(f"    {status} {c(skill_name, Colors.CYAN)} ({location})")
-        # Try to read description from TOML
-        try:
-            content = skill_path.read_text(encoding="utf-8")
-            for line in content.splitlines():
-                if line.startswith("description"):
-                    desc = line.split("=", 1)[1].strip().strip('"\'')
-                    print(f"        {c(desc, Colors.DIM)}")
-                    break
-        except Exception:
-            pass
-
-
-def _enable_skill(all_skills: dict, enabled_skills: list, config: dict):
-    """Enable a skill."""
-    if not all_skills:
-        print_warn("\n  No hay skills disponibles para habilitar.")
-        pause()
-        return
-    
-    print(c("\n  ─── Habilitar Skill ───\n", Colors.BOLD))
-    
-    # Show disabled skills
-    disabled = {k: v for k, v in all_skills.items() if k not in enabled_skills}
-    if not disabled:
-        print_info("  Todos los skills disponibles ya están habilitados.")
-        pause()
-        return
-    
-    skill_list = sorted(disabled.keys())
-    for i, skill_name in enumerate(skill_list, 1):
-        print(f"    {c(str(i), Colors.CYAN)}. {skill_name}")
-    print(f"    {c('0', Colors.RED)}. Cancelar\n")
-    
-    choice = input("  Selecciona skill a habilitar: ").strip()
-    try:
-        idx = int(choice) - 1
-        if 0 <= idx < len(skill_list):
-            skill_name = skill_list[idx]
-            if skill_name not in enabled_skills:
-                enabled_skills.append(skill_name)
-                config["enabled_skills"] = enabled_skills
-                save_config(config)
-                print_ok(f"Skill '{skill_name}' habilitado.")
-            else:
-                print_info(f"Skill '{skill_name}' ya estaba habilitado.")
-        elif choice == "0":
-            return
-        else:
-            print_warn("Opción inválida.")
-    except ValueError:
-        print_warn("Por favor ingresa un número.")
-    pause()
-
-
-def _disable_skill(enabled_skills: list, config: dict):
-    """Disable a skill."""
-    if not enabled_skills:
-        print_info("\n  No hay skills habilitados.")
-        pause()
-        return
-    
-    print(c("\n  ─── Deshabilitar Skill ───\n", Colors.BOLD))
-    
-    for i, skill_name in enumerate(enabled_skills, 1):
-        print(f"    {c(str(i), Colors.CYAN)}. {skill_name}")
-    print(f"    {c('0', Colors.RED)}. Cancelar\n")
-    
-    choice = input("  Selecciona skill a deshabilitar: ").strip()
-    try:
-        idx = int(choice) - 1
-        if 0 <= idx < len(enabled_skills):
-            skill_name = enabled_skills.pop(idx)
-            config["enabled_skills"] = enabled_skills
-            save_config(config)
-            print_ok(f"Skill '{skill_name}' deshabilitado.")
-        elif choice == "0":
-            return
-        else:
-            print_warn("Opción inválida.")
-    except ValueError:
-        print_warn("Por favor ingresa un número.")
-    pause()
-
-
-def _import_skill():
-    """Import a skill from an external path."""
-    print(c("\n  ─── Importar Skill ───\n", Colors.BOLD))
-    print_info("Ingresa la ruta a un archivo .toml de skill.")
-    print_info("El archivo será copiado al directorio de skills standalone.\n")
-    
-    src_path = input("  Ruta del skill: ").strip()
-    if not src_path:
-        print_info("Operación cancelada.")
-        pause()
-        return
-    
-    src = Path(src_path).expanduser()
-    if not src.exists():
-        print_error(f"El archivo no existe: {src}")
-        pause()
-        return
-    
-    if not src.suffix == ".toml":
-        print_warn("El archivo no tiene extensión .toml. ¿Continuar?")
-        if not prompt_yes_no("", default=False):
-            pause()
-            return
-    
-    # Create standalone skills dir
-    skills_dir = STANDALONE_CONFIG_DIR / "skills"
-    skills_dir.mkdir(parents=True, exist_ok=True)
-    
-    dest = skills_dir / src.name
-    
-    if dest.exists():
-        if not prompt_yes_no(f"El skill {src.name} ya existe. ¿Sobrescribir?", default=False):
-            print_info("Operación cancelada.")
-            pause()
-            return
-    
-    try:
-        import shutil as shutil_module
-        shutil_module.copy2(src, dest)
-        print_ok(f"Skill importado: {dest}")
-        
-        # Ask to enable
-        skill_name = src.stem
-        if prompt_yes_no(f"¿Habilitar skill '{skill_name}'?", default=True):
-            config = load_config()
-            enabled = config.get("enabled_skills", [])
-            if skill_name not in enabled:
-                enabled.append(skill_name)
-                config["enabled_skills"] = enabled
-                save_config(config)
-                print_ok(f"Skill '{skill_name}' habilitado.")
-    except Exception as e:
-        print_error(f"Error al importar: {e}")
-    
     pause()
 
 
@@ -1560,39 +1326,36 @@ def show_help():
     """Display comprehensive help information."""
     print_banner()
     print(c("\n  ═════════════════ AYUDA / HELP ═════════════════\n", f"{Colors.BOLD}{Colors.HEADER}"))
-    
+
     # Menu commands
     print(c("  ─── COMANDOS DEL MENÚ ───\n", f"{Colors.BOLD}{Colors.CYAN}"))
     print(f"    {c('1', Colors.GREEN)}. [CONFIG]   Workspaces — Gestión de directorios de trabajo")
     print(f"    {c('2', Colors.GREEN)}. [CONFIG]   Memoria/Wiki — Configurar paths y auto-sync")
     print(f"    {c('3', Colors.GREEN)}. [CONFIG]   Comportamiento Agente — Idioma, CLI default")
-    print(f"    {c('4', Colors.GREEN)}. [CONFIG]   Skills — Habilitar/deshabilitar/importar skills")
-    print(f"    {c('5', Colors.GREEN)}. [SYNC]     Contexto — Sincronizar (manual/auto)")
-    print(f"    {c('6', Colors.GREEN)}. [LAUNCH]   Iniciar sesión con AI CLI")
-    print(f"    {c('7', Colors.GREEN)}. [UPDATE]   Buscar actualizaciones del framework")
-    print(f"    {c('8', Colors.GREEN)}. [HELP]     Ayuda")
+    print(f"    {c('4', Colors.GREEN)}. [SYNC]     Contexto — Sincronizar (manual/auto)")
+    print(f"    {c('5', Colors.GREEN)}. [LAUNCH]   Iniciar sesión con AI CLI")
+    print(f"    {c('6', Colors.GREEN)}. [UPDATE]   Buscar actualizaciones del framework")
+    print(f"    {c('7', Colors.GREEN)}. [HELP]     Ayuda")
     print(f"    {c('0', Colors.RED)}. [EXIT]     Salir del menú\n")
-    
+
     # Submenus
     print(c("  ─── SUBMENÚS ───\n", f"{Colors.BOLD}{Colors.CYAN}"))
     print(f"    Memoria/Wiki:")
     print(f"      [1] Configurar Wiki Path, [2] Memory Path, [3] Toggle auto-sync, [4] Intervalo")
-    print(f"    Skills:")
-    print(f"      [1] Listar skills, [2] Habilitar, [3] Deshabilitar, [4] Importar")
     print(f"    Sync:")
     print(f"      [1] Sync ahora, [2] Toggle modo, [3] Cambiar intervalo\n")
-    
+
     # CLI flags
     print(c("  ─── BANDERAS CLI / CLI FLAGS ───\n", f"{Colors.BOLD}{Colors.CYAN}"))
     print(f"    {c('--help', Colors.YELLOW)}, {c('-h', Colors.YELLOW)}      Muestra esta ayuda")
     print(f"    {c('--sync', Colors.YELLOW)}           Sincroniza contexto y sale")
     print(f"    {c('--version', Colors.YELLOW)}       Muestra versión del framework")
     print(f"    {c('--cli NAME', Colors.YELLOW)}     Inicia CLI directamente (opencode, claude, gemini, codex)\n")
-    
+
     # Skills available
     print(c("  ─── SKILLS DISPONIBLES ───\n", f"{Colors.BOLD}{Colors.CYAN}"))
-    print(c("    Invoca con @nombre en tu sesión AI\n", Colors.DIM))
-    
+    print(c("    OpenCode: tool `skill`; otros CLIs: @nombre según convención\n", Colors.DIM))
+
     print(f"    {c('📄 Documentos:', Colors.BOLD)}")
     print(f"      @pdf, @docx, @pptx, @markdown-writer, @paper-summarizer")
     print(f"    {c('📊 Datos:', Colors.BOLD)}")
@@ -1605,7 +1368,7 @@ def show_help():
     print(f"      @ui-ux-pro-max, @dashboard-pro")
     print(f"    {c('🧠 Sistema:', Colors.BOLD)}")
     print(f"      @decision-engine, @error-recovery, @context-evaluator, @json-prompt-generator\n")
-    
+
     # Agents
     print(c("  ─── AGENTES ───\n", f"{Colors.BOLD}{Colors.CYAN}"))
     print(c("    Delega tareas automáticamente\n", Colors.DIM))
@@ -1614,14 +1377,13 @@ def show_help():
     print(f"    {c('@skill-finder', Colors.GREEN)}    → Ruteo de capabilities")
     print(f"    {c('@session-manager', Colors.GREEN)} → Gestión de sesiones diarias")
     print(f"    {c('@doc-writer', Colors.GREEN)}       → Documentación automática")
-    print(f"    {c('@feature-architect', Colors.GREEN)}→ Arquitecto de producto (dev-only)")
-    print(f"    {c('@skill-finder', Colors.GREEN)}  → Discovery de skills\n")
-    
+    print(f"    {c('@feature-architect', Colors.GREEN)}→ Arquitecto de producto (dev-only)\n")
+
     # Config file
     print(c("  ─── CONFIG.JSON ───\n", f"{Colors.BOLD}{Colors.CYAN}"))
     print(f"    ~/.pa-framework/config.json")
     print(f"    wiki_path, memory_path, auto_sync, sync_interval, enabled_skills, default_cli, language\n")
-    
+
     # Key files
     print(c("  ─── ARCHIVOS CLAVE ───\n", f"{Colors.BOLD}{Colors.CYAN}"))
     print(f"    core/.context/MASTER.md      → Contexto maestro")
@@ -1630,7 +1392,7 @@ def show_help():
     print(f"    core/agents/AGENTS.md        → Índice de agentes")
     print(f"    core/.context/sessions/      → Sesiones diarias")
     print(f"    workspaces/                   → Directorios de trabajo\n")
-    
+
     print(f"  {'─' * 48}")
     print(c("  Documentación completa: README.md, GEMINI.md, CLAUDE.md", Colors.DIM))
     print()
@@ -1641,7 +1403,7 @@ def show_cli_help():
     display_version = framework_version.render(
         framework_version.canonical(REPO_ROOT), "badge"
     )
-    
+
     print(f"""
 {c('PA Framework Control Panel', Colors.BOLD)} {display_version}
 
@@ -1660,11 +1422,10 @@ def show_cli_help():
     1. [CONFIG] Workspaces
     2. [CONFIG] Memoria/Wiki
     3. [CONFIG] Comportamiento Agente
-    4. [CONFIG] Skills
-    5. [SYNC] Contexto (manual/auto)
-    6. [LAUNCH] Iniciar Sesión IA
-    7. [UPDATE] Actualizar Framework
-    8. [HELP] Ayuda
+    4. [SYNC] Contexto (manual/auto)
+    5. [LAUNCH] Iniciar Sesión IA
+    6. [UPDATE] Actualizar Framework
+    7. [HELP] Ayuda
     0. Salir
 
 {c('CONFIG.JSON (~/.pa-framework/config.json):', Colors.BOLD)}
@@ -1681,15 +1442,14 @@ def show_cli_help():
   ./pa.sh --cli claude      # Inicia Claude Code (fallback a manual)
   ./pa.sh --cli gemini      # Inicia Gemini CLI (fallback a manual)
 
-{c('SKILLS DISPONIBLES:', Colors.BOLD)}
-  @pdf, @xlsx, @csv-processor, @docx, @pptx, @data-viz
-  @task-management, @skill-discovery, @prompt-improvement
-  @prd-generator, @etl, @error-recovery, @decision-engine
-  @ui-ux-pro-max, @dashboard-pro, @skill-creator, @mcp-builder
+{c('SKILLS:', Colors.BOLD)}
+  Catálogo completo: core/skills/SKILLS.md
+  Definiciones:      core/skills/core/<skill>/SKILL.md
 
 {c('AGENTES:', Colors.BOLD)}
-  @FreakingJSON-PA (principal), @context-scout, @skill-finder
-  @session-manager, @doc-writer, @feature-architect, @skill-finder
+  @FreakingJSON-PA (principal)
+  @context-scout, @skill-finder, @session-manager, @doc-writer, @feature-architect
+  Índice: core/agents/AGENTS.md
 
 {c('ARCHIVOS CLAVE:', Colors.BOLD)}
   core/.context/quick-start.md  → Guía de inicio rápido
@@ -1766,13 +1526,13 @@ def main_menu():
     while True:
         clear_screen()
         print_banner()
-        
+
         # Load config to show current state indicators
         config = load_config()
         auto_sync = config.get("auto_sync", False)
         enabled_skills = len(config.get("enabled_skills", []))
         sync_mode = "Auto" if auto_sync else "Manual"
-        
+
         print()
         print(f"    {c('1', Colors.CYAN)}. [CONFIG] Workspaces")
         print(f"    {c('2', Colors.CYAN)}. [CONFIG] Memoria/Wiki")
@@ -1823,8 +1583,8 @@ def main():
     parser.add_argument("--version", action="store_true", help="Show version and exit")
     parser.add_argument("-h", "--help", action="store_true", help="Show help and exit")
     parser.add_argument(
-        "--cli", 
-        type=str, 
+        "--cli",
+        type=str,
         metavar="NAME",
         choices=CLI_COMMANDS,
         help="Launch specific AI CLI directly (opencode, claude, gemini, codex)"
@@ -1869,18 +1629,18 @@ def main():
                 if not (CONTEXT_DIR / "profile.md").exists():
                     print_error("La instalación no se completó correctamente.")
                     sys.exit(1)
-        
+
         # Ensure session file exists
         _ensure_session_file()
-        
+
         # v0.4.0-beta: validación + inicialización real antes del CLI
         _framework_bootstrap()
-        
+
         # Get magic prompt and try auto-launch
         magic = get_magic_prompt()
         _init_cli_memory_bridge(args.cli, magic)
         auto_launched = try_auto_launch_cli(args.cli, magic, REPO_ROOT)
-        
+
         if not auto_launched:
             # Fallback: show prompt and launch CLI manually
             print(
@@ -1897,7 +1657,7 @@ def main():
                 )
             )
             pause("Presiona Enter para iniciar la CLI...")
-            
+
             # QAWIN-RUNTIME: argv list, sin shell=True; el control regresa
             # a PA para el cierre normal de sesión.
             _run_cli_interactive(args.cli)

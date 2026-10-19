@@ -1,4 +1,9 @@
 ---
+# NOTA: MANIFIESTO EXTENDIDO (no es el frontmatter canónico).
+# La fuente canónica de esta skill es SKILL.md (frontmatter YAML).
+# Este archivo se conserva por compatibilidad con README.md y por el detalle
+# extra que aporta: modos, inputs/outputs, workflow y style_presets (colores).
+#
 # Skill: Dashboard Pro Generator
 # Descripción: Genera dashboards profesionales en dos modos:
 #   - con-dependencias: Proyectos Next.js completos
@@ -8,12 +13,12 @@ id: dashboard-pro
 name: Dashboard Pro Generator
 description: |
   Genera dashboards profesionales con diseño consistente y código mantenible.
-  
+
   Dos modos de operación:
   1. con-dependencias: Proyecto Next.js 15 completo con TypeScript, Tailwind,
      shadcn/ui, Recharts, TanStack Table. Ideal para proyectos grandes.
-  
-  2. sin-dependencias: Dashboard autónomo en un solo archivo HTML con 
+
+  2. sin-dependencias: Dashboard autónomo en un solo archivo HTML con
      Tailwind CDN y charts via CDN (Chart.js, ApexCharts o Vanilla SVG).
      Ideal para entregables rápidos, reportes o prototipos.
 
@@ -66,22 +71,22 @@ inputs:
     type: string
     required: true
     description: Descripción de la aplicación/dashboard a generar
-  
+
   - name: mode
     type: enum
     options: [con-dependencias, sin-dependencias]
     default: con-dependencias
     description: Modo de generación
-  
+
   - name: chart_library
     type: enum
     options: [chart-js, apex-charts, vanilla-svg, auto]
     default: auto
     description: Librería de charts (solo modo sin-dependencias)
-  
+
   - name: style_preset
     type: enum
-    options: 
+    options:
       - fintech-dark      # Dark + Gold
       - fintech-light     # Light + Blue
       - saas-modern       # Light + Purple
@@ -95,11 +100,11 @@ outputs:
     type: file
     path: design-brief.jsonc
     description: Design brief en formato JSONC
-  
+
   - name: dashboard_code
     type: directory|file
     description: Código del dashboard generado
-  
+
   - name: implementation_notes
     type: file
     path: IMPLEMENTATION.md
@@ -111,13 +116,13 @@ workflow:
       name: Analizar requerimientos
       action: detect_requirements
       description: Detectar modo, complejidad y chart library óptima
-    
+
     - id: generate_brief
       name: Generar Design Brief
       action: use_template
       template: generators/design-brief.md
       output: design-brief.jsonc
-    
+
     - id: implement
       name: Implementar Dashboard
       action: conditional
@@ -126,7 +131,7 @@ workflow:
           then: implement_nextjs
         - if: mode == 'sin-dependencias'
           then: implement_html
-    
+
     - id: verify
       name: Verificar resultado
       action: use_template
@@ -152,7 +157,7 @@ style_presets:
       danger: "#EF4444"
     style: ["soft-neumorphism", "premium-fintech"]
     mode: dark
-  
+
   fintech-light:
     colors:
       background: "#FFFFFF"
@@ -164,7 +169,7 @@ style_presets:
       danger: "#EF4444"
     style: ["clean", "professional"]
     mode: light
-  
+
   saas-modern:
     colors:
       background: "#FAFAFA"
@@ -183,4 +188,3 @@ framework_meta:
   local_first: true
   vendor_agnostic: true
   mvi_compliant: true
----

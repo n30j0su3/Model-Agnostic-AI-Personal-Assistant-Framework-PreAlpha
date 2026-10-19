@@ -49,4 +49,4 @@ python core/scripts/memory_pipeline.py  # Pipeline de memoria
 
 ---
 
-*Última actualización: 2026-10-18 | Framework v0.4.1-beta*
+*Última actualización: 2026-10-19 | Framework v0.4.1-beta*

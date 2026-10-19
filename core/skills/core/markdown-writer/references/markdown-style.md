@@ -143,7 +143,7 @@ def main():
 
 ```markdown
 [Otra sesión](./2026-02-10.md)
-[SKILL de PDF](../skills/core/pdf/SKILL.md)
+[SKILL de PDF](../../pdf/SKILL.md)
 [Referencia](references/guide.md)
 ```
 
@@ -259,8 +259,8 @@ tags: []
 
 # Sesión YYYY-MM-DD
 
-**Inicio**: HH:MM  
-**Workspace**: Nombre  
+**Inicio**: HH:MM
+**Workspace**: Nombre
 **Objetivo**: Descripción
 
 ---
@@ -280,7 +280,7 @@ tags: []
 **Fin**: HH:MM
 ```
 
-### Skills (`skills/core/{name}/SKILL.md`)
+### Skills (`core/skills/core/{name}/SKILL.md`)
 
 ```markdown
 ---
@@ -312,8 +312,8 @@ metadata:
 ```markdown
 ## Idea: Título
 
-**Fecha**: YYYY-MM-DD  
-**Categoría**: Tipo  
+**Fecha**: YYYY-MM-DD
+**Categoría**: Tipo
 **Estado**: 📝 Borrador
 
 ### Descripción
@@ -363,8 +363,8 @@ tags: [auth, api]
 
 # Sesión 2026-02-11
 
-**Inicio**: 09:00  
-**Workspace**: API Development  
+**Inicio**: 09:00
+**Workspace**: API Development
 **Objetivo**: Implementar JWT authentication
 
 ---
@@ -382,8 +382,8 @@ Implementación completa de autenticación JWT con refresh tokens.
 
 ## Decisiones
 
-**Decisión**: Tokens con expiración de 24h + refresh de 7 días  
-**Razón**: Balance seguridad/UX según OWASP guidelines  
+**Decisión**: Tokens con expiración de 24h + refresh de 7 días
+**Razón**: Balance seguridad/UX según OWASP guidelines
 **Impacto**: Requiere tabla adicional para refresh tokens
 
 ## Bloqueos
@@ -398,7 +398,7 @@ Implementación completa de autenticación JWT con refresh tokens.
 
 ---
 
-**Fin**: 18:30  
+**Fin**: 18:30
 **Estado**: ✅ Completado
 ```
 

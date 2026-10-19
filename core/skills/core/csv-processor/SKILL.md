@@ -112,15 +112,24 @@ python core/skills/core/csv-processor/scripts/csv_processor.py \
 
 ### Ejemplo 4: Uso en Python
 ```python
-import pandas as pd
-from core.skills.core.csv_processor.scripts.csv_processor import process_csv
+# El directorio usa guion (csv-processor), por lo que no es importable como
+# paquete. Cargar el módulo por ruta:
+import importlib.util
+from pathlib import Path
+
+spec = importlib.util.spec_from_file_location(
+    "csv_processor",
+    Path("core/skills/core/csv-processor/scripts/csv_processor.py"),
+)
+csv_processor = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(csv_processor)
 
 # Limpieza simple
-df = process_csv('input.csv', mode='clean')
+df = csv_processor.process_csv('input.csv', mode='clean')
 
 # Transformación avanzada
-df_filtered = process_csv(
-    'input.csv', 
+df_filtered = csv_processor.process_csv(
+    'input.csv',
     mode='transform',
     filter_query='edad >= 18',
     columns=['nombre', 'edad', 'ciudad']
@@ -187,7 +196,7 @@ Cuando el pipeline es complejo (múltiples fuentes, joins), usar:
 | **Casos de uso** | Limpieza rápida, conversión | Pipelines ETL enterprise |
 | **Integración** | Punto de entrada/salida | Orquestación central |
 
-**Regla de oro**: 
+**Regla de oro**:
 - Un solo CSV → Operaciones simples → Usar @csv-processor
 - Múltiples fuentes → Joins complejos → Usar @etl
 

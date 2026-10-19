@@ -3,7 +3,7 @@ name: prd-generator
 description: Generates structured Product Requirements Documents with user stories, acceptance criteria, and stakeholder alignment.
 license: MIT
 metadata:
-  author: opencode
+  author: FreakingJSON Framework
   version: "1.1"
 compatibility: OpenCode, Claude Code, Gemini CLI, Codex
 ---

@@ -25,6 +25,7 @@ from typing import List, Dict, Optional
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent.parent
 SKILLS_DIR = REPO_ROOT / "core" / "skills" / "core"
+CATALOG_FILE = REPO_ROOT / "core" / "skills" / "catalog.json"
 KNOWLEDGE_DIR = REPO_ROOT / "core" / ".context" / "knowledge"
 INDEX_FILE = KNOWLEDGE_DIR / "skills-index.json"
 
@@ -36,8 +37,19 @@ class SkillsIndexer:
 
     def __init__(self):
         self.index = self._load_existing_index()
+        self.catalog = self._load_catalog()
         self.new_skills = 0
         self.updated_skills = 0
+
+    def _load_catalog(self) -> dict:
+        """Load catalog.json for canonical categories (single source of truth)."""
+        try:
+            with open(CATALOG_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            skills = data.get("skills", {})
+            return skills if isinstance(skills, dict) else {}
+        except (json.JSONDecodeError, OSError):
+            return {}
 
     def _load_existing_index(self) -> dict:
         """Load existing index or create new structure."""
@@ -200,6 +212,11 @@ class SkillsIndexer:
             "tools": [],
         }
 
+        # Category from catalog.json (canonical source)
+        catalog_entry = self.catalog.get(skill_id, {})
+        if catalog_entry.get("category"):
+            skill_data["category"] = catalog_entry["category"]
+
         if skill_md.exists():
             try:
                 with open(skill_md, "r", encoding="utf-8") as f:
@@ -208,8 +225,12 @@ class SkillsIndexer:
                 frontmatter = self._extract_frontmatter(content)
 
                 if "name" in frontmatter:
-                    skill_data["id"] = frontmatter["name"]
-                    skill_data["name"] = f"@{frontmatter['name']}"
+                    fm_name = frontmatter["name"]
+                    if fm_name != skill_id:
+                        print(
+                            f"[WARN] {skill_id}: frontmatter name {fm_name!r} "
+                            "does not match directory; using directory id"
+                        )
 
                 if "description" in frontmatter:
                     skill_data["description"] = frontmatter["description"]
@@ -249,6 +270,18 @@ class SkillsIndexer:
         skill_dirs = sorted([d for d in SKILLS_DIR.iterdir() if d.is_dir()])
 
         print(f"[INFO] Found {len(skill_dirs)} skill directories")
+
+        # Prune entries that no longer correspond to a skill directory. This also
+        # removes legacy IDs (for example "Content Optimizer") left by older
+        # indexers before the slug normalization.
+        skill_ids = {d.name for d in skill_dirs}
+        before = len(self.index["skills"])
+        self.index["skills"] = [
+            s for s in self.index["skills"] if s.get("id") in skill_ids
+        ]
+        pruned = before - len(self.index["skills"])
+        if pruned:
+            print(f"[INFO] Pruned {pruned} stale skill entries")
 
         existing_ids = {s["id"] for s in self.index["skills"]}
 

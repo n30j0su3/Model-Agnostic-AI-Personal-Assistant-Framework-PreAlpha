@@ -1,15 +1,14 @@
 ---
 name: error-recovery
-displayName: "@error-recovery"
-version: "1.0.0"
-category: core
 description: Self-healing error handling with recovery playbooks. Log errors, analyze patterns, and generate actionable recovery strategies following the Antifragile principle.
 license: MIT
 metadata:
   author: FreakingJSON Framework
+  version: "1.0"
   created: 2026-03-11
   dependencies:
-    - error_logger.py
+    - core/scripts/error_logger.py
+compatibility: [OpenCode, Claude, Gemini, Codex]
 ---
 
 # @error-recovery
@@ -214,6 +213,9 @@ core/.context/knowledge/
 └── playbooks/
     └── PB-*.md         # Recovery playbooks
 ```
+
+> Estos directorios se **crean automáticamente** por `ErrorLogger` en el primer
+> `log_error()`; no es necesario crearlos manualmente.
 
 ## References
 

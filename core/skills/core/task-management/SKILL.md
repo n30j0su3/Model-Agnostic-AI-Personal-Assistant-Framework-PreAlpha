@@ -3,7 +3,7 @@ name: task-management
 description: Sistema avanzado de gestión de tareas multidisciplinarias. Permite crear, categorizar por workspace y mover tareas entre archivos de contexto y la sesión actual.
 license: MIT
 metadata:
-  author: opencode
+  author: FreakingJSON Framework
   version: "1.0"
 compatibility: OpenCode, Claude Code, Gemini CLI, Codex
 ---

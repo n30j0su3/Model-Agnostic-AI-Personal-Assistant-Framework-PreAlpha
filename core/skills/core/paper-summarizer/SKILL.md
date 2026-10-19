@@ -1,14 +1,10 @@
 ---
-id: paper-summarizer
-name: Paper Summarizer
+name: paper-summarizer
 description: Analiza y resume documentos tecnicos, papers cientificos o articulos extensos. Extrae metodologia, hallazgos clave y conclusiones. Usalo en el workspace @research.
-category: research
-type: core
-version: 1.0.0
 license: MIT
 metadata:
-  author: FreakingJSON
-  source: OBSOLETE/migration
+  author: FreakingJSON Framework
+  version: "1.0"
 compatibility: [OpenCode, Claude, Gemini, Codex]
 ---
 
@@ -28,8 +24,8 @@ Al resumir un documento, busca siempre los siguientes puntos:
 
 ### 2. Flujo de Trabajo
 1. El usuario proporciona un archivo (PDF convertido a texto o MD) o un link.
-2. La IA lee el contenido y genera un archivo en `workspaces/research/analysis/summary-[nombre].md`.
-3. Registra la referencia en `workspaces/research/papers/README.md`.
+2. La IA lee el contenido y genera un resumen en el workspace `@research` (`workspaces/<research>/summary-[nombre].md`, si el workspace está habilitado en `data/user/workspaces.json`).
+3. Registra la referencia del paper en el índice del workspace `@research`.
 
 ### 3. Comandos Soportados
 - "Resume este paper @archivo"

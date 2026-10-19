@@ -11,7 +11,7 @@ Main Agent (FreakingJSON-PA)
 ├── SessionManager    → Gestión de sesiones diarias
 ├── DocWriter         → Documentación automática
 ├── FeatureArchitect  → Arquitecto de producto (dev-only)
-└── SyncPropagator    → Propagación BASE / DEV / PROD
+└── SyncPropagator    → Propagación BASE / DEV / PROD (planeado)
 ```
 
 ## Agente Principal
@@ -20,7 +20,7 @@ Main Agent (FreakingJSON-PA)
 - **Propósito**: Asistente personal principal en modo producción. Orquesta sesiones, contexto y delegación para usuarios finales.
 - **Archivo**: `pa-assistant.md` (agente: FreakingJSON-PA)
 - **Estado**: OPERATIVO
-- **Dependencias**: context-scout, skill-finder, session-manager, doc-writer, feature-architect, sync-propagator
+- **Dependencias**: context-scout, skill-finder, session-manager, doc-writer, feature-architect
 
 ## Subagentes
 
@@ -51,10 +51,12 @@ Main Agent (FreakingJSON-PA)
 - **Modo**: DEV-ONLY (no disponible en producción)
 - **Dependencias**: prd-generator, task-management
 
-### @sync-propagator
-- **Propósito**: Documenta y propaga features de framework entre BASE, DEV y PROD.
-- **Archivo**: `subagents/sync-propagator.md`
-- **Estado**: OPERATIVO
+### @sync-propagator (PLANEADO)
+- **Propósito**: Documentar y propagar features del framework entre BASE, DEV y PROD.
+- **Archivo**: `subagents/sync-propagator.md` — **por crear**
+- **Estado**: NO IMPLEMENTADO. El sistema de propagación no existe todavía: `config/propagation-policy.json` es un stub vacío (`{}`) y no hay script de propagación.
+- **Base reutilizable**: `core/scripts/update.py` (+ `config/update-protected-paths.txt`), `core/scripts/sync_auditor.py` (higiene pre-push de PROD), `core/scripts/sync_context.py` (MASTER.md → contexto por CLI).
+- **Nota**: hasta que se implemente, no debe listarse como dependencia operativa del agente principal.
 
 ---
 
@@ -68,7 +70,7 @@ Usuario → FreakingJSON-PA → [Comprende tarea]
                         ├── SessionManager (gestión de sesión)
                         ├── DocWriter (documentación)
                         ├── FeatureArchitect (arquitectura de features - dev)
-                        └── SyncPropagator (propagación entre ambientes)
+                        └── SyncPropagator (propagación entre ambientes — planeado)
 ```
 
 > **Coordinación pública**: Los agentes del framework comparten un protocolo común de contexto local, uso de skills y preservación de conocimiento.
@@ -92,7 +94,7 @@ El agente **FreakingJSON** representa la esencia del framework: un asistente que
 
 **Frase Insignia:**
 > *"El conocimiento verdadero trasciende a lo público."*
-> 
+>
 > *"True knowledge transcends to the public."*
 
 **Principios:**

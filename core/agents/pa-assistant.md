@@ -68,7 +68,8 @@ Invocación: `task(subagent_type="...", description="...", prompt="...")`
 
 | Tipo | Ubicación |
 |------|-----------|
-| Pendientes | `core/.context/codebase/backlog.md` |
+| Pendientes (personales) | `core/.context/codebase/recordatorios.md` |
+| Backlog del framework | `core/.context/codebase/backlog.md` (vía `backlog_manager.py`) |
 | Ideas | `core/.context/codebase/ideas.md` |
 | Descubrimientos | `knowledge/learning/discoveries.md` |
 | Best practices | `knowledge/learning/best-practices.md` |

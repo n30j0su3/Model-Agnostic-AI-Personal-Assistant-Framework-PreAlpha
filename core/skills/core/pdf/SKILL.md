@@ -3,7 +3,7 @@ name: pdf
 description: Comprehensive PDF manipulation toolkit for extracting text and tables, creating new PDFs, merging/splitting documents, and handling forms. Use when the user needs to process or generate PDF files.
 license: Apache-2.0
 metadata:
-  author: Agentman
+  author: FreakingJSON Framework
   version: "1.0"
 compatibility: Requires pypdf, pdfplumber, reportlab, and poppler-utils.
 ---

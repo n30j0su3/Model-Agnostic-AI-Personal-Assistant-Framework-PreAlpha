@@ -1,14 +1,10 @@
 ---
-id: mcp-builder
-name: MCP Builder
+name: mcp-builder
 description: Guides creation of MCP servers with strong tool design, schemas, and evaluation practices.
-category: core
-type: core
-version: 1.0.0
 license: MIT
 metadata:
-  author: FreakingJSON
-  source: OBSOLETE/migration
+  author: FreakingJSON Framework
+  version: "1.0"
 compatibility: [OpenCode, Claude, Gemini, Codex]
 ---
 

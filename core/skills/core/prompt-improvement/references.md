@@ -25,13 +25,13 @@ Actualiza las referencias de forma manual y programada cuando sea posible.
 Linux/macOS (cron mensual):
 
 ```bash
-0 9 1 * * cd /ruta/al/framework && python skills/core/prompt-improvement/scripts/update-references.py --json
+0 9 1 * * cd /ruta/al/framework && python core/skills/core/prompt-improvement/scripts/update-references.py --json
 ```
 
 Windows (Task Scheduler):
 
 ```powershell
-python "C:\Ruta\al\framework\skills\core\prompt-improvement\scripts\update-references.py" --json
+python "C:\Ruta\al\framework\core\skills\core\prompt-improvement\scripts\update-references.py" --json
 ```
 
 Despues de cada actualizacion, revisa los cambios manualmente para validar calidad y vigencia.

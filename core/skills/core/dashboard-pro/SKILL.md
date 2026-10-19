@@ -1,16 +1,10 @@
-# dashboard-pro — Skill
-
 ---
-id: dashboard-pro
-name: Dashboard Pro
+name: dashboard-pro
 description: Genera dashboards profesionales con diseño consistente usando design tokens y component library. Genera Design Brief, código y IMPLEMENTATION.md. Usalo cuando necesites visualizar datos o métricas.
-category: dev
-type: core
-version: 1.0.0
 license: MIT
 metadata:
-  author: FreakingJSON
-  source: dashboard-pro/integration
+  author: FreakingJSON Framework
+  version: "1.0"
 compatibility: [OpenCode, Claude, Gemini, Codex]
 ---
 
@@ -40,3 +34,4 @@ Habilidad para generar dashboards profesionales con diseño consistente.
 - `INTEGRATION.md`: Integración con FeatureArchitect.
 - `OPTIMIZATION-REPORT.md`: Reporte de optimización del component library.
 - `scripts/optimize-templates.py`: Optimizador de templates.
+- `skill.yaml`: **manifiesto extendido** (modos, inputs/outputs, workflow, style presets). El frontmatter de este `SKILL.md` es la fuente canónica; `skill.yaml` añade los presets de estilo y detalles del workflow.

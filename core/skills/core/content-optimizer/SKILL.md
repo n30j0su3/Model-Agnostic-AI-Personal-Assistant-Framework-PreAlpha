@@ -1,20 +1,16 @@
 ---
-id: content-optimizer
-name: Content Optimizer
+name: content-optimizer
 description: Optimiza borradores de texto para SEO, legibilidad y engagement. Ajusta el tono de voz y la estructura del contenido. Usalo en el workspace @content.
-category: content
-type: core
-version: 1.0.0
 license: MIT
 metadata:
-  author: FreakingJSON
-  source: OBSOLETE/migration
+  author: FreakingJSON Framework
+  version: "1.0"
 compatibility: [OpenCode, Claude, Gemini, Codex]
 ---
 
 # Content Optimizer Skill
 
-Habilidad diseniada para maximizar el alcance y la claridad de tus textos.
+Habilidad diseñada para maximizar el alcance y la claridad de tus textos.
 
 ## Instrucciones para la IA
 
@@ -22,10 +18,10 @@ Habilidad diseniada para maximizar el alcance y la claridad de tus textos.
 - **SEO**: Presencia de palabras clave, etiquetas H1-H3 logicas, meta-descripciones.
 - **Legibilidad**: Uso de voz activa, parrafos cortos, evitar jerga innecesaria.
 - **Engagement**: Fuerza del Hook inicial, CTA (Call to Action) claro.
-- **Tono**: Asegurar que coincida con la voz definida en `workspaces/content/CONTEXT.md`.
+- **Tono**: Asegurar que coincida con la voz definida en el `CONTEXT.md` del workspace `@content` (si existe).
 
 ### 2. Flujo de Trabajo
-1. Analizar el borrador actual en `workspaces/content/drafts/`.
+1. Analizar el borrador actual en el workspace `@content` (p. ej. `workspaces/content/projects/<proyecto>/`).
 2. Proporcionar un reporte de "Antes y Despues".
 3. Sugerir 3 variaciones de titulos (Hooks) de alto impacto.
 

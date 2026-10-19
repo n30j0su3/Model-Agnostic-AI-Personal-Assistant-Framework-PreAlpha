@@ -1,6 +1,13 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": [],
+  "default_agent": "FreakingJSON",
+  // Skills nativas del framework: OpenCode escanea `**/SKILL.md` bajo cada path.
+  // Se registran desde el propio repo (alcance de framework, no global).
+  "skills": {
+    "paths": ["core/skills/core"]
+  },
+  // El plugin de integración vive en `.opencode/plugins/` y OpenCode lo carga
+  // automáticamente. La lista `plugin` es para paquetes npm, no para archivos locales.
   "mcp": {
     // Servidores MCP DESACTIVADOS por defecto (ahorro de ~6K tokens de contexto
     // inicial + no requieren Node). Para reactivar: cambia "enabled" a true.

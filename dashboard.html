@@ -6,18 +6,18 @@
     <title>PA Framework Command Center</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a3e635' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M13 10V3L4 14h7v7l9-11h-7z'/%3E%3C/svg%3E">
     <meta name="description" content="Dashboard profesional del FreakingJSON Personal Assistant Framework">
-    
+
     <!-- Tailwind CSS -->
     <script src="assets/tailwind.js"></script>
-    
+
     <!-- Chart.js -->
     <script src="assets/chart.umd.js"></script>
-    
+
     <!-- Google Fonts - Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -44,7 +44,7 @@
             }
         }
     </script>
-    
+
     <style>
 
 /* FreakingJSON Cyberpunk Neon Effects */
@@ -76,13 +76,13 @@
 
         * { box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; }
-        
+
         /* Custom scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
-        
+
         /* Animations */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -100,10 +100,10 @@
             0% { background-position: -200% 0; }
             100% { background-position: 200% 0; }
         }
-        
+
         .animate-fade-in { animation: fadeIn 0.4s ease-out; }
         .animate-slide-in { animation: slideInLeft 0.3s ease-out; }
-        
+
         /* KPI Card hover effect */
         .kpi-card {
             position: relative;
@@ -123,14 +123,14 @@
             transform: translateY(-2px);
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
         }
-        
+
         /* Glass effect */
         .glass {
             background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         /* Gradient text */
         .gradient-text {
             background: linear-gradient(135deg, #f2fc9e, #8b5cf6);
@@ -138,19 +138,19 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
+
         /* Skeleton loading */
         .skeleton {
             background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
             background-size: 200% 100%;
             animation: shimmer 1.5s infinite;
         }
-        
+
         /* Page transition */
         .page-transition {
             animation: fadeIn 0.3s ease-out;
         }
-        
+
         /* Sidebar active state */
         .nav-item {
             position: relative;
@@ -176,7 +176,7 @@
             background: rgba(59, 130, 246, 0.1);
             color: #f2fc9e;
         }
-        
+
         /* Chat message styles */
         .message-agent {
             background: #1e293b;
@@ -187,7 +187,7 @@
             background: linear-gradient(135deg, #f2fc9e, #f2fc9e);
             border-radius: 12px 12px 4px 12px;
         }
-        
+
         /* Toast notification */
         .toast {
             position: fixed;
@@ -201,16 +201,16 @@
             z-index: 1000;
             animation: slideInLeft 0.3s ease-out;
         }
-        
+
         /* Workflow Styles */
         .workflow-step {
             transition: all 0.3s ease;
         }
-        
+
         .workflow-step:hover {
             transform: translateX(4px);
         }
-        
+
         .step-checkbox {
             appearance: none;
             width: 1.25rem;
@@ -222,12 +222,12 @@
             transition: all 0.2s ease;
             position: relative;
         }
-        
+
         .step-checkbox:checked {
             background-color: #f2fc9e;
             border-color: #f2fc9e;
         }
-        
+
         .step-checkbox:checked::after {
             content: '';
             position: absolute;
@@ -239,17 +239,17 @@
             border-width: 0 2px 2px 0;
             transform: rotate(45deg);
         }
-        
+
         .step-checkbox:focus {
             outline: none;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
         }
-        
+
         /* Workflow Toast */
         .workflow-toast {
             animation: slideInRight 0.3s ease-out;
         }
-        
+
         @keyframes slideInRight {
             from {
                 opacity: 0;
@@ -260,24 +260,24 @@
                 transform: translateX(0);
             }
         }
-        
+
         /* Mobile responsiveness for workflow */
         @media (max-width: 768px) {
             .workflow-step {
                 flex-direction: column;
                 gap: 0.75rem;
             }
-            
+
             .workflow-step .step-indicator {
                 align-self: flex-start;
             }
         }
-        
+
         /* Toggle Switch Animation */
         .peer:checked ~ .peer-checked\:bg-amber-500 {
             background-color: #f59e0b;
         }
-        
+
         .peer:checked ~ .peer-checked\:after\:translate-x-full::after {
             transform: translateX(100%);
         }
@@ -312,7 +312,7 @@
             *, *::before, *::after { animation: none !important; transition: none !important; }
             .matrix-bg, .scanlines { display: none !important; }
         }
-    
+
         /* HERO Animations */
         @keyframes fade-in {
             from { opacity: 0; }
@@ -329,7 +329,7 @@
             animation: slide-up 0.8s ease-out forwards;
             opacity: 0;
         }
-        
+
         /* Wizard Modal */
         #wizard-modal {
             animation: fade-in 0.3s ease-out;
@@ -382,7 +382,7 @@
 
                 <div class="header-actions flex items-center gap-2">
                     <div class="relative hidden lg:block">
-                        <input type="text" id="global-search" placeholder="Buscar sesiones, skills..." 
+                        <input type="text" id="global-search" placeholder="Buscar sesiones, skills..."
                             class="w-64 bg-slate-800 border border-slate-700 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-lime-400 transition-colors">
                         <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -390,7 +390,7 @@
                     </div>
 
                     <button id="lang-toggle" class="px-3 py-1.5 text-xs rounded-lg border border-slate-700 hover:border-lime-400/60 bg-slate-900/70" aria-label="Toggle language">ES/EN</button>
-                    
+
                     <nav id="primary-nav" class="flex items-center gap-1">
                         <button onclick="router.navigate('home')" class="nav-btn p-2 rounded-lg hover:bg-slate-800 transition-colors" data-page="home" title="Inicio" aria-label="Inicio">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -438,25 +438,25 @@
             <section id="hero-section" class="relative min-h-[60vh] flex items-center justify-center px-4 transition-all duration-700">
                 <div class="absolute inset-0 bg-gradient-to-br from-lime-400/10 via-purple-500/5 to-slate-950"></div>
                 <div class="relative max-w-5xl mx-auto text-center">
-                    
+
                     <!-- Badge de versión -->
                     <div class="inline-flex items-center gap-2 px-5 py-2.5 bg-lime-400/10 border border-lime-400/30 rounded-full text-lime-300 text-sm mb-8 neon-glow animate-fade-in">
                         <span class="w-2.5 h-2.5 bg-lime-400 rounded-full animate-pulse"></span>
                         Framework <span id="home-framework-version" data-framework-version>—</span> — 100% Local, 100% Privado
                     </div>
-                    
+
                     <!-- Título principal -->
                     <h1 class="text-5xl lg:text-7xl font-bold mb-6 leading-tight animate-slide-up" style="animation-delay: 0.1s">
                         Tu Asistente AI Personal.
                         <span class="gradient-text block mt-3">Tu Conocimiento. Tu Control.</span>
                     </h1>
-                    
+
                     <!-- Descripción -->
                     <p class="text-xl text-slate-400 mb-10 max-w-2xl mx-auto animate-slide-up" style="animation-delay: 0.2s">
                         Gestiona tu conocimiento, automatiza tareas y colabora con IA manteniendo el control total de tus datos.
                         <span class="text-lime-300 font-semibold">Sin cloud. Sin suscripciones. Sin límites.</span>
                     </p>
-                    
+
                     <!-- Botones de acción -->
                     <div class="flex flex-wrap justify-center gap-4 animate-slide-up" style="animation-delay: 0.3s">
                         <button onclick="quickStart()" class="group px-8 py-4 bg-lime-500 hover:bg-lime-400 text-slate-950 font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-lime-400/25 flex items-center gap-3 neon-glow">
@@ -473,7 +473,7 @@
                             Ver Tutorial
                         </button>
                     </div>
-                    
+
                     <!-- Stats rápidas -->
                     <div class="grid grid-cols-3 gap-6 mt-16 max-w-2xl mx-auto animate-fade-in" style="animation-delay: 0.5s">
                         <div class="text-center">
@@ -491,7 +491,7 @@
                     </div>
                 </div>
             </section>
-            
+
             <!-- WIZARD MODAL - Primer uso -->
             <div id="wizard-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -503,7 +503,7 @@
                             </svg>
                         </button>
                     </div>
-                    
+
                     <div id="wizard-steps" class="p-6">
                         <!-- Los pasos se generan dinámicamente -->
                     </div>
@@ -938,7 +938,7 @@
 
         const router = {
             currentPage: 'home',
-            
+
             navigate(page) {
                 // v0.4.0-beta: Consola deshabilitada (puente local incompleto) — redirigir a home
                 if (page === 'console') page = 'home';
@@ -963,7 +963,7 @@
                 translateStaticUI(container);
                 applyFrameworkVersion(container);
                 applyBranding();
-                
+
                 // Initialize page-specific JS
                 if (this.currentPage === 'internals') {
                     charts.init();
@@ -997,16 +997,16 @@
                                 <span class="w-2 h-2 bg-lime-400 rounded-full animate-pulse neon-glow"></span>
                                 Framework <span data-framework-version>—</span>
                             </div>
-                            
+
                             <h1 class="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
                                 ${t('hero_title')}
                                 <span class="gradient-text block mt-2">${t('hero_sub')}</span>
                             </h1>
-                            
+
                             <p class="text-xl text-slate-400 mb-10 max-w-2xl mx-auto">
                                 ${t('hero_desc')}
                             </p>
-                            
+
                             <div class="flex flex-wrap justify-center gap-4">
                                 <button onclick="app.startFramework()" class="px-8 py-4 bg-lime-500 hover:bg-lime-400 text-slate-950 font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-lime-400/25 flex items-center gap-2 neon-glow">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1048,7 +1048,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="grid md:grid-cols-2 gap-6 mb-8">
                                 <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-lime-400/50 transition-all cursor-pointer group" onclick="modalManager.showObjectiveModal()">
                                     <div class="flex items-center gap-3 mb-4">
@@ -1067,7 +1067,7 @@
                                         </svg>
                                     </div>
                                 </div>
-                                
+
                                 <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-purple-500/50 transition-all cursor-pointer group" onclick="modalManager.showPhilosophyModal()">
                                     <div class="flex items-center gap-3 mb-4">
                                         <div class="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400">
@@ -1086,7 +1086,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                                 ${components.featureCard('Local-first', 'Todo en tus archivos locales. Nada en la nube.', 'shield', 'blue')}
                                 ${components.featureCard('Privacy-first', 'Sin credenciales expuestas. Tu privacidad primero.', 'lock', 'purple')}
@@ -1100,7 +1100,7 @@
                     <section class="py-20 px-4 bg-slate-900/50">
                         <div class="max-w-4xl mx-auto">
                             <h2 class="text-3xl font-bold text-center mb-12">Cómo Empezar</h2>
-                            
+
                             <div class="grid md:grid-cols-3 gap-8">
                                 <div class="relative">
                                     <div class="absolute -top-4 left-6 w-8 h-8 bg-lime-500 rounded-full flex items-center justify-center font-bold text-sm neon-glow">1</div>
@@ -1111,7 +1111,7 @@
                                         <p class="text-xs text-slate-500 mt-2">Windows</p>
                                     </div>
                                 </div>
-                                
+
                                 <div class="relative">
                                     <div class="absolute -top-4 left-6 w-8 h-8 bg-lime-500 rounded-full flex items-center justify-center font-bold text-sm neon-glow">2</div>
                                     <div class="p-6 bg-slate-800 rounded-xl border border-slate-700 pt-8">
@@ -1121,7 +1121,7 @@
                                         <p class="text-xs text-slate-500 mt-4">Elige idioma y CLI</p>
                                     </div>
                                 </div>
-                                
+
                                 <div class="relative">
                                     <div class="absolute -top-4 left-6 w-8 h-8 bg-lime-500 rounded-full flex items-center justify-center font-bold text-sm neon-glow">3</div>
                                     <div class="p-6 bg-slate-800 rounded-xl border border-slate-700 pt-8">
@@ -1141,7 +1141,7 @@
                             <div class="bg-gradient-to-r from-purple-500/10 to-lime-400/10 border border-purple-500/30 rounded-2xl p-8">
                                 <h2 class="text-2xl font-bold mb-4">Migrar tus Archivos a Workspaces</h2>
                                 <p class="text-slate-300 mb-6">¿Tienes archivos dispersos? Organízalo todo en workspaces temáticos.</p>
-                                
+
                                 <div class="grid md:grid-cols-3 gap-4 mb-6">
                                     <div class="flex items-center gap-3">
                                         <span class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center text-sm font-bold">1</span>
@@ -1173,14 +1173,14 @@
                     <section class="py-20 px-4 border-t border-slate-800">
                         <div class="max-w-6xl mx-auto">
                             <h2 class="text-3xl font-bold text-center mb-12">Framework Internals</h2>
-                            
+
                             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
                                 ${components.kpiCard(store.stats.totalSessions, t('kpi_sessions'), t('kpi_registered'), 'blue')}
                                 ${components.kpiCard(store.stats.totalSkills, t('kpi_skills'), t('kpi_indexed'), 'purple')}
                                 ${components.kpiCard(store.stats.totalInteractions, t('kpi_interactions'), t('kpi_tools'), 'green')}
                                 ${components.kpiCard(store.stats.codeQuality + '%', t('kpi_quality'), store.lspErrors.length + ' ' + t('kpi_errors_unit'), 'amber')}
                             </div>
-                            
+
                             <div class="text-center">
                                 <button onclick="router.navigate('internals')" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl transition-colors border border-slate-700">
                                     Ver detalles completos →
@@ -1209,9 +1209,9 @@
                         </div>
                     `;
                 }
-                
+
                 const sessionList = store.sessions.map(s => `
-                    <div class="p-3 rounded-lg hover:bg-slate-800 cursor-pointer transition-all ${store.currentSession?.id === s.id ? 'bg-slate-800 border-l-2 border-lime-400' : ''}" 
+                    <div class="p-3 rounded-lg hover:bg-slate-800 cursor-pointer transition-all ${store.currentSession?.id === s.id ? 'bg-slate-800 border-l-2 border-lime-400' : ''}"
                          onclick="app.selectSession('${s.id}')">
                         <div class="flex items-start gap-3">
                             <div class="w-8 h-8 rounded-lg ${app.getSessionTypeColor(s.type)} flex items-center justify-center shrink-0">
@@ -1242,7 +1242,7 @@
                                 Nueva Sesión
                             </button>
                         </div>
-                        
+
                         <div class="flex-1 overflow-y-auto p-2 space-y-1">
                             <div class="px-3 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Sesiones Recientes</div>
                             ${sessionList || '<div class="px-3 py-8 text-center text-slate-500 text-sm">No hay sesiones</div>'}
@@ -1269,7 +1269,7 @@
                                     <p class="text-slate-200">¡Hola! Selecciona una sesión del menú lateral para explorar tu historial de conversaciones.</p>
                                 </div>
                             </div>
-                            
+
                             ${store.currentSession ? `
                             <div class="flex gap-3 flex-row-reverse">
                                 <div class="w-10 h-10 rounded-full bg-slate-600 flex items-center justify-center text-white shrink-0">👤</div>
@@ -1277,7 +1277,7 @@
                                     <p>Ver sesión: ${store.currentSession.title}</p>
                                 </div>
                             </div>
-                            
+
                             <div class="flex gap-3">
                                 <div class="w-10 h-10 rounded-full bg-gradient-to-br from-lime-400 to-purple-600 flex items-center justify-center text-white font-bold shrink-0">F</div>
                                 <div class="message-agent p-4 max-w-3xl space-y-3">
@@ -1297,7 +1297,7 @@
                         <!-- Input -->
                         <div class="p-4 border-t border-slate-800 bg-slate-900/50">
                             <div class="relative">
-                                <input type="text" disabled placeholder="El chat estará disponible en una futura actualización..." 
+                                <input type="text" disabled placeholder="El chat estará disponible en una futura actualización..."
                                     class="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 pl-4 pr-12 text-slate-400 cursor-not-allowed">
                                 <button disabled class="absolute right-2 top-2 p-1.5 bg-slate-700 rounded-lg cursor-not-allowed">
                                     <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1316,7 +1316,7 @@
                 <div class="h-full overflow-y-auto p-4 lg:p-8 page-transition">
                     <div class="max-w-6xl mx-auto">
                         <h1 class="text-3xl font-bold mb-8">${t('internals_title')}</h1>
-                        
+
                         <!-- Tabs -->
                         <div class="flex gap-2 mb-6 border-b border-slate-800 pb-2" id="framework-tabs" role="tablist" aria-label="Framework Internals">
                             <button onclick="app.switchFrameworkTab('overview')" class="fw-tab-btn px-4 py-2 bg-lime-500 text-slate-950 rounded-lg text-sm font-medium transition-colors neon-glow" data-tab="overview" role="tab" aria-selected="true">${t('tab_overview')}</button>
@@ -1452,7 +1452,7 @@
                                     </div>
                                 `}
                             </div>
-                            
+
                             <div class="text-center">
                                 <span class="text-slate-500 text-sm">${store.skills.length} skills indexadas</span>
                             </div>
@@ -1579,7 +1579,7 @@
                 <div class="bg-slate-900/60 rounded-2xl border border-slate-800 p-6 mb-6">
                     <h2 class="text-xl font-semibold text-white mb-4">${t('modelo_current')}</h2>
                     <div id="modelo-current" class="text-lime-400 font-mono text-lg mb-4">Cargando…</div>
-                    
+
                     <button id="modelo-detect-btn" onclick="modeloPage.detect()" class="px-6 py-3 bg-lime-500 hover:bg-lime-400 text-slate-950 rounded-lg transition-colors flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -1659,10 +1659,10 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                         </svg>
                     </div>
-                        
+
                         <h1 class="text-4xl font-bold mb-2">FreakingJSON</h1>
                         <p class="text-xl text-slate-400 mb-8">Personal Assistant Framework</p>
-                        
+
                         <p class="text-2xl font-light italic text-slate-300 mb-12">
                             "El conocimiento verdadero trasciende a lo público"
                         </p>
@@ -1677,7 +1677,7 @@
                                 </h3>
                                 <p class="text-sm text-slate-400">Todo en tus archivos locales. Nada en la nube.</p>
                             </div>
-                            
+
                             <div class="p-6 bg-slate-900 border border-slate-800 rounded-xl">
                                 <h3 class="font-semibold mb-2 flex items-center gap-2">
                                     <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1687,7 +1687,7 @@
                                 </h3>
                                 <p class="text-sm text-slate-400">Sin credenciales expuestas. Tu privacidad primero.</p>
                             </div>
-                            
+
                             <div class="p-6 bg-slate-900 border border-slate-800 rounded-xl">
                                 <h3 class="font-semibold mb-2 flex items-center gap-2">
                                     <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1697,7 +1697,7 @@
                                 </h3>
                                 <p class="text-sm text-slate-400">Minimal Viable Information. Solo lo esencial.</p>
                             </div>
-                            
+
                             <div class="p-6 bg-slate-900 border border-slate-800 rounded-xl">
                                 <h3 class="font-semibold mb-2 flex items-center gap-2">
                                     <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1802,7 +1802,7 @@
             activityChart() {
                 const ctx = document.getElementById('activityChart');
                 if (!ctx) return;
-                
+
                 // BL-120: Leer data real de sessions en lugar de Math.random()
                 const sessionDates = store.sessions.map(s => s.date || s.id).sort();
                 const last30Days = Array.from({length: 30}, (_, i) => {
@@ -1810,7 +1810,7 @@
                     d.setDate(d.getDate() - (29 - i));
                     return d.toISOString().split('T')[0];
                 });
-                
+
                 // Contar sesiones por día
                 const sessionCount = last30Days.map(date => {
                     return store.sessions.filter(s => {
@@ -1818,7 +1818,7 @@
                         return sDate.includes(date);
                     }).length;
                 });
-                
+
                 this.instances.activity?.destroy();
                 this.instances.activity = new Chart(ctx, {
                     type: 'line',
@@ -1921,7 +1921,7 @@
             init() {
                 this.loadState();
                 this.updateUI();
-                
+
                 // Add event listeners to checkboxes
                 document.querySelectorAll('.step-checkbox').forEach(checkbox => {
                     checkbox.addEventListener('change', (e) => {
@@ -1941,14 +1941,14 @@
 
             toggleExpressMode() {
                 this.state.expressMode = !this.state.expressMode;
-                
+
                 // Guardar en localStorage para persistencia entre sesiones
                 configManager.setSetting('expressMode', this.state.expressMode);
-                
+
                 this.updateUI();
                 this.showToast(
-                    this.state.expressMode 
-                        ? 'Modo Express ACTIVADO - Salta planificación (paso 3). Ideal para tareas simples.' 
+                    this.state.expressMode
+                        ? 'Modo Express ACTIVADO - Salta planificación (paso 3). Ideal para tareas simples.'
                         : 'Modo Express DESACTIVADO - Flujo completo de 7 pasos. Recomendado para features complejas.'
                 );
             },
@@ -1989,7 +1989,7 @@
                     const isCompleted = !!this.state.steps[step];
                     const isInProgress = !isCompleted && this.isStepInProgress(step);
                     const indicator = stepEl.querySelector('.step-indicator');
-                    
+
                     // Update indicator appearance
                     if (isCompleted) {
                         indicator.className = 'step-indicator flex-shrink-0 w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white font-bold z-10 transition-all duration-300 ring-4 ring-green-500/20';
@@ -2036,10 +2036,10 @@
                 const completedSteps = Object.values(this.state.steps).filter(Boolean).length;
                 const totalSteps = 7;
                 const progressPercent = (completedSteps / totalSteps) * 100;
-                
+
                 const progressBar = document.getElementById('progress-bar');
                 const progressText = document.getElementById('progress-text');
-                
+
                 if (progressBar) {
                     progressBar.style.width = progressPercent + '%';
                 }
@@ -2051,7 +2051,7 @@
             isStepInProgress(step) {
                 // Step 4 (Execution) is always "in progress" until completed
                 if (step === 4) return true;
-                
+
                 // Previous steps should be completed for next step to be in progress
                 for (let i = 1; i < step; i++) {
                     if (!this.state.steps[i]) return false;
@@ -2073,11 +2073,11 @@
                     if (saved) {
                         this.state = { ...this.state, ...JSON.parse(saved) };
                     }
-                    
+
                     // Cargar modo express de config
                     const expressMode = configManager.getSetting('expressMode', false);
                     this.state.expressMode = expressMode;
-                    
+
                 } catch (e) {
                     console.warn('Could not load workflow state:', e);
                 }
@@ -2113,15 +2113,15 @@
         const modalManager = {
             open(content, options = {}) {
                 const { maxWidth = 'max-w-2xl', onClose } = options;
-                
+
                 const overlay = document.createElement('div');
                 overlay.className = 'fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in';
                 overlay.onclick = () => this.close(overlay);
-                
+
                 const modal = document.createElement('div');
                 modal.className = `${maxWidth} bg-slate-900 border border-slate-800 rounded-xl shadow-2xl max-h-[80vh] overflow-y-auto animate-slide-in`;
                 modal.onclick = e => e.stopPropagation();
-                
+
                 modal.innerHTML = `
                     <div class="sticky top-0 bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between">
                         <button onclick="modalManager.close(this.closest('.fixed'))" class="text-slate-400 hover:text-white transition-colors">
@@ -2132,10 +2132,10 @@
                     </div>
                     <div class="p-6">${content}</div>
                 `;
-                
+
                 overlay.appendChild(modal);
                 document.body.appendChild(overlay);
-                
+
                 // Keyboard escape
                 const handleEsc = e => {
                     if (e.key === 'Escape') {
@@ -2144,10 +2144,10 @@
                     }
                 };
                 document.addEventListener('keydown', handleEsc);
-                
+
                 if (onClose) onClose();
             },
-            
+
             close(overlay) {
                 if (!overlay) return;
                 overlay.style.opacity = '0';
@@ -2167,7 +2167,7 @@
                 const escaped = this.escapeHtml(md || '');
                 return `<pre class="text-xs leading-6 text-slate-200 bg-slate-950 border border-slate-700 rounded-lg p-4 overflow-auto max-h-[48vh]">${escaped}</pre>`;
             },
-            
+
             showSkillDetail(skill) {
                 const mdContent = skill.content || 'Contenido SKILL.md no disponible en cache. Path: ' + (skill.location || 'N/A');
                 const content = `
@@ -2254,7 +2254,7 @@
                             <h2 class="text-3xl font-bold gradient-text mb-2">Filosofía del Framework</h2>
                             <p class="text-slate-400 italic">"El conocimiento verdadero trasciende a lo público"</p>
                         </div>
-                        
+
                         <div class="grid gap-4">
                             ${[
                                 { title: '1. Local-First', desc: 'Todo tu conocimiento reside en archivos locales que tú controlas. Sin dependencia de servidores externos.' },
@@ -2271,7 +2271,7 @@
                                 </div>
                             `).join('')}
                         </div>
-                        
+
                         <div class="pt-6 border-t border-slate-800 text-center">
                             <p class="text-slate-500 text-sm mb-3">Frase insignia:</p>
                             <blockquote class="text-lg text-slate-300 italic">
@@ -2281,10 +2281,10 @@
                         </div>
                     </div>
                 `;
-                
+
                 this.open(content, { maxWidth: 'max-w-4xl' });
             },
-            
+
             showObjectiveModal() {
                 const content = `
                     <div class="space-y-6">
@@ -2292,16 +2292,16 @@
                             <h2 class="text-3xl font-bold gradient-text mb-2">Objetivo del Framework</h2>
                             <p class="text-slate-400">"Tu conocimiento. Tu control."</p>
                         </div>
-                        
+
                         <div class="bg-slate-800/50 rounded-lg p-6 border border-slate-700">
                             <h3 class="text-xl font-semibold mb-4">Propósito Principal</h3>
                             <p class="text-slate-400 leading-relaxed">
-                                Proporcionar un asistente de IA personal que resida completamente en tu control local, 
-                                sin dependencia de servidores externos. Gestiona tu conocimiento, automatiza tareas y 
+                                Proporcionar un asistente de IA personal que resida completamente en tu control local,
+                                sin dependencia de servidores externos. Gestiona tu conocimiento, automatiza tareas y
                                 colabora con IA manteniendo el control total de tus datos.
                             </p>
                         </div>
-                        
+
                         <div>
                             <h3 class="text-lg font-semibold mb-3">Características Clave</h3>
                             <div class="grid md:grid-cols-2 gap-3">
@@ -2327,7 +2327,7 @@
                         </div>
                     </div>
                 `;
-                
+
                 this.open(content, { maxWidth: 'max-w-4xl' });
             }
         };
@@ -2352,7 +2352,7 @@
                     animationsEnabled: true
                 }
             },
-            
+
             async load() {
                 try {
                     const response = await fetch(this.configPath);
@@ -2364,14 +2364,14 @@
                 }
                 return this.defaultConfig;
             },
-            
+
             async save(config) {
                 // NOTA: Esto requiere backend para escritura real
                 // Por ahora guardamos en localStorage como fallback
                 localStorage.setItem('dashboard-config', JSON.stringify(config));
                 console.log('[ConfigManager] Config guardada (localStorage)');
             },
-            
+
             getSetting(key, defaultValue) {
                 const saved = localStorage.getItem('dashboard-config');
                 if (saved) {
@@ -2384,7 +2384,7 @@
                 }
                 return defaultValue;
             },
-            
+
             setSetting(key, value) {
                 const config = {
                     ...this.defaultConfig,
@@ -2394,7 +2394,7 @@
                 config.lastUpdated = new Date().toISOString();
                 this.save(config);
             },
-            
+
             reset() {
                 localStorage.removeItem('dashboard-config');
                 console.log('[ConfigManager] Config reseteada a defaults');
@@ -2413,13 +2413,13 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
                         </div>
-                        
+
                         <h2 class="text-2xl font-bold mb-3">¿Qué son las Sesiones?</h2>
                         <p class="text-slate-400 max-w-md mb-6">
-                            Las sesiones son el corazón del framework. Cada vez que trabajas con una IA, 
+                            Las sesiones son el corazón del framework. Cada vez que trabajas con una IA,
                             se crea un registro con todo lo importante.
                         </p>
-                        
+
                         <div class="grid md:grid-cols-2 gap-4 mb-8 max-w-2xl">
                             <div class="bg-slate-800/50 rounded-lg p-4 text-left">
                                 <div class="flex items-center gap-2 mb-2">
@@ -2430,7 +2430,7 @@
                                 </div>
                                 <p class="text-xs text-slate-400">Registro de qué se trabajó en cada sesión</p>
                             </div>
-                            
+
                             <div class="bg-slate-800/50 rounded-lg p-4 text-left">
                                 <div class="flex items-center gap-2 mb-2">
                                     <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2440,7 +2440,7 @@
                                 </div>
                                 <p class="text-xs text-slate-400">Decisiones importantes y alternativas consideradas</p>
                             </div>
-                            
+
                             <div class="bg-slate-800/50 rounded-lg p-4 text-left">
                                 <div class="flex items-center gap-2 mb-2">
                                     <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2450,7 +2450,7 @@
                                 </div>
                                 <p class="text-xs text-slate-400">Tareas identificadas para futuro seguimiento</p>
                             </div>
-                            
+
                             <div class="bg-slate-800/50 rounded-lg p-4 text-left">
                                 <div class="flex items-center gap-2 mb-2">
                                     <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2461,7 +2461,7 @@
                                 <p class="text-xs text-slate-400">Traza completa de cambios en el código</p>
                             </div>
                         </div>
-                        
+
                         <div class="flex flex-col sm:flex-row gap-4">
                             <button onclick="app.startFramework()" class="px-8 py-3 bg-lime-500 hover:bg-lime-400 text-slate-950 font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-lime-400/25 flex items-center gap-2 neon-glow">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2473,15 +2473,15 @@
                                 Ver ejemplo de sesión
                             </button>
                         </div>
-                        
+
                         <p class="text-slate-500 text-sm mt-8 max-w-md">
-                            Las sesiones se crean automáticamente al ejecutar 
+                            Las sesiones se crean automáticamente al ejecutar
                             <code class="bg-slate-800 px-2 py-1 rounded text-xs">session-start.py</code>
                         </p>
                     </div>
                 `;
             },
-            
+
             skills() {
                 return `
                     <div class="flex flex-col items-center justify-center py-20 px-4 text-center">
@@ -2490,13 +2490,13 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
                             </svg>
                         </div>
-                        
+
                         <h2 class="text-2xl font-bold mb-3">Sin Skills Disponibles</h2>
                         <p class="text-slate-400 max-w-md">
-                            Las skills son habilidades especializadas del framework. 
+                            Las skills son habilidades especializadas del framework.
                             Aún no hay skills indexadas.
                         </p>
-                        
+
                         <button onclick="app.runIndexer()" class="mt-6 px-6 py-3 bg-lime-500 hover:bg-lime-400 text-slate-950 font-semibold rounded-xl transition-all neon-glow">
                             Ejecutar Indexer de Skills
                         </button>
@@ -2514,20 +2514,20 @@
             async init() {
                 // Load data
                 await dataLoader.loadAll();
-                
+
                 // Hide loading screen
                 document.getElementById('loading-screen').classList.add('hidden');
                 document.getElementById('main-layout').classList.remove('hidden');
-                
+
                 // Initial render
                 router.render();
                 router.updateNavState();
-                
+
                 // Mobile menu toggle
                 document.getElementById('menu-toggle')?.addEventListener('click', () => {
                     document.querySelector('aside')?.classList.toggle('hidden');
                 });
-                
+
                 // Search functionality
                 document.getElementById('global-search')?.addEventListener('input', (e) => {
                     this.handleSearch(e.target.value);
@@ -2592,11 +2592,11 @@
                     </div>`;
                 document.body.appendChild(overlay);
             },
-            
+
             showSessionDemo() {
                 router.navigate('sessions');
             },
-            
+
             async runIndexer() {
                 try {
                     const result = await paConsole.api('/api/skills/reindex', 'POST', {});
@@ -2695,10 +2695,10 @@
                 document.querySelectorAll('.fw-tab-content').forEach(tab => {
                     tab.classList.add('hidden');
                 });
-                
+
                 // Show selected tab
                 document.getElementById(`fw-tab-${tabName}`)?.classList.remove('hidden');
-                
+
                 // Update button styles
                 document.querySelectorAll('.fw-tab-btn').forEach(btn => {
                     const isActive = btn.dataset.tab === tabName;
@@ -2711,12 +2711,12 @@
                         btn.classList.remove('bg-lime-500', 'text-slate-950');
                     }
                 });
-                
+
                 // Re-init charts if on overview tab
                 if (tabName === 'overview') {
                     setTimeout(() => charts.init(), 100);
                 }
-                
+
                 // Init workflow manager if on workflow tab
                 if (tabName === 'workflow') {
                     setTimeout(() => workflowManager.init(), 100);
@@ -2927,17 +2927,17 @@
                 } catch (e) { /* no crítico */ }
             })();
         });
-    
+
         // ============================================
         // MODELO PAGE — Selección de modelo IA
         // ============================================
         const modeloPage = {
             currentModel: '',
-            
+
             async init() {
                 await this.loadCurrentModel();
             },
-            
+
             async loadCurrentModel() {
                 // v0.4.0-beta: GET /api/config/model (server bridge) — lee .opencode/config.json
                 // En file:// o sin bridge → estado "sin puente" honesto.
@@ -2955,21 +2955,21 @@
                 this.currentModel = '';
                 if (el) el.textContent = t('modelo_no_bridge');
             },
-            
+
             async detect() {
                 const btn = document.getElementById('modelo-detect-btn');
                 const results = document.getElementById('modelo-results');
                 const select = document.getElementById('modelo-select');
-                
+
                 if (btn) {
                     btn.disabled = true;
                     btn.innerHTML = t('modelo_detecting');
                 }
-                
+
                 try {
                     await paConsole.api('/api/runtime/ensure', 'POST', {});
                     const models = await paConsole.api('/api/models/free');
-                    
+
                     if (models && models.length > 0) {
                         select.innerHTML = `<option value="">${t('modelo_select_ph')}</option>`;
                         models.forEach(m => {
@@ -2991,13 +2991,13 @@
                 } catch(e) {
                     this.showFeedback(t('modelo_detect_err'), 'error');
                 }
-                
+
                 if (btn) {
                     btn.disabled = false;
                     btn.innerHTML = t('modelo_detecting') === 'Detectando…' ? 'Detectar modelos free' : 'Detect free models';
                 }
             },
-            
+
             async test() {
                 // Ping real del modelo seleccionado — verifica que
                 // la credencial FUNCIONA (detectar ≠ poder usar).
@@ -3021,17 +3021,17 @@
                     this.showFeedback(t('modelo_detect_err'), 'error');
                 }
             },
-            
+
             async save() {
                 const select = document.getElementById('modelo-select');
                 const model = select.value;
                 const feedback = document.getElementById('modelo-feedback');
-                
+
                 if (!model) {
                     this.showFeedback(t('modelo_pick_first'), 'error');
                     return;
                 }
-                
+
                 try {
                     const result = await paConsole.api('/api/config/model', 'POST', {model: model});
                     if (result.ok) {
@@ -3045,7 +3045,7 @@
                     this.showFeedback('✗ Error al guardar', 'error');
                 }
             },
-            
+
             showFeedback(msg, type) {
                 const el = document.getElementById('modelo-feedback');
                 if (el) {
@@ -3161,7 +3161,7 @@
                 ]
             }
         ];
-        
+
         function quickStart() {
             // Ocultar hero y mostrar dashboard
             document.getElementById('hero-section').style.opacity = '0';
@@ -3171,24 +3171,24 @@
                 router.navigate('console');
             }, 700);
         }
-        
+
         function showTour() {
             wizardStep = 0;
             renderWizard();
             document.getElementById('wizard-modal').classList.remove('hidden');
         }
-        
+
         function closeWizard() {
             document.getElementById('wizard-modal').classList.add('hidden');
         }
-        
+
         function renderWizard() {
             const step = wizardSteps[wizardStep];
             const container = document.getElementById('wizard-steps');
-            
+
             // Progress bar
             const progress = ((wizardStep + 1) / wizardSteps.length) * 100;
-            
+
             let html = `
                 <div class="mb-6">
                     <div class="flex justify-between text-sm text-slate-400 mb-2">
@@ -3199,10 +3199,10 @@
                         <div class="h-full bg-lime-500 transition-all duration-300" style="width: ${progress}%"></div>
                     </div>
                 </div>
-                
+
                 <h3 class="text-xl font-bold text-white mb-4">${step.title}</h3>
                 <div class="mb-6">${step.content}</div>
-                
+
                 <div class="flex justify-between gap-3">
                     ${step.buttons.filter(b => b.action === 'prev').map(b => `
                         <button onclick="wizardPrev()" class="px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition-colors">
@@ -3217,29 +3217,29 @@
                     `).join('')}
                 </div>
             `;
-            
+
             container.innerHTML = html;
-            
+
             // Callback onShow si existe
             if (step.onShow) {
                 setTimeout(step.onShow, 100);
             }
         }
-        
+
         function wizardNext() {
             if (wizardStep < wizardSteps.length - 1) {
                 wizardStep++;
                 renderWizard();
             }
         }
-        
+
         function wizardPrev() {
             if (wizardStep > 0) {
                 wizardStep--;
                 renderWizard();
             }
         }
-        
+
         function wizardAction(action) {
             if (action === 'next') wizardNext();
             else if (action === 'prev') wizardPrev();
@@ -3248,19 +3248,19 @@
                 quickStart();
             }
         }
-        
+
         function runSetupChecks() {
             const statusEl = document.getElementById('setup-status');
             const checkPython = document.getElementById('check-python');
             const checkOpencode = document.getElementById('check-opencode');
-            
+
             statusEl.textContent = 'Verificando...';
-            
+
             // Simular checks (en producción haría fetch real)
             setTimeout(() => {
                 checkPython.className = 'w-5 h-5 rounded-full bg-lime-500 flex items-center justify-center';
                 checkPython.innerHTML = '✓';
-                
+
                 setTimeout(() => {
                     checkOpencode.className = 'w-5 h-5 rounded-full bg-lime-500 flex items-center justify-center';
                     checkOpencode.innerHTML = '✓';
@@ -3284,8 +3284,8 @@ window.__DOCS_META__ = [{"id": "overview", "label": "📘 Visión General"}, {"i
 <!-- Lee README-simple.md — es la guia pensada para ti.               -->
 <!-- ================================================================ -->
 
-> 💡 **¿Primera vez usando el framework?**  
-> **Lee [README-simple.md](./README-simple.md)** — es la guia pensada para usuarios sin experiencia tecnica.  
+> 💡 **¿Primera vez usando el framework?**
+> **Lee [README-simple.md](./README-simple.md)** — es la guia pensada para usuarios sin experiencia tecnica.
 > Este archivo (README.md) contiene documentacion detallada para usuarios avanzados.
 
 ---
@@ -3317,7 +3317,7 @@ window.__DOCS_META__ = [{"id": "overview", "label": "📘 Visión General"}, {"i
 - Session management optimizado
 
 📄 [Ver Changelog](./CHANGELOG.md) | 🏷️ [Ver Releases](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases)
-> 
+>
 > — *FreakingJSON*
 
 ---
@@ -3525,7 +3525,7 @@ Hecho con ❤️ por **FreakingJSON**.
 - ☕ **Apoya el proyecto**: [buymeacoffee.com/freakingjson](https://buymeacoffee.com/freakingjson)
 
 > *"I own my context. I am FreakingJSON."*
-> 
+>
 > **"El conocimiento verdadero trasciende a lo público."**
 </script>
 <script type="text/markdown" id="docsrc-overview__en">
@@ -3535,8 +3535,8 @@ Hecho con ❤️ por **FreakingJSON**.
 <!-- Read README-simple.md — it's the guide designed for you.         -->
 <!-- ================================================================ -->
 
-> 💡 **First time using the framework?**  
-> **Read [README-simple.md](./README-simple.md)** — it's the guide designed for users without technical experience.  
+> 💡 **First time using the framework?**
+> **Read [README-simple.md](./README-simple.md)** — it's the guide designed for users without technical experience.
 > This file (README.md) contains detailed documentation for advanced users.
 
 ---
@@ -3568,7 +3568,7 @@ Hecho con ❤️ por **FreakingJSON**.
 - Optimized session management
 
 📄 [View Changelog](./CHANGELOG.md) | 🏷️ [View Releases](https://github.com/n30j0su3/Model-Agnostic-AI-Personal-Assistant-Framework-PreAlpha/releases)
-> 
+>
 > — *FreakingJSON*
 
 ---
@@ -3774,14 +3774,14 @@ Made with ❤️ by **FreakingJSON**.
 - ☕ **Support the project**: [buymeacoffee.com/freakingjson](https://buymeacoffee.com/freakingjson)
 
 > *"I own my context. I am FreakingJSON."*
-> 
+>
 > **"True knowledge transcends the public."**
 </script>
 <script type="text/markdown" id="docsrc-getting_started">
 # 🚀 Primeros pasos con PA Framework
 
 > **Tutorial visual de 5 minutos para nuevos usuarios**
-> 
+>
 > *Versión: v0.3.8-alpha | Actualizado: abril de 2026*
 
 ---
@@ -3799,7 +3799,7 @@ En solo 5 minutos vas a saber cómo:
 
 ## 🎯 ¿Qué es PA Framework?
 
-PA Framework es tu **asistente personal de IA** que vive en tu computadora. 
+PA Framework es tu **asistente personal de IA** que vive en tu computadora.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -4129,7 +4129,7 @@ Carpeta de PA Framework
 ### "¿Necesito una API key?"
 
 > **¡No!** Puedes usar modelos de IA locales (como Ollama) gratis.
-> 
+>
 > Para IA en la nube (OpenAI, Claude), necesitas una cuenta gratuita y una API key.
 
 ### "¿Dónde están mis datos?"
@@ -4207,14 +4207,14 @@ Tus datos personales **se conservan automáticamente** durante las actualizacion
 *Hecho con ❤️ por FreakingJSON*
 
 > *"Yo soy dueño de mi contexto. Soy FreakingJSON."*
-> 
+>
 > *"El conocimiento verdadero trasciende a lo público."*
 </script>
 <script type="text/markdown" id="docsrc-getting_started__en">
 # 🚀 Getting Started with PA Framework
 
 > **5-Minute Visual Tutorial for New Users**
-> 
+>
 > *Version: v0.3.8-alpha | Updated: April 2026*
 
 ---
@@ -4232,7 +4232,7 @@ In just 5 minutes, you'll know how to:
 
 ## 🎯 What is PA Framework?
 
-PA Framework is your **personal AI assistant** that lives on your computer. 
+PA Framework is your **personal AI assistant** that lives on your computer.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -4562,7 +4562,7 @@ PA Framework Folder
 ### "Do I need an API key?"
 
 > **No!** You can use local AI models (like Ollama) for free.
-> 
+>
 > For cloud AI (OpenAI, Claude), you'll need a free account and API key.
 
 ### "Where is my data?"
@@ -4640,16 +4640,16 @@ Your personal data is **automatically preserved** during updates.
 *Made with ❤️ by FreakingJSON*
 
 > *"I own my context. I am FreakingJSON."*
-> 
+>
 > *"True knowledge transcends to the public."*
 </script>
 <script type="text/markdown" id="docsrc-tutorial">
 # Documento de planificación del tutorial de incorporación
 
-> **Ítem del backlog:** BL-101  
-> **Versión:** 1.0  
-> **Creado:** abril de 2026  
-> **Estado:** Planificación  
+> **Ítem del backlog:** BL-101
+> **Versión:** 1.0
+> **Creado:** abril de 2026
+> **Estado:** Planificación
 > **Prerrequisito:** [GETTING-STARTED.md](./GETTING-STARTED.md) (inicio rápido de 5 minutos)
 
 ---
@@ -5056,10 +5056,10 @@ GETTING-STARTED.md (prerrequisito)
 <script type="text/markdown" id="docsrc-tutorial__en">
 # Onboarding Tutorial Planning Document
 
-> **Backlog Item:** BL-101  
-> **Version:** 1.0  
-> **Created:** April 2026  
-> **Status:** Planning  
+> **Backlog Item:** BL-101
+> **Version:** 1.0
+> **Created:** April 2026
+> **Status:** Planning
 > **Prerequisite:** [GETTING-STARTED.md](./GETTING-STARTED.md) (5-minute quick-start)
 
 ---
@@ -5473,7 +5473,7 @@ GETTING-STARTED.md (prerequisite)
 # Guía de Instalación de CLI para PA Framework
 
 > **¿No tienes un CLI instalado? ¡Esta guía te ayuda a comenzar!**
-> 
+>
 > *Versión: v0.3.8-alpha | Actualizado: abril de 2026*
 
 ---
@@ -6090,7 +6090,7 @@ opencode setup
 # CLI Installation Guide for PA Framework
 
 > **Don't have a CLI installed? This guide will help you get started!**
-> 
+>
 > *Version: v0.3.8-alpha | Updated: April 2026*
 
 ---
@@ -6779,7 +6779,7 @@ Salida esperada:
 | Componente | Ruta | Independiente | Notas |
 |-----------|------|------------|-------|
 | SessionStore | `core/memory/session_memory.py` | ✅ Sí | SQLite `data/sessions.db` |
-| SkillExecutor | `core/skills/skill_executor.py` | ✅ Sí | Skills en TOML en `skills/*.toml` |
+| SkillsIndexer | `core/scripts/skills_indexer.py` | ✅ Sí | Skills Markdown; genera `skills-index.json` |
 | MultiEngine | `core/providers/multi_engine.py` | ✅ Sí | Configuración JSON/YAML |
 | ContextLoader | `core/scripts/context_loader.py` | ✅ Sí | Carga lazy por tiers |
 | SessionStart | `core/scripts/session_start.py` | ✅ Sí | Script de bootstrap |
@@ -6939,7 +6939,7 @@ Expected output:
 | Component | Path | Standalone | Notes |
 |-----------|------|------------|-------|
 | SessionStore | `core/memory/session_memory.py` | ✅ Yes | SQLite `data/sessions.db` |
-| SkillExecutor | `core/skills/skill_executor.py` | ✅ Yes | TOML skills in `skills/*.toml` |
+| SkillsIndexer | `core/scripts/skills_indexer.py` | ✅ Yes | Markdown skills; generates `skills-index.json` |
 | MultiEngine | `core/providers/multi_engine.py` | ✅ Yes | JSON/YAML config |
 | ContextLoader | `core/scripts/context_loader.py` | ✅ Yes | Tier-based lazy loading |
 | SessionStart | `core/scripts/session_start.py` | ✅ Yes | Bootstrap script |
@@ -7026,8 +7026,8 @@ export GEMINI_API_KEY="..."
 <script type="text/markdown" id="docsrc-memory">
 # Memory Architecture — Integral 4-Layer Persistence
 
-> **Versión**: v0.3.7-alpha (HOTFIX4 candidate)  
-> **Estado**: Activo  
+> **Versión**: v0.3.7-alpha (HOTFIX4 candidate)
+> **Estado**: Activo
 > **Modelo**: Persistencia integral (no task-specific)
 
 ---
@@ -7118,8 +7118,8 @@ python core/scripts/memory_pipeline.py --full-cycle
 <script type="text/markdown" id="docsrc-memory__en">
 # Memory Architecture — Integral 4-Layer Persistence
 
-> **Version**: v0.3.7-alpha (HOTFIX4 candidate)  
-> **Status**: Active  
+> **Version**: v0.3.7-alpha (HOTFIX4 candidate)
+> **Status**: Active
 > **Model**: Integral persistence (not task-specific)
 
 ---

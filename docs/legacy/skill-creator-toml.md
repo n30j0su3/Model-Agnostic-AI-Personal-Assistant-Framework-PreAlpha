@@ -1,7 +1,7 @@
 # Skill Creator Automático
 
-> **Versión**: v0.4.0-beta  
-> **Propósito**: Generar skills automáticamente desde ejemplos o descripciones en lenguaje natural  
+> **Versión**: v0.4.0-beta
+> **Propósito**: Generar skills automáticamente desde ejemplos o descripciones en lenguaje natural
 > **Principios**: YAGNI, Impeccable, DRY, Local-First
 
 ---

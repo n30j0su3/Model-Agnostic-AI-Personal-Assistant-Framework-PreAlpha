@@ -471,3 +471,19 @@ def test_workflow_declares_only_supported_blocking_lanes():
     assert "def migration_gate()" in release_gate
     assert '"v0.4.0-beta^{commit}"' in release_gate
     assert "receipts.append(migration_gate())" in release_gate
+
+
+def test_release_zip_ships_native_skills_and_plugin(tmp_path: Path, release_repo: Path):
+    builder = load_builder()
+    package = builder.build_release_zip(tmp_path / "dist", repo_root=release_repo)
+    with zipfile.ZipFile(package) as archive:
+        names = archive.namelist()
+        skill_mds = [
+            name
+            for name in names
+            if re.fullmatch(r"core/skills/core/[^/]+/SKILL\.md", name)
+        ]
+        assert len(skill_mds) == 23
+        assert ".opencode/plugins/freakingjson-framework.ts" in names
+        assert "core/skills/skill_executor.py" not in names
+        assert "core/scripts/skill_creator.py" not in names

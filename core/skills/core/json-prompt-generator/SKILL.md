@@ -3,7 +3,7 @@ name: json-prompt-generator
 description: Genera prompts JSON estructurados a partir de una idea inicial para IA, con objetivos y entregables claros.
 license: MIT
 metadata:
-  author: opencode
+  author: FreakingJSON Framework
   version: "1.0"
 compatibility: OpenCode, Claude Code, Gemini CLI, Codex
 ---

@@ -1,0 +1,24 @@
+{
+  "name": "Technical Rubric",
+  "description": "Criterios para evaluar la precision tecnica del codigo y la arquitectura de una respuesta.",
+  "criteria": [
+    {
+      "id": "correctness",
+      "label": "Correccion Tecnica",
+      "description": "El codigo o diseno es correcto, compila/ejecuta y resuelve el problema planteado.",
+      "weight": 0.4
+    },
+    {
+      "id": "architecture",
+      "label": "Arquitectura y Mantenibilidad",
+      "description": "La solucion sigue buenas practicas de diseno, es modular y facil de mantener.",
+      "weight": 0.35
+    },
+    {
+      "id": "robustness",
+      "label": "Robustez y Edge Cases",
+      "description": "Maneja errores, validaciones y casos borde de forma explicita.",
+      "weight": 0.25
+    }
+  ]
+}

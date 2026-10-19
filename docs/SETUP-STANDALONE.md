@@ -73,7 +73,7 @@ Expected output:
 | Component | Path | Standalone | Notes |
 |-----------|------|------------|-------|
 | SessionStore | `core/memory/session_memory.py` | ✅ Yes | SQLite `data/sessions.db` |
-| SkillExecutor | `core/skills/skill_executor.py` | ✅ Yes | TOML skills in `skills/*.toml` |
+| SkillsIndexer | `core/scripts/skills_indexer.py` | ✅ Yes | Sistema Markdown; genera `skills-index.json` |
 | MultiEngine | `core/providers/multi_engine.py` | ✅ Yes | JSON/YAML config |
 | ContextLoader | `core/scripts/context_loader.py` | ✅ Yes | Tier-based lazy loading |
 | SessionStart | `core/scripts/session_start.py` | ✅ Yes | Bootstrap script |

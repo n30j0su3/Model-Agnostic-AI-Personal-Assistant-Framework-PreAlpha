@@ -38,7 +38,7 @@ Determina qué tipo de documento necesita crear:
 | Tipo | Ubicación | Template | Propósito |
 |------|-----------|----------|-----------|
 | **Sesión** | `sessions/YYYY-MM-DD.md` | `assets/templates/session-template.md` | Log diario de trabajo |
-| **Skill** | `skills/core/{name}/SKILL.md` | `references/skill-template.md` | Documentación de skill |
+| **Skill** | `skills/core/{name}/SKILL.md` | `core/skills/core/skill-creator/references/skill-template.md` | Documentación de skill |
 | **Idea** | `codebase/ideas.md` | `assets/templates/idea-template.md` | Notas y descubrimientos |
 | **ADR** | `codebase/decisions/` | `assets/templates/adr-template.md` | Decisiones arquitectónicas |
 
@@ -98,8 +98,8 @@ tags: [feature, api]
 
 # Sesión 2026-02-11
 
-**Inicio**: 09:00 AM  
-**Workspace**: Development  
+**Inicio**: 09:00 AM
+**Workspace**: Development
 **Objetivo**: Implementar endpoint de autenticación
 
 ---
@@ -117,8 +117,8 @@ Implementación completa del endpoint POST /auth/login con JWT y rate limiting.
 
 ## Decisiones
 
-**Decisión**: Usar JWT con expiración de 24h  
-**Razón**: Balance entre seguridad y UX  
+**Decisión**: Usar JWT con expiración de 24h
+**Razón**: Balance entre seguridad y UX
 **Alternativas**: Sessions (rechazado - stateful)
 
 ## Bloqueos
@@ -142,8 +142,8 @@ Implementación completa del endpoint POST /auth/login con JWT y rate limiting.
 ```markdown
 ## Idea: Sistema de Plugins para Skills
 
-**Fecha**: 2026-02-11  
-**Categoría**: Mejora Framework  
+**Fecha**: 2026-02-11
+**Categoría**: Mejora Framework
 **Estado**: 📝 Borrador
 
 ### Descripción
@@ -179,8 +179,8 @@ Permitir que las skills se extiendan mediante plugins sin modificar el core.
 ```markdown
 # ADR 001: Uso de SQLite para Almacenamiento de Contexto
 
-**Estado**: Aceptado  
-**Fecha**: 2026-02-11  
+**Estado**: Aceptado
+**Fecha**: 2026-02-11
 **Decisores**: @freakingjson-team
 
 ## Contexto

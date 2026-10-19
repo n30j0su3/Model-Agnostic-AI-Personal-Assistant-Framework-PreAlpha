@@ -1,10 +1,11 @@
 ---
-id: skill-discovery
-name: Skill Discovery Helper
+name: skill-discovery
 description: Helper para identificar skills apropiadas para tareas comunes y evitar crear scripts innecesarios
-category: core
-type: helper
-version: 1.0.0
+license: MIT
+metadata:
+  author: FreakingJSON Framework
+  version: "1.0"
+compatibility: [OpenCode, Claude, Gemini, Codex]
 ---
 
 # Skill Discovery Helper
@@ -139,7 +140,7 @@ Antes de crear cualquier script, pregúntate:
 2. **¿Existe una skill para esta tarea?**
 3. **¿Estoy duplicando funcionalidad?**
 
-Si la respuesta a #2 es "Sí" → **Usar la skill.**  
+Si la respuesta a #2 es "Sí" → **Usar la skill.**
 Si la respuesta a #2 es "No" → Crear script o considerar nueva skill.
 
 ## Contacto
@@ -148,5 +149,5 @@ Para agregar nuevas skills al índice, actualizar este archivo y `core/skills/SK
 
 ---
 
-*"No reinventes la rueda. Usa las skills del framework."*  
+*"No reinventes la rueda. Usa las skills del framework."*
 *— Principio DRY, FreakingJSON-PA*
