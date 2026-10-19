@@ -41,6 +41,9 @@
   `.opencode/package.json` and `package-lock.json` are runtime-managed: they
   ship for bootstrap but are excluded from the manifest hash gate. The pin
   guard now checks CLI/plugin coherence instead of freezing `1.4.6`.
+- **Guía de migración v0.4.1-beta:** rutas por versión (v0.4.0, v0.3.x,
+  v0.2.x y anteriores), backup, verificación y rollback. Integrada en el
+  README y en `docs/GUIA-DE-MIGRACION-v0.4.1-beta.md`.
 
 ### RC6 publication hardening
 

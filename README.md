@@ -60,6 +60,22 @@ python core/scripts/dashboard_server.py
 ```
 y recarga — el dashboard detecta el puente automáticamente.
 
+## Actualizar desde versiones anteriores
+
+Si vienes de **v0.4.0-beta**, **v0.3.x** o una alpha:
+
+1. Haz backup de `core/.context/`, `data/` y `workspaces/`.
+2. Ejecuta `python core/scripts/update.py --check` y luego `python core/scripts/update.py`.
+3. Verifica con `python core/scripts/system_check.py --quick`.
+4. Revisa `python core/scripts/migrate.py --check`; si hay pendientes, `--apply`.
+5. Confirma perfil, workspaces, sesiones y modelo seleccionado.
+
+**Desde v0.2.x o anterior:** se recomienda instalación limpia + restaurar `core/.context/`, `data/user`, `data/sessions.db`, `data/user_memory.db` y `workspaces/`; las migraciones automáticas cubren estructuras, no todas las personalizaciones.
+
+**OpenCode:** actualiza a `>=1.18.0` antes de arrancar (`npm install -g opencode-ai@latest`).
+
+Guía completa: [`docs/GUIA-DE-MIGRACION-v0.4.1-beta.md`](docs/GUIA-DE-MIGRACION-v0.4.1-beta.md).
+
 ## Requisitos
 - Python 3.11+
 - [opencode](https://opencode.ai) CLI (auto-instalable en Windows)

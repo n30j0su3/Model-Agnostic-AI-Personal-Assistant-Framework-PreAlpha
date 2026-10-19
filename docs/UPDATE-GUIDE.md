@@ -3,6 +3,9 @@
 This guide describes the supported update and rollback flow for PA Framework.
 Esta guía describe el flujo soportado de actualización y rollback de PA Framework.
 
+> Para la migración específica a **v0.4.1-beta** (desde v0.4.0, v0.3.x o versiones anteriores), consulta
+> [GUIA-DE-MIGRACION-v0.4.1-beta.md](./GUIA-DE-MIGRACION-v0.4.1-beta.md).
+
 ## 1. Before updating / Antes de actualizar
 
 Run every command from the framework root. Keep the framework stopped while the

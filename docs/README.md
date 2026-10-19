@@ -51,6 +51,7 @@ python core/scripts/update.py
 La actualización oficial preserva contexto, KB, workspaces y configuración sensible del usuario.
 
 - Guía completa: [UPDATE-GUIDE.md](./UPDATE-GUIDE.md)
+- Guía de migración v0.4.1-beta: [GUIA-DE-MIGRACION-v0.4.1-beta.md](./GUIA-DE-MIGRACION-v0.4.1-beta.md)
 - Changelog: [CHANGELOG.md](../CHANGELOG.md)
 
 ### Iniciar desde cualquier CLI
