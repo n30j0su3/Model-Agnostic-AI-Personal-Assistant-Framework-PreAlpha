@@ -5,6 +5,26 @@ Versión destino: `v0.4.1-beta` · Fecha: 2026-10-18 · Licencia: MIT
 
 ---
 
+## Guía rápida de migración
+
+> **Regla de oro:** el backup seguro no se toca. Nunca ejecutes el framework, migraciones ni scripts dentro del backup; restaura siempre desde una **copia** del backup.
+
+1. **Backup limpio.** Detén el framework y guarda solo lo importante: `core/.context/`, `data/user/`, `data/sessions.db`, `data/user_memory.db`, `workspaces/`, `config/`, `.opencode/config.json` y `opencode.jsonc`. Verifica que la copia contiene tus archivos. No incluyas `node_modules/`, `.pytest_cache/` ni `__pycache__/`.
+2. **Elige una ruta:**
+   - **Menú de `pa.bat` / `pa.sh`:** usa la opción de **Buscar actualizaciones**. El updater crea snapshot y restaura el estado protegido. Ideal si tu instalación actual está sana.
+   - **Copia limpia del ZIP del repo (recomendado):** extrae `v0.4.1-beta` en una carpeta **nueva**, nunca encima de la vieja. Ideal si hay dudas, forks o si el update falla.
+3. **Restaura desde una copia del backup**, no desde el backup original. Copia a la instalación nueva o actualizada:
+   - `core/.context/` (MASTER, profile, sessions, codebase, knowledge, memory)
+   - `data/user/`, `data/sessions.db`, `data/user_memory.db`
+   - `workspaces/`
+   - `config/mcp.json`, `config/quotas.json`, `.opencode/config.json`, `opencode.jsonc`
+   - No copies `node_modules/`, `.pytest_cache/`, `__pycache__/` ni scripts viejos.
+   - Puedes hacerlo **manualmente** o con la opción de **importación/restauración del propio framework**, si tu versión la ofrece.
+4. **Verifica.** `VERSION`, `python core/scripts/system_check.py --quick`, `python core/scripts/migrate.py --check`, perfil, workspaces, sesiones y modelo.
+5. **Si algo falla.** Usa el snapshot del updater con `rollback.py` o vuelve a extraer el ZIP limpio y restaura otra copia del backup. No borres el backup original.
+
+---
+
 ## 1. Antes de empezar
 
 Detén el dashboard, OpenCode y cualquier sesión del framework. Trabaja desde la raíz de tu instalación actual.

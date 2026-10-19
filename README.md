@@ -62,13 +62,15 @@ y recarga — el dashboard detecta el puente automáticamente.
 
 ## Actualizar desde versiones anteriores
 
-Si vienes de **v0.4.0-beta**, **v0.3.x** o una alpha:
+> **Regla de oro:** el backup seguro no se toca. Restaura siempre desde una **copia** del backup, nunca trabajes en caliente sobre el original.
 
-1. Haz backup de `core/.context/`, `data/` y `workspaces/`.
-2. Ejecuta `python core/scripts/update.py --check` y luego `python core/scripts/update.py`.
-3. Verifica con `python core/scripts/system_check.py --quick`.
-4. Revisa `python core/scripts/migrate.py --check`; si hay pendientes, `--apply`.
-5. Confirma perfil, workspaces, sesiones y modelo seleccionado.
+**Rutas:** usa la opción **Buscar actualizaciones** del menú de `pa.bat`/`pa.sh`, o extrae una **copia limpia del ZIP del repo** en una carpeta nueva (recomendado si hay dudas o el update falla).
+
+1. Haz un **backup limpio** de `core/.context/`, `data/user/`, `data/*.db`, `workspaces/`, `config/`, `.opencode/config.json` y `opencode.jsonc`. No incluyas `node_modules/`, `.pytest_cache/` ni `__pycache__/`.
+2. Actualiza desde el menú o extrae el ZIP limpio en una carpeta nueva.
+3. Restaura desde una **copia** del backup, manualmente o con la opción de importación/restauración del framework.
+4. Verifica perfil, workspaces, sesiones, modelo y `python core/scripts/migrate.py --check`.
+5. Si falla, usa el snapshot del updater o vuelve al ZIP limpio con otra copia del backup. No borres el backup original.
 
 **Desde v0.2.x o anterior:** se recomienda instalación limpia + restaurar `core/.context/`, `data/user`, `data/sessions.db`, `data/user_memory.db` y `workspaces/`; las migraciones automáticas cubren estructuras, no todas las personalizaciones.
 
