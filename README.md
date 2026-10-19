@@ -95,9 +95,11 @@ El soporte se declara solo para lanes con CI bloqueante en
 - **macOS Intel** — no soportado en v0.4.1.
 
 Una plataforma no entra en soporte por compartir launcher: necesita suite,
-installer smoke y package gate verdes en su runner real. Para este candidato
-`v0.4.1-beta`, la publicación permanece **NO-GO** hasta completar el workflow
-multiplataforma y el checklist `docs/WINDOWS-CHECKLIST.md` sobre Windows x64.
+installer smoke y package gate verdes en su runner real. La release
+`v0.4.1-beta` se publicó el 2026-10-19 tras completar el workflow
+multiplataforma (Linux x64, macOS arm64, Windows x64, browser gates y paquete
+sanitizado). La checklist humana de Windows (`docs/WINDOWS-CHECKLIST.md`) queda
+como seguimiento post-release.
 
 ## Estructura
 ```
