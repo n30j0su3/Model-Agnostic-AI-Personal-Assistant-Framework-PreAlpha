@@ -10,6 +10,8 @@ compatibility: [OpenCode, Claude, Gemini, Codex]
 
 # Skill Discovery Helper
 
+> **Gate tarea→skill (obligatorio):** antes de crear o modificar cualquier archivo, mapea la tarea a una skill de este catálogo. Si existe una skill aplicable, cárgala y úsala; si no, dilo explícitamente antes de escribir. No crees scripts ad-hoc sin este chequeo.
+
 ## Propósito
 
 Este helper ayuda a identificar la skill apropiada para una tarea, evitando crear scripts innecesarios que dupliquen funcionalidad existente.

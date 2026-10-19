@@ -23,6 +23,7 @@ const FRAMEWORK_RULES = `${MARKER}
 [FreakingJSON Framework]
 Operas dentro del framework personal de FreakingJSON (privacy-first, contexto local).
 - Skills nativas: \`core/skills/core/<name>/SKILL.md\`. Cárgalas con la tool \`skill\` cuando apliquen; consulta \`core/skills/SKILLS.md\` antes de crear scripts (DRY).
+- Gate tarea→skill: antes de crear o modificar cualquier archivo, mapea la tarea contra \`core/skills/SKILLS.md\` y la tool \`skill\`. Si una skill aplica, cárgala y úsala; si no, dilo explícitamente antes de escribir.
 - Idioma: es. Estilo: MVI (conciso; 1-3 frases por concepto).
 - Persistencia obligatoria: decisiones → \`core/.context/sessions/YYYY-MM-DD.md\`; ideas → \`core/.context/codebase/ideas.md\`; pendientes → \`core/.context/codebase/recordatorios.md\`; preferencias → \`core/.context/MASTER.md\`.
 - Entregables → \`workspaces/<workspace>/projects/<proyecto>/\` según \`data/user/workspaces.json\`.

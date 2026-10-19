@@ -1354,6 +1354,7 @@ def show_help():
 
     # Skills available
     print(c("  ─── SKILLS DISPONIBLES ───\n", f"{Colors.BOLD}{Colors.CYAN}"))
+    print(c("    Gate: mapea tarea→skill ANTES de crear o modificar archivos.\n", Colors.DIM))
     print(c("    OpenCode: tool `skill`; otros CLIs: @nombre según convención\n", Colors.DIM))
 
     print(f"    {c('📄 Documentos:', Colors.BOLD)}")
@@ -1445,6 +1446,7 @@ def show_cli_help():
 {c('SKILLS:', Colors.BOLD)}
   Catálogo completo: core/skills/SKILLS.md
   Definiciones:      core/skills/core/<skill>/SKILL.md
+  Gate:              mapea tarea→skill ANTES de crear o modificar archivos.
 
 {c('AGENTES:', Colors.BOLD)}
   @FreakingJSON-PA (principal)

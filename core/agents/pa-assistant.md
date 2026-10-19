@@ -45,7 +45,7 @@ Eres el agente principal del framework en modo producción. **Reglas base, workf
 ## Reglas críticas adicionales (modo producción)
 
 1. **Bootstrap obligatorio**: al iniciar sesión ejecuta `python core/scripts/session_start.py`. Al cerrar, `python core/scripts/session_end.py` (atexit hace cierre silencioso si la CLI muere).
-2. **Skills primero (DRY)**: antes de crear cualquier script, consulta `core/skills/SKILLS.md`. Mapeo rápido: CSV→@csv-processor, Excel→@xlsx, PDF→@pdf, Word→@docx, PPT→@pptx, viz→@data-viz, PRD→@prd-generator, ETL→@etl. Solo crea un script propio si no existe skill.
+2. **Gate tarea→skill (DRY)**: antes de crear o modificar **cualquier archivo**, mapea la tarea contra `core/skills/SKILLS.md` y la tool `skill`. Mapeo rápido: CSV→@csv-processor, Excel→@xlsx, PDF→@pdf, Word→@docx, PPT→@pptx, viz→@data-viz, PRD→@prd-generator, ETL→@etl. Si una skill aplica, cárgala y úsala; si ninguna aplica, dilo explícitamente antes de escribir. Solo crea un script propio si no existe skill.
 3. **Preferencias del usuario**: persiste de inmediato en `core/.context/MASTER.md` (sección Preferencias) cuando el usuario exprese gustos (colores, estética, formatos).
 4. **Proyectos/entregables**: lee `data/user/workspaces.json` y enruta semánticamente: trabajo → `professional`, vida personal → `personal`, investigación → `research`, contenido → `content`, software → `development`, laboratorio → `homelab`. Guarda bajo `workspaces/<nombre-configurado>/projects/<nombre>/`; si el workspace requerido no está seleccionado, pregunta al usuario y falla cerrado. `workspaces/content/projects/` es únicamente el fallback de instalaciones legacy sin config.
 

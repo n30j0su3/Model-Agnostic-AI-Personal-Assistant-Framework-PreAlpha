@@ -233,3 +233,20 @@ def test_indexer_prunes_legacy_ids_and_uses_catalog_category(tmp_path, monkeypat
     assert [s["id"] for s in index["skills"]] == ["alpha", "beta"]
     assert index["total_skills"] == 2
     assert {s["category"] for s in index["skills"]} == {"Development", "Content"}
+
+
+def test_task_to_skill_gate_is_mandatory_before_file_writes():
+    surfaces = [
+        ROOT / ".opencode" / "agent" / "FreakingJSON.md",
+        ROOT / "core" / "agents" / "pa-assistant.md",
+        ROOT / ".opencode" / "plugins" / "freakingjson-framework.ts",
+        ROOT / "core" / "skills" / "SKILLS.md",
+        ROOT / "core" / "skills" / "core" / "skill-discovery" / "SKILL.md",
+        ROOT / "core" / "scripts" / "pa.py",
+    ]
+    for path in surfaces:
+        text = path.read_text(encoding="utf-8-sig").lower()
+        assert "tarea→skill" in text, f"{path}: missing task→skill gate"
+        assert "antes de crear o modificar" in text, (
+            f"{path}: gate must run before creating or modifying files"
+        )

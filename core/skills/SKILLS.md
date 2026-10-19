@@ -30,6 +30,10 @@
 | **@paper-summarizer** | Analiza y resume papers científicos y documentos técnicos | `core/skills/core/paper-summarizer/` |
 | **@error-recovery** | Self-healing error handling con recovery playbooks | `core/skills/core/error-recovery/` |
 
+## Gate tarea→skill (obligatorio)
+
+> **Antes de crear o modificar cualquier archivo**, mapea la tarea contra este catálogo y la tool `skill`. Si existe una skill aplicable, cárgala y úsala; si ninguna aplica, dilo explícitamente antes de escribir. No crees scripts ad-hoc sin pasar por `skill-discovery`.
+
 ## Uso Recomendado: Skill Discovery First
 
 > **⚠️ ANTES de crear cualquier script**, consulta `@skill-discovery` para verificar
